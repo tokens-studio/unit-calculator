@@ -1,5 +1,5 @@
 {
-	"name": "pratt-calculator",
+	"name": "token-value-calculator",
 	"version": "0.1.0",
 	"description": "",
 	"main": "dist/index.js",
@@ -19,15 +19,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/jrop/pratt-calculator.git"
+		"url": "git+https://github.com/floscr/pratt-calculator.git"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/jrop/pratt-calculator/issues"
+		"url": "https://github.com/floscr/pratt-calculator/issues"
 	},
-	"homepage": "https://github.com/jrop/pratt-calculator#readme",
+	"homepage": "https://github.com/floscr/pratt-calculator#readme",
 	"devDependencies": {
 		"@types/node": "^20.17.52",
 		"@types/tape": "^5.8.1",

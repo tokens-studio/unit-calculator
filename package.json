@@ -7,7 +7,6 @@
 	"bin": {
 		"calc": "./index.js"
 	},
-	"type": "module",
 	"scripts": {
 		"lint": "prettier -l '*.js' && eslint '*.js'",
 		"lint:fix": "prettier --write '*.js'",

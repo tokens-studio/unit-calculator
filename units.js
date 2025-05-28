@@ -102,24 +102,6 @@ export class UnitValue {
 }
 
 // Parse a string into a UnitValue
-function parseUnitValue(str) {
-  // Match a number followed by optional unit
-  const match = str.match(/^(-?\d*\.?\d+)([a-z%]+)?$/i);
-  if (!match) {
-    throw new Error(`Invalid unit value: ${str}`);
-  }
-
-  const [, valueStr, unit] = match;
-  const value = parseFloat(valueStr);
-
-  if (unit && !CSS_UNITS.includes(unit)) {
-    throw new Error(`Unsupported CSS unit: ${unit}`);
-  }
-
-  return new UnitValue(value, unit || null);
-}
-
-// Parse a string into a UnitValue
 export function parseUnitValue(str) {
   // Match a number followed by optional unit
   const match = str.match(/^(-?\d*\.?\d+)([a-z%]+)?$/i);

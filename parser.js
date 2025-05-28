@@ -1,4 +1,5 @@
 const createLexer = require('./lexer')
+const { UnitValue, parseUnitValue } = require('./units')
 
 function parser(s) {
 	// Check for adjacent numbers in the input by looking for patterns like "number whitespace number"
@@ -21,7 +22,8 @@ function parser(s) {
 		'(': 50,
 	}
 	const NUDS = {
-		NUMBER: t => parseFloat(t.match),
+		NUMBER_WITH_UNIT: t => parseUnitValue(t.match),
+		NUMBER: t => new UnitValue(parseFloat(t.match)),
 		ID: t => {
 			const mbr = Math[t.match]
 			if (typeof mbr == 'undefined') {
@@ -91,22 +93,62 @@ function parser(s) {
 } // parser
 
 parser.visit = function visit(node) {
-	if (typeof node == 'number') return node
+	if (typeof node == 'number') return new UnitValue(node);
+	if (node instanceof UnitValue) return node;
+	
 	return {
 		id: n => n.ref,
-		'^': n => Math.pow(visit(n.left), visit(n.right)),
-		'+': n => visit(n.left) + visit(n.right),
-		'-': n => visit(n.left) - visit(n.right),
-		'*': n => visit(n.left) * visit(n.right),
-		'/': n => visit(n.left) / visit(n.right),
-		'()': node => node.target.ref(visit(node.args)),
-		neg: n => -visit(n.value),
+		'^': n => {
+			const left = visit(n.left);
+			const right = visit(n.right);
+			
+			// Only allow power operations on unitless values
+			if (!left.isUnitless() || !right.isUnitless()) {
+				throw new Error("Power operations can only be performed on unitless values");
+			}
+			
+			return new UnitValue(Math.pow(left.value, right.value));
+		},
+		'+': n => {
+			const left = visit(n.left);
+			const right = visit(n.right);
+			return left.add(right);
+		},
+		'-': n => {
+			const left = visit(n.left);
+			const right = visit(n.right);
+			return left.subtract(right);
+		},
+		'*': n => {
+			const left = visit(n.left);
+			const right = visit(n.right);
+			return left.multiply(right);
+		},
+		'/': n => {
+			const left = visit(n.left);
+			const right = visit(n.right);
+			return left.divide(right);
+		},
+		'()': node => {
+			const args = visit(node.args);
+			// Math functions should only operate on the numeric value
+			if (node.target.id === 'floor' || node.target.id === 'ceil' || 
+				node.target.id === 'abs' || node.target.id === 'cos') {
+				return new UnitValue(node.target.ref(args.value), args.unit);
+			}
+			return node.target.ref(args);
+		},
+		neg: n => {
+			const value = visit(n.value);
+			return value.negate();
+		},
 	}[node.type](node)
 }
 
 parser.calc = function calc(s) {
 	const parse = parser(s)
-	return parser.visit(parse())
+	const result = parser.visit(parse());
+	return result.toString();
 }
 
 module.exports = parser

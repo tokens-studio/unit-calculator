@@ -22,6 +22,7 @@ class Lexer {
 
 function lex(s) {
 	const tokens = [
+		{type: 'NUMBER_WITH_UNIT', re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)/},
 		{type: 'NUMBER', re: /(?:\d+(?:\.\d*)?|\.\d+)/},
 		{type: 'ID', re: /[A-Za-z]+/},
 		{type: '+', re: /\+/},

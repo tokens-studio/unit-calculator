@@ -66,8 +66,10 @@ function parser(s: string): () => ASTNode {
     throw new Error("Adjacent numbers are not allowed");
   }
   
-  // Check for consecutive operators
-  const consecutiveOperatorsRegex = /[\+\-\*\/\^]{2,}/;
+  // Check for consecutive operators, but allow for negative numbers (e.g., -2*-2)
+  // This regex looks for 2+ operators in sequence, but excludes patterns like "*-" or "/-" 
+  // which are valid for negative numbers
+  const consecutiveOperatorsRegex = /(?<!\*|\/|\^)[\+\-\*\/\^]{2,}(?!\d)/;
   if (consecutiveOperatorsRegex.test(s)) {
     throw new Error("Consecutive operators are not allowed");
   }

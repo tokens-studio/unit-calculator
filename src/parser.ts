@@ -65,6 +65,12 @@ function parser(s: string): () => ASTNode {
   if (adjacentNumbersRegex.test(s)) {
     throw new Error("Adjacent numbers are not allowed");
   }
+  
+  // Check for consecutive operators
+  const consecutiveOperatorsRegex = /[\+\-\*\/\^]{2,}/;
+  if (consecutiveOperatorsRegex.test(s)) {
+    throw new Error("Consecutive operators are not allowed");
+  }
 
   const lexer: Lexer = createLexer(s);
   const BPS: BindingPowers = {

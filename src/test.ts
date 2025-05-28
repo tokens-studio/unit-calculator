@@ -32,6 +32,14 @@ _test("should throw on adjacent numbers", (t) => {
   t.end();
 });
 
+// Test that expressions with consecutive operators throw errors
+_test("should throw on consecutive operators", (t) => {
+  t.throws(() => calc("1+++++++1"), Error, "Consecutive operators should throw an error");
+  t.throws(() => calc("2**3"), Error, "Consecutive operators should throw an error");
+  t.throws(() => calc("5--3"), Error, "Consecutive operators should throw an error");
+  t.end();
+});
+
 // Test CSS unit calculations
 _test("CSS unit calculations", (t) => {
   // Addition with same units

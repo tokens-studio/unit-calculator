@@ -1,6 +1,12 @@
 const createLexer = require('./lexer')
 
 function parser(s) {
+	// Check for adjacent numbers in the input by looking for patterns like "number whitespace number"
+	const adjacentNumbersRegex = /\d+\s+\d+/;
+	if (adjacentNumbersRegex.test(s)) {
+		throw new Error("Adjacent numbers are not allowed");
+	}
+	
 	const lexer = createLexer(s)
 	const BPS = {
 		[null]: 0,

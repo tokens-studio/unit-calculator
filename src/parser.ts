@@ -60,6 +60,20 @@ interface LedFunctions {
 }
 
 function parser(s: string): () => ASTNode {
+  // Check for adjacent numbers in the input by looking for patterns like "number whitespace number"
+  const adjacentNumbersRegex = /\d+\s+\d+/;
+  if (adjacentNumbersRegex.test(s)) {
+    throw new Error("Adjacent numbers are not allowed");
+  }
+  
+  // Check for consecutive operators, but allow for negative numbers (e.g., -2*-2)
+  // This regex looks for 2+ operators in sequence, but excludes patterns like "*-" or "/-" 
+  // which are valid for negative numbers
+  const consecutiveOperatorsRegex = /(?<!\*|\/|\^)[\+\*\/\^]{2,}|(?<!\*|\/|\^)\-{2,}/;
+  if (consecutiveOperatorsRegex.test(s)) {
+    throw new Error("Consecutive operators are not allowed");
+  }
+
   const lexer: Lexer = createLexer(s);
   const BPS: BindingPowers = {
     [null as unknown as string]: 0,
@@ -161,7 +175,7 @@ function parser(s: string): () => ASTNode {
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
     
-    // Validate token - this replaces the regex checks
+    // Validate token
     if (token.type === null && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
@@ -169,13 +183,17 @@ function parser(s: string): () => ASTNode {
     let left = nud(token);
     
     while (bp(lexer.peek()) > rbp) {
-      // Check for consecutive operators
       const nextToken = lexer.peek();
-      if (isOperator(token.type) && isOperator(nextToken.type)) {
-        // Allow for negative numbers with * or / or ^ (e.g., *-2)
-        if (!(nextToken.type === "-" && 
-              (token.type === "*" || token.type === "/" || token.type === "^"))) {
-          throw new Error("Consecutive operators are not allowed");
+      
+      // Check for consecutive operators (this check happens before consuming the next token)
+      if (isOperator(nextToken.type)) {
+        const prevToken = lexer.tokens[lexer.position - 1];
+        if (isOperator(prevToken.type)) {
+          // Allow for negative numbers with * or / or ^ (e.g., *-2)
+          if (!(nextToken.type === "-" && 
+                (prevToken.type === "*" || prevToken.type === "/" || prevToken.type === "^"))) {
+            throw new Error("Consecutive operators are not allowed");
+          }
         }
       }
       

@@ -182,9 +182,14 @@ function parser(s: string): () => ASTNode {
       const next = lexer.tokens[i + 1];
       
       if (isOperator(current.type) && isOperator(next.type)) {
-        // Allow for negative numbers after any operator (e.g., 1 + -2, 3 * -4)
-        if (next.type === "-") {
-          // Negation is allowed after any operator
+        // Special case: double minus (--) is not allowed
+        if (current.type === "-" && next.type === "-") {
+          throw new Error("Double minus (--) is not allowed");
+        }
+        
+        // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
+        if (next.type === "-" && current.type !== "-") {
+          // Negation is allowed after operators other than minus
           continue;
         }
         

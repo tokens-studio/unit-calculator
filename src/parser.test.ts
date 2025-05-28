@@ -1,0 +1,52 @@
+import test from "tape";
+import { calc } from "./parser.js";
+
+test("Parser validation tests", (t) => {
+  // Test for adjacent numbers
+  t.throws(() => calc("1 2"), Error, "Adjacent numbers should throw an error");
+  t.throws(
+    () => calc("1 2 + 3"),
+    Error,
+    "Adjacent numbers at start should throw an error"
+  );
+  t.throws(
+    () => calc("1 + 2 3"),
+    Error,
+    "Adjacent numbers at end should throw an error"
+  );
+
+  // Test for consecutive operators
+  t.throws(() => calc("1 ++ 2"), Error, "Double plus should throw an error");
+  t.throws(
+    () => calc("1 +* 2"),
+    Error,
+    "Plus followed by multiply should throw an error"
+  );
+  t.throws(
+    () => calc("1 */ 2"),
+    Error,
+    "Multiply followed by divide should throw an error"
+  );
+  t.throws(() => calc("1 -- 2"), Error, "Double minus should throw an error");
+
+  // Test for valid negation
+  t.equal(calc("1 + -2"), -1, "Negation after plus should work");
+  t.equal(calc("1 - -2"), 3, "Negation after minus should work");
+  t.equal(calc("2 * -3"), -6, "Negation after multiply should work");
+  t.equal(calc("6 / -2"), -3, "Negation after divide should work");
+  t.equal(calc("2 ^ -2"), 0.25, "Negation after power should work");
+
+  // Test for complex expressions with negation
+  t.equal(
+    calc("1 + 2 * -3 + 4"),
+    -3,
+    "Complex expression with negation should work"
+  );
+  t.equal(
+    calc("-1 + -2 * -3"),
+    -1,
+    "Expression with multiple negations should work"
+  );
+
+  t.end();
+});

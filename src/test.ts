@@ -1,5 +1,7 @@
 import _test from "tape";
 import { calc } from "./parser.js";
+// Import the parser tests
+import "./parser.test.js";
 
 const test = (expr: string, expected: number | string) =>
   _test(expr, (t) => {

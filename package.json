@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "prettier -l '*.js' && eslint '*.js'",
     "lint:fix": "prettier --write '*.js' && eslint --fix '*.js'",
+    "format": "prettier --write '**/*.js'",
     "precommit": "npm run lint",
     "prepack": "npm test",
     "test": "node test.js"
@@ -28,7 +29,7 @@
     "eslint": "^3.19.0",
     "eslint-config-jrop": "^0.0.1",
     "husky": "^0.14.3",
-    "prettier": "^1.12.1",
+    "prettier": "^2.8.8",
     "tape": "^4.9.0"
   }
 }

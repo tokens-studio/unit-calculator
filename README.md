@@ -3,10 +3,6 @@ Pratt Parser
 
 This project demonstrates the fundamentals of a Pratt Parser.  It is based on [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
 
-Additionally, this README file attempts to simplify the concepts so that, when I come back to try to implement this again (at some undetermined point in the future), I will be able to remember how this works.
-
-This README assumes that you already have read the previous two articles as this text merely attempts to simplify some of the concepts, hopefully adding intuition to them.
-
 ## Concepts
 
 In general, the Pratt Parser solves the following problem: given the string "1 + 2 * 3", does the "2" associate with the "+" or the "&#42;".  It also solves "-" being both a prefix _and_ infix operator, as well as elegantly handling right associativity.
@@ -44,10 +40,6 @@ function expr(rbp) {
 	// (4) give the operator the left side of the tree, and let it build the right side; this new tree is our new "left"
 }
 ```
-
-## Contributions
-
-The Pratt Parser is a new concept to me, and thus this README would probably benefit from clarification, and the code would probably also benefit from cleanup.  Submit a PR if you feel so inclined!
 
 ## LICENSE
 

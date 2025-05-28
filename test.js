@@ -19,7 +19,7 @@ test('5/2/.5', 5)
 test('5 - 3 - 1 - 4', -3)
 test('floor(ceil(0.5) / 2)', 0)
 test('PI', Math.PI)
-test('abs(cos(PI)) + 9', '10')
+test('abs(cos(PI)) + 9', 10)
 
 // Test that expressions with adjacent numbers throw errors
 _test('should throw on adjacent numbers', t => {

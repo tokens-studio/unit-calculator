@@ -136,7 +136,12 @@ parser.visit = function visit(node) {
 				node.target.id === 'abs' || node.target.id === 'cos') {
 				return new UnitValue(node.target.ref(args.value), args.unit);
 			}
-			return node.target.ref(args);
+			// For constants like PI, we need to return a UnitValue
+			if (typeof node.target.ref === 'number') {
+				return new UnitValue(node.target.ref);
+			}
+			// For other functions, ensure we're passing the value, not the UnitValue object
+			return new UnitValue(node.target.ref(args.value));
 		},
 		neg: n => {
 			const value = visit(n.value);
@@ -148,7 +153,8 @@ parser.visit = function visit(node) {
 parser.calc = function calc(s) {
 	const parse = parser(s)
 	const result = parser.visit(parse());
-	return result.toString();
+	// Return number for unitless values, string for values with units
+	return result.isUnitless() ? result.value : result.toString();
 }
 
 module.exports = parser

@@ -2,15 +2,7 @@ import createLexer, { Lexer, Token } from "./lexer.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
 // Define node types for the AST
-type NodeType = 
-  | "id" 
-  | "+" 
-  | "-" 
-  | "*" 
-  | "/" 
-  | "^" 
-  | "()" 
-  | "neg";
+type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 
 interface BaseNode {
   type: NodeType;
@@ -39,12 +31,12 @@ interface NegationNode extends BaseNode {
   value: ASTNode;
 }
 
-type ASTNode = 
-  | IdNode 
-  | BinaryOpNode 
-  | FunctionCallNode 
-  | NegationNode 
-  | UnitValue 
+type ASTNode =
+  | IdNode
+  | BinaryOpNode
+  | FunctionCallNode
+  | NegationNode
+  | UnitValue
   | number;
 
 interface BindingPowers {
@@ -85,9 +77,9 @@ function parser(s: string): () => ASTNode {
     "*": 30,
     "/": 30,
     "^": 40,
-    "(": 50
+    "(": 50,
   };
-  
+
   const NUDS: NudFunctions = {
     NUMBER_WITH_UNIT: (t) => parseUnitValue(t.match!),
     NUMBER: (t) => new UnitValue(parseFloat(t.match!)),
@@ -101,25 +93,30 @@ function parser(s: string): () => ASTNode {
       }
       return { type: "id", ref: mbr, id: t.match! } as IdNode;
     },
-    "+": (t, bp) => parse(bp),
-    "-": (t, bp) => ({ type: "neg", value: parse(bp) } as NegationNode),
+    "+": (_t, bp) => parse(bp),
+    "-": (_t, bp) => ({ type: "neg", value: parse(bp) } as NegationNode),
     "(": () => {
       const inner = parse();
       lexer.expect(")");
       return inner;
-    }
+    },
   };
-  
+
   const LEDS: LedFunctions = {
-    "+": (left, t, bp) => ({ type: "+", left, right: parse(bp) } as BinaryOpNode),
-    "-": (left, t, bp) => ({ type: "-", left, right: parse(bp) } as BinaryOpNode),
-    "*": (left, t, bp) => ({ type: "*", left, right: parse(bp) } as BinaryOpNode),
-    "/": (left, t, bp) => ({ type: "/", left, right: parse(bp) } as BinaryOpNode),
-    "^": (left, t, bp) => ({
-      type: "^",
-      left,
-      right: parse(bp - 1)
-    } as BinaryOpNode),
+    "+": (left, _t, bp) =>
+      ({ type: "+", left, right: parse(bp) } as BinaryOpNode),
+    "-": (left, _t, bp) =>
+      ({ type: "-", left, right: parse(bp) } as BinaryOpNode),
+    "*": (left, _t, bp) =>
+      ({ type: "*", left, right: parse(bp) } as BinaryOpNode),
+    "/": (left, _t, bp) =>
+      ({ type: "/", left, right: parse(bp) } as BinaryOpNode),
+    "^": (left, _t, bp) =>
+      ({
+        type: "^",
+        left,
+        right: parse(bp - 1),
+      } as BinaryOpNode),
     "(": (left) => {
       if ((left as IdNode).type != "id") {
         throw new Error(`Cannot invoke expression as if it was a function)`);
@@ -132,13 +129,13 @@ function parser(s: string): () => ASTNode {
       const args = parse();
       lexer.expect(")");
       return { type: "()", target: idNode, args } as FunctionCallNode;
-    }
+    },
   };
-  
+
   function bp(token: Token): number {
     return BPS[token.type as keyof typeof BPS] || 0;
   }
-  
+
   function nud(token: Token): ASTNode {
     if (!NUDS[token.type as keyof typeof NUDS])
       throw new Error(
@@ -146,7 +143,7 @@ function parser(s: string): () => ASTNode {
       );
     return NUDS[token.type as keyof typeof NUDS](token, bp(token));
   }
-  
+
   function led(left: ASTNode, token: Token): ASTNode {
     if (!LEDS[token.type as keyof typeof LEDS])
       throw new Error(
@@ -154,7 +151,7 @@ function parser(s: string): () => ASTNode {
       );
     return LEDS[token.type as keyof typeof LEDS](left, token, bp(token));
   }
-  
+
   function parse(rbp = 0): ASTNode {
     let left = nud(lexer.next());
     while (bp(lexer.peek()) > rbp) {
@@ -162,7 +159,7 @@ function parser(s: string): () => ASTNode {
     }
     return left;
   }
-  
+
   return parse;
 } // parser
 
@@ -217,7 +214,10 @@ parser.visit = function visit(node: ASTNode): UnitValue {
         node.target.id === "abs" ||
         node.target.id === "cos"
       ) {
-        return new UnitValue((node.target.ref as Function)(args.value), args.unit);
+        return new UnitValue(
+          (node.target.ref as Function)(args.value),
+          args.unit
+        );
       }
       // For constants like PI, we need to return a UnitValue
       if (typeof node.target.ref === "number") {
@@ -229,7 +229,7 @@ parser.visit = function visit(node: ASTNode): UnitValue {
     neg: (n: NegationNode) => {
       const value = visit(n.value);
       return value.negate();
-    }
+    },
   };
 
   const typedNode = node as BaseNode;

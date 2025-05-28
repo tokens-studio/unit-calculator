@@ -48,6 +48,18 @@ test("Parser validation tests", (t) => {
     -7,
     "Expression with multiple negations should work"
   );
+  
+  // Test for expressions with parentheses and negation
+  t.equal(
+    calc("-(1 + 2)"),
+    -3,
+    "Negation of parenthesized expression should work"
+  );
+  t.equal(
+    calc("(-1 + -2) * 3"),
+    -9,
+    "Parenthesized expression with negations should work"
+  );
 
   t.end();
 });

@@ -25,18 +25,14 @@ class UnitValue {
     return this.unit === null;
   }
 
-  // Check if this unit is compatible with another unit for addition/subtraction
   isCompatibleWith(other) {
-    // Both unitless or both have the same unit
     return (
       (this.isUnitless() && other.isUnitless()) ||
       (this.unit === other.unit && this.unit !== null)
     );
   }
 
-  // For multiplication and division, we need different rules
   canMultiplyWith(other) {
-    // Can always multiply unitless with anything
     return this.isUnitless() || other.isUnitless() || this.unit === other.unit;
   }
 
@@ -44,7 +40,6 @@ class UnitValue {
     return this.isUnitless() ? `${this.value}` : `${this.value}${this.unit}`;
   }
 
-  // Basic operations
   add(other) {
     if (!this.isCompatibleWith(other)) {
       throw new Error(

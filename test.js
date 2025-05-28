@@ -1,5 +1,5 @@
-const _test = require("tape");
-const { calc } = require("./parser");
+import _test from "tape";
+import { calc } from "./parser.js";
 
 const test = (expr, expected) =>
   _test(expr, t => {

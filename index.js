@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-const { calc } = require("./parser");
+import { calc } from "./parser.js";
+import readline from "readline";
 
 const args = process.argv.slice(2);
 if (args.length == 0) {
   // no args
-  const readline = require("readline");
 
   const rl = readline.createInterface({
     input: process.stdin,

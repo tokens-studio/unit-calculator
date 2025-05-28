@@ -1,5 +1,5 @@
-const EOF = { type: null, match: null };
-class Lexer {
+export const EOF = { type: null, match: null };
+export class Lexer {
   constructor(tkns) {
     this.tokens = tkns;
     this.position = 0;
@@ -20,7 +20,7 @@ class Lexer {
   }
 }
 
-function lex(s) {
+export default function lex(s) {
   const tokens = [
     {
       type: "NUMBER_WITH_UNIT",
@@ -52,4 +52,3 @@ function lex(s) {
   }
   return new Lexer(tkns);
 }
-module.exports = lex;

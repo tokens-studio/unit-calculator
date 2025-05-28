@@ -1,5 +1,5 @@
-const createLexer = require("./lexer");
-const { UnitValue, parseUnitValue } = require("./units");
+import createLexer from "./lexer.js";
+import { UnitValue, parseUnitValue } from "./units.js";
 
 function parser(s) {
   // Check for adjacent numbers in the input by looking for patterns like "number whitespace number"
@@ -177,4 +177,6 @@ parser.calc = function calc(s) {
   return result.isUnitless() ? result.value : result.toString();
 };
 
-module.exports = parser;
+export default parser;
+export { parser };
+export const calc = parser.calc;

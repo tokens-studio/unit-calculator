@@ -1,5 +1,5 @@
 // CSS units supported by the calculator
-const CSS_UNITS = [
+export const CSS_UNITS = [
   "px",
   "em",
   "rem",
@@ -15,7 +15,7 @@ const CSS_UNITS = [
   "pc"
 ];
 
-class UnitValue {
+export class UnitValue {
   constructor(value, unit = null) {
     this.value = value;
     this.unit = unit;
@@ -119,8 +119,20 @@ function parseUnitValue(str) {
   return new UnitValue(value, unit || null);
 }
 
-module.exports = {
-  UnitValue,
-  parseUnitValue,
-  CSS_UNITS
-};
+// Parse a string into a UnitValue
+export function parseUnitValue(str) {
+  // Match a number followed by optional unit
+  const match = str.match(/^(-?\d*\.?\d+)([a-z%]+)?$/i);
+  if (!match) {
+    throw new Error(`Invalid unit value: ${str}`);
+  }
+
+  const [, valueStr, unit] = match;
+  const value = parseFloat(valueStr);
+
+  if (unit && !CSS_UNITS.includes(unit)) {
+    throw new Error(`Unsupported CSS unit: ${unit}`);
+  }
+
+  return new UnitValue(value, unit || null);
+}

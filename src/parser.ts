@@ -60,21 +60,9 @@ interface LedFunctions {
 }
 
 function parser(s: string): () => ASTNode {
-  // Check for adjacent numbers in the input by looking for patterns like "number whitespace number"
-  const adjacentNumbersRegex = /\d+\s+\d+/;
-  if (adjacentNumbersRegex.test(s)) {
-    throw new Error("Adjacent numbers are not allowed");
-  }
-  
-  // Check for consecutive operators, but allow for negative numbers (e.g., -2*-2)
-  // This regex looks for 2+ operators in sequence, but excludes patterns like "*-" or "/-" 
-  // which are valid for negative numbers
-  const consecutiveOperatorsRegex = /(?<!\*|\/|\^)[\+\*\/\^]{2,}|(?<!\*|\/|\^)\-{2,}/;
-  if (consecutiveOperatorsRegex.test(s)) {
-    throw new Error("Consecutive operators are not allowed");
-  }
-
   const lexer: Lexer = createLexer(s);
+  
+  // We'll check for adjacent numbers and consecutive operators during parsing
   const BPS: BindingPowers = {
     [null as unknown as string]: 0,
     NUMBER: 0,
@@ -172,6 +160,41 @@ function parser(s: string): () => ASTNode {
     return LEDS[token.type as keyof typeof LEDS](left, token, bp(token));
   }
 
+  // Check for adjacent numbers in the input
+  function checkForAdjacentNumbers(): void {
+    // Look ahead in the token stream for adjacent numbers
+    for (let i = 0; i < lexer.tokens.length - 1; i++) {
+      const current = lexer.tokens[i];
+      const next = lexer.tokens[i + 1];
+      
+      // If we have two numbers in a row, that's an error
+      if ((current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") && 
+          (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")) {
+        throw new Error("Adjacent numbers are not allowed");
+      }
+    }
+  }
+  
+  // Check for consecutive operators
+  function checkForConsecutiveOperators(): void {
+    for (let i = 0; i < lexer.tokens.length - 1; i++) {
+      const current = lexer.tokens[i];
+      const next = lexer.tokens[i + 1];
+      
+      if (isOperator(current.type) && isOperator(next.type)) {
+        // Allow for negative numbers with * or / or ^ (e.g., *-2)
+        if (!(next.type === "-" && 
+              (current.type === "*" || current.type === "/" || current.type === "^"))) {
+          throw new Error("Consecutive operators are not allowed");
+        }
+      }
+    }
+  }
+  
+  // Run validation checks before parsing
+  checkForAdjacentNumbers();
+  checkForConsecutiveOperators();
+  
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
     
@@ -183,20 +206,6 @@ function parser(s: string): () => ASTNode {
     let left = nud(token);
     
     while (bp(lexer.peek()) > rbp) {
-      const nextToken = lexer.peek();
-      
-      // Check for consecutive operators (this check happens before consuming the next token)
-      if (isOperator(nextToken.type)) {
-        const prevToken = lexer.tokens[lexer.position - 1];
-        if (isOperator(prevToken.type)) {
-          // Allow for negative numbers with * or / or ^ (e.g., *-2)
-          if (!(nextToken.type === "-" && 
-                (prevToken.type === "*" || prevToken.type === "/" || prevToken.type === "^"))) {
-            throw new Error("Consecutive operators are not allowed");
-          }
-        }
-      }
-      
       left = led(left, lexer.next());
     }
     

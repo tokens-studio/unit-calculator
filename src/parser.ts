@@ -182,11 +182,14 @@ function parser(s: string): () => ASTNode {
       const next = lexer.tokens[i + 1];
       
       if (isOperator(current.type) && isOperator(next.type)) {
-        // Allow for negative numbers with * or / or ^ (e.g., *-2)
-        if (!(next.type === "-" && 
-              (current.type === "*" || current.type === "/" || current.type === "^"))) {
-          throw new Error("Consecutive operators are not allowed");
+        // Allow for negative numbers after any operator (e.g., 1 + -2, 3 * -4)
+        if (next.type === "-") {
+          // Negation is allowed after any operator
+          continue;
         }
+        
+        // All other consecutive operators are not allowed
+        throw new Error("Consecutive operators are not allowed");
       }
     }
   }

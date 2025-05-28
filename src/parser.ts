@@ -310,13 +310,16 @@ parser.calc = function calc(s: string): number | string {
     return result as unknown as number;
   }
 
-  // For the specific test case '6px / 2px', return a string
-  if (s.trim() === "6px / 2px") {
+  // Return number for unitless values, string for values with units
+  if (result.isUnitless()) {
+    // If this is a result of dividing same units, return as string
+    if (result.fromUnitDivision) {
+      return result.value.toString();
+    }
+    return result.value;
+  } else {
     return result.toString();
   }
-
-  // Return number for unitless values, string for values with units
-  return result.isUnitless() ? result.value : result.toString();
 };
 
 export default parser;

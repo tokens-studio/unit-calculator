@@ -18,10 +18,12 @@ export const CSS_UNITS = [
 export class UnitValue {
   value: number;
   unit: string | null;
+  fromUnitDivision: boolean;
 
-  constructor(value: number, unit: string | null = null) {
+  constructor(value: number, unit: string | null = null, fromUnitDivision: boolean = false) {
     this.value = value;
     this.unit = unit;
+    this.fromUnitDivision = fromUnitDivision;
   }
 
   isUnitless(): boolean {
@@ -92,19 +94,19 @@ export class UnitValue {
       );
     }
 
-    // Special case: if units are the same, they cancel out
+    // Special case: if units are the same, they cancel out and mark as from unit division
     if (this.unit === other.unit && this.unit !== null) {
-      return new UnitValue(this.value / other.value, null);
+      return new UnitValue(this.value / other.value, null, true);
     }
 
     // If denominator is unitless, result has unit of numerator
     // If numerator is unitless, result is unitless (can't have unit in denominator)
     const resultUnit = other.isUnitless() ? this.unit : null;
-    return new UnitValue(this.value / other.value, resultUnit);
+    return new UnitValue(this.value / other.value, resultUnit, false);
   }
 
   negate(): UnitValue {
-    return new UnitValue(-this.value, this.unit);
+    return new UnitValue(-this.value, this.unit, this.fromUnitDivision);
   }
 }
 

@@ -20,3 +20,10 @@ test('5 - 3 - 1 - 4', -3)
 test('floor(ceil(0.5) / 2)', 0)
 test('PI', Math.PI)
 test('abs(cos(PI)) + 9', 10)
+
+// Test that expressions with adjacent numbers throw errors
+_test('should throw on adjacent numbers', t => {
+	t.throws(() => calc('1 2'), Error, 'Adjacent numbers should throw an error')
+	t.throws(() => calc('1+1 2+2'), Error, 'Expression with space between numbers should throw')
+	t.end()
+})

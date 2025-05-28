@@ -31,14 +31,19 @@ function lex(s) {
 		{type: '^', re: /\^/},
 		{type: '(', re: /\(/},
 		{type: ')', re: /\)/},
+		{type: 'WHITESPACE', re: /\s+/},
 	]
 	const normalizeRegExp = re => new RegExp(`^${re.source}`)
-	s = s.replace(/\s+/g, '')
 	const tkns = []
 	while (s.length > 0) {
 		const token = tokens.find(t => normalizeRegExp(t.re).test(s))
+		if (!token) {
+			throw new Error(`Unexpected character in input: ${s[0]}`)
+		}
 		const match = normalizeRegExp(token.re).exec(s)
-		tkns.push({type: token.type, match: match[0]})
+		if (token.type !== 'WHITESPACE') {
+			tkns.push({type: token.type, match: match[0]})
+		}
 		s = s.substr(match[0].length)
 	}
 	return new Lexer(tkns)

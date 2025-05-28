@@ -1,7 +1,6 @@
-Pratt Parser
-============
+# Token Value Calculator
 
-This project demonstrates the fundamentals of a Pratt Parser.  It is based on [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
+This project demonstrates the fundamentals of a Pratt Parser.  It is based on this [repository](https://github.com/jrop/pratt-calculator), [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
 
 ## Concepts
 

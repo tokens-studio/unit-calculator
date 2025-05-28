@@ -45,9 +45,9 @@ export default function lex(s: string): Lexer {
   const tokens: TokenDefinition[] = [
     {
       type: "NUMBER_WITH_UNIT",
-      re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)/,
+      re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)(?![a-zA-Z0-9])/,
     },
-    { type: "NUMBER", re: /(?:\d+(?:\.\d*)?|\.\d+)/ },
+    { type: "NUMBER", re: /(?:\d+(?:\.\d*)?|\.\d+)(?![a-zA-Z0-9])/ },
     { type: "ID", re: /[A-Za-z]+/ },
     { type: "+", re: /\+/ },
     { type: "-", re: /-/ },
@@ -63,6 +63,10 @@ export default function lex(s: string): Lexer {
   while (s.length > 0) {
     const token = tokens.find((t) => normalizeRegExp(t.re).test(s));
     if (!token) {
+      // Check if this might be a malformed number with trailing garbage
+      if (/^\d+[a-zA-Z0-9]/.test(s)) {
+        throw new Error(`Invalid number format: "${s.match(/^\d+[a-zA-Z0-9]+/)?.[0] || s}"`);
+      }
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }
     const match = normalizeRegExp(token.re).exec(s);

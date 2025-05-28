@@ -97,7 +97,10 @@ parser.visit = function visit(node) {
 	if (node instanceof UnitValue) return node;
 	
 	return {
-		id: n => n.ref,
+		id: n => {
+			// Handle constants like PI by wrapping them in UnitValue
+			return new UnitValue(n.ref);
+		},
 		'^': n => {
 			const left = visit(n.left);
 			const right = visit(n.right);
@@ -153,6 +156,11 @@ parser.visit = function visit(node) {
 parser.calc = function calc(s) {
 	const parse = parser(s)
 	const result = parser.visit(parse());
+	// Make sure result is a UnitValue before checking isUnitless
+	if (!(result instanceof UnitValue)) {
+		// If not a UnitValue, convert it to one
+		return result;
+	}
 	// Return number for unitless values, string for values with units
 	return result.isUnitless() ? result.value : result.toString();
 }

@@ -2,18 +2,20 @@
 	"name": "pratt-calculator",
 	"version": "0.1.0",
 	"description": "",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"type": "module",
 	"bin": {
-		"calc": "./index.js"
+		"calc": "./dist/index.js"
 	},
 	"scripts": {
-		"lint": "prettier -l '*.js' && eslint '*.js'",
-		"lint:fix": "prettier --write '*.js'",
-		"format": "prettier --write '**/*.js'",
+		"build": "tsc",
+		"lint": "prettier -l 'src/**/*.ts' && eslint 'src/**/*.ts'",
+		"lint:fix": "prettier --write 'src/**/*.ts'",
+		"format": "prettier --write 'src/**/*.ts'",
 		"precommit": "npm run lint",
-		"prepack": "npm test",
-		"test": "node test.js"
+		"prepack": "npm run build && npm test",
+		"test": "npm run build && node dist/test.js",
+		"start": "npm run build && node dist/index.js"
 	},
 	"repository": {
 		"type": "git",
@@ -27,10 +29,13 @@
 	},
 	"homepage": "https://github.com/jrop/pratt-calculator#readme",
 	"devDependencies": {
+		"@types/node": "^20.17.52",
+		"@types/tape": "^5.8.1",
 		"eslint": "^3.19.0",
 		"eslint-config-jrop": "^0.0.1",
 		"husky": "^0.14.3",
 		"prettier": "^2.8.8",
-		"tape": "^4.9.0"
+		"tape": "^4.9.0",
+		"typescript": "^5.8.3"
 	}
 }

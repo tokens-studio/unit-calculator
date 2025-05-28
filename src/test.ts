@@ -1,7 +1,7 @@
 import _test from "tape";
 import { calc } from "./parser.js";
 
-const test = (expr, expected) =>
+const test = (expr: string, expected: number | string) =>
   _test(expr, t => {
     t.equal(calc(expr), expected);
     t.end();

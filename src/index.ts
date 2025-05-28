@@ -18,7 +18,11 @@ if (args.length == 0) {
     try {
       console.log(calc(line));
     } catch (e) {
-      console.error(e.message);
+      if (e instanceof Error) {
+        console.error(e.message);
+      } else {
+        console.error(String(e));
+      }
     }
     rl.prompt();
   });

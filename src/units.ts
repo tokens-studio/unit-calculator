@@ -16,31 +16,34 @@ export const CSS_UNITS = [
 ];
 
 export class UnitValue {
-  constructor(value, unit = null) {
+  value: number;
+  unit: string | null;
+
+  constructor(value: number, unit: string | null = null) {
     this.value = value;
     this.unit = unit;
   }
 
-  isUnitless() {
+  isUnitless(): boolean {
     return this.unit === null;
   }
 
-  isCompatibleWith(other) {
+  isCompatibleWith(other: UnitValue): boolean {
     return (
       (this.isUnitless() && other.isUnitless()) ||
       (this.unit === other.unit && this.unit !== null)
     );
   }
 
-  canMultiplyWith(other) {
+  canMultiplyWith(other: UnitValue): boolean {
     return this.isUnitless() || other.isUnitless() || this.unit === other.unit;
   }
 
-  toString() {
+  toString(): string {
     return this.isUnitless() ? `${this.value}` : `${this.value}${this.unit}`;
   }
 
-  add(other) {
+  add(other: UnitValue): UnitValue {
     if (!this.isCompatibleWith(other)) {
       throw new Error(
         `Cannot add incompatible units: ${this.unit ||
@@ -51,7 +54,7 @@ export class UnitValue {
     return new UnitValue(this.value + other.value, this.unit || other.unit);
   }
 
-  subtract(other) {
+  subtract(other: UnitValue): UnitValue {
     if (!this.isCompatibleWith(other)) {
       throw new Error(
         `Cannot subtract incompatible units: ${this.unit ||
@@ -62,7 +65,7 @@ export class UnitValue {
     return new UnitValue(this.value - other.value, this.unit || other.unit);
   }
 
-  multiply(other) {
+  multiply(other: UnitValue): UnitValue {
     if (!this.canMultiplyWith(other)) {
       throw new Error(
         `Cannot multiply incompatible units: ${this.unit ||
@@ -77,7 +80,7 @@ export class UnitValue {
     return new UnitValue(this.value * other.value, resultUnit);
   }
 
-  divide(other) {
+  divide(other: UnitValue): UnitValue {
     if (!this.canMultiplyWith(other)) {
       throw new Error(
         `Cannot divide incompatible units: ${this.unit ||
@@ -96,13 +99,13 @@ export class UnitValue {
     return new UnitValue(this.value / other.value, resultUnit);
   }
 
-  negate() {
+  negate(): UnitValue {
     return new UnitValue(-this.value, this.unit);
   }
 }
 
 // Parse a string into a UnitValue
-export function parseUnitValue(str) {
+export function parseUnitValue(str: string): UnitValue {
   // Match a number followed by optional unit
   const match = str.match(/^(-?\d*\.?\d+)([a-z%]+)?$/i);
   if (!match) {

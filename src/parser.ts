@@ -108,7 +108,7 @@ function parser(s: string): () => ASTNode {
         }
         
         throw new Error(
-          `Undefined variable: '${t.match}'${posInfo ? ' ' + posInfo : ''}. Only Math constants and functions are supported.`
+          `Unknown expression: '${t.match}'${posInfo ? ' ' + posInfo : ''}. Only Math constants and functions are supported.`
         );
       }
       return { type: "id", ref: mbr, id: t.match! } as IdNode;

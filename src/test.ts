@@ -36,7 +36,7 @@ _test("should throw on adjacent numbers", (t) => {
 _test("should throw on consecutive operators", (t) => {
   t.throws(() => calc("1+++++++1"), Error, "Consecutive operators should throw an error");
   t.throws(() => calc("2**3"), Error, "Consecutive operators should throw an error");
-  t.throws(() => calc("5--3"), Error, "Consecutive operators should throw an error");
+  t.throws(() => calc("5--3"), Error, "Double minus should throw an error");
   t.end();
 });
 

@@ -1,5 +1,3 @@
-import { UnitValue } from "./units.js";
-
 export interface Token {
   type: string | null;
   match?: string | null;
@@ -76,7 +74,7 @@ export default function lex(s: string): Lexer {
     if (token.type !== "WHITESPACE") {
       tkns.push({ type: token.type, match: match[0] });
     }
-    s = s.substr(match[0].length);
+    s = s.substring(match[0].length);
   }
   return new Lexer(tkns);
 }

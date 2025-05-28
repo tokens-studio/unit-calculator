@@ -2,7 +2,7 @@ import _test from "tape";
 import { calc } from "./parser.js";
 
 const test = (expr: string, expected: number | string) =>
-  _test(expr, t => {
+  _test(expr, (t) => {
     t.equal(calc(expr), expected);
     t.end();
   });
@@ -22,7 +22,7 @@ test("PI", Math.PI);
 test("abs(cos(PI)) + 9", 10);
 
 // Test that expressions with adjacent numbers throw errors
-_test("should throw on adjacent numbers", t => {
+_test("should throw on adjacent numbers", (t) => {
   t.throws(() => calc("1 2"), Error, "Adjacent numbers should throw an error");
   t.throws(
     () => calc("1+1 2+2"),
@@ -33,7 +33,7 @@ _test("should throw on adjacent numbers", t => {
 });
 
 // Test CSS unit calculations
-_test("CSS unit calculations", t => {
+_test("CSS unit calculations", (t) => {
   // Addition with same units
   t.equal(calc("1px + 2px"), "3px", "Addition with same units");
   t.equal(calc("1rem + 2rem"), "3rem", "Addition with same units");

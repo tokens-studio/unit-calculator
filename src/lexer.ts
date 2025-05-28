@@ -45,7 +45,7 @@ export default function lex(s: string): Lexer {
   const tokens: TokenDefinition[] = [
     {
       type: "NUMBER_WITH_UNIT",
-      re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)/
+      re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)/,
     },
     { type: "NUMBER", re: /(?:\d+(?:\.\d*)?|\.\d+)/ },
     { type: "ID", re: /[A-Za-z]+/ },
@@ -56,12 +56,12 @@ export default function lex(s: string): Lexer {
     { type: "^", re: /\^/ },
     { type: "(", re: /\(/ },
     { type: ")", re: /\)/ },
-    { type: "WHITESPACE", re: /\s+/ }
+    { type: "WHITESPACE", re: /\s+/ },
   ];
   const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
   const tkns: Token[] = [];
   while (s.length > 0) {
-    const token = tokens.find(t => normalizeRegExp(t.re).test(s));
+    const token = tokens.find((t) => normalizeRegExp(t.re).test(s));
     if (!token) {
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }

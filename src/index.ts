@@ -11,10 +11,10 @@ if (args.length == 0) {
     input: process.stdin,
     output: process.stdout,
     terminal: true,
-    prompt: "> "
+    prompt: "> ",
   });
 
-  rl.on("line", function(line) {
+  rl.on("line", function (line) {
     try {
       console.log(calc(line));
     } catch (e) {

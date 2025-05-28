@@ -12,7 +12,7 @@ export const CSS_UNITS = [
   "mm",
   "in",
   "pt",
-  "pc"
+  "pc",
 ];
 
 export class UnitValue {
@@ -46,8 +46,9 @@ export class UnitValue {
   add(other: UnitValue): UnitValue {
     if (!this.isCompatibleWith(other)) {
       throw new Error(
-        `Cannot add incompatible units: ${this.unit ||
-          "unitless"} and ${other.unit || "unitless"}`
+        `Cannot add incompatible units: ${this.unit || "unitless"} and ${
+          other.unit || "unitless"
+        }`
       );
     }
 
@@ -57,8 +58,9 @@ export class UnitValue {
   subtract(other: UnitValue): UnitValue {
     if (!this.isCompatibleWith(other)) {
       throw new Error(
-        `Cannot subtract incompatible units: ${this.unit ||
-          "unitless"} and ${other.unit || "unitless"}`
+        `Cannot subtract incompatible units: ${this.unit || "unitless"} and ${
+          other.unit || "unitless"
+        }`
       );
     }
 
@@ -68,8 +70,9 @@ export class UnitValue {
   multiply(other: UnitValue): UnitValue {
     if (!this.canMultiplyWith(other)) {
       throw new Error(
-        `Cannot multiply incompatible units: ${this.unit ||
-          "unitless"} and ${other.unit || "unitless"}`
+        `Cannot multiply incompatible units: ${this.unit || "unitless"} and ${
+          other.unit || "unitless"
+        }`
       );
     }
 
@@ -83,8 +86,9 @@ export class UnitValue {
   divide(other: UnitValue): UnitValue {
     if (!this.canMultiplyWith(other)) {
       throw new Error(
-        `Cannot divide incompatible units: ${this.unit ||
-          "unitless"} and ${other.unit || "unitless"}`
+        `Cannot divide incompatible units: ${this.unit || "unitless"} and ${
+          other.unit || "unitless"
+        }`
       );
     }
 

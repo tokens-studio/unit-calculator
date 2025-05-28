@@ -94,9 +94,9 @@ function parser(s: string): () => ASTNode {
     ID: (t) => {
       const mbr = Math[t.match! as keyof typeof Math];
       if (typeof mbr == "undefined") {
-        const pos = t.strpos?.().start;
+        const pos = t.strpos?.()?.start || { line: "unknown", column: "unknown" };
         throw new Error(
-          `Undefined variable: '${t.match}' (at ${pos?.line}:${pos?.column})`
+          `Undefined variable: '${t.match}' at position ${pos.line}:${pos.column}. Only Math constants and functions are supported.`
         );
       }
       return { type: "id", ref: mbr, id: t.match! } as IdNode;

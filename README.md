@@ -1,6 +1,6 @@
 # Token Value Calculator
 
-This project demonstrates the fundamentals of a Pratt Parser.  It is based on this [repository](https://github.com/jrop/pratt-calculator), [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
+This project demonstrates the fundamentals of a Pratt Parser. It's based on this [repository](https://github.com/jrop/pratt-calculator), [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
 
 ## Concepts
 
@@ -9,8 +9,8 @@ In general, the Pratt Parser solves the following problem: given the string "1 +
 The Pratt Parser is based on three computational units:
 
 ```js
-parser.expr(rbp) // the expression parser
-token.nud() // "Null Denotation" (operates on no "left" context)
+parser.expr(rbp)	// The expression parser
+token.nud()			// "Null Denotation" (operates on no "left" context)
 token.led(left, bp) // "Left Denotation" (operates with "left" context)
 ```
 
@@ -18,10 +18,10 @@ The `parser.expr(rbp)` function looks like:
 
 ```js
 function expr(rbp) {
-	let left = lexer.next().nud() // (1)
-	while (rbp < lexer.peek().bp) { // (2)
-		const operator = lexer.next() // (3)
-		left = operator.led(left, operator.bp) // (4)
+	let left = lexer.next().nud()				// (1)
+	while (rbp < lexer.peek().bp) {				// (2)
+		const operator = lexer.next()			// (3)
+		left = operator.led(left, operator.bp)	// (4)
 	}
 	return left
 }
@@ -39,3 +39,11 @@ function expr(rbp) {
 	// (4) give the operator the left side of the tree, and let it build the right side; this new tree is our new "left"
 }
 ```
+
+## References
+
+
+- [Simple but Powerful Pratt Parsing](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html)
+- [Pratt Parsing: Introduction and Implementation in TypeScript](https://www.less-bug.com/en/posts/pratt-parsing-introduction-and-implementation-in-typescript/)
+- [Pratt parsing, aka top-down precedence parsing, aka precedence climbing](https://eliasdorneles.com/til/posts/pratt-parsing-aka-top-down-precedence-parsing-aka-precedence-climbing/)
+- [Pratt parser for a subset of JavaScript](https://leontrolski.github.io/pratt-example.html)

@@ -212,6 +212,25 @@ function parser(s: string): () => ASTNode {
   checkForAdjacentNumbers();
   checkForConsecutiveOperators();
 
+  // Check for unbalanced parentheses
+  function checkForUnbalancedParentheses(): void {
+    let openCount = 0;
+    for (const token of lexer.tokens) {
+      if (token.type === "(") openCount++;
+      if (token.type === ")") {
+        openCount--;
+        if (openCount < 0) {
+          throw new Error("Unmatched closing parenthesis");
+        }
+      }
+    }
+    if (openCount > 0) {
+      throw new Error("Unmatched opening parenthesis");
+    }
+  }
+
+  checkForUnbalancedParentheses();
+
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
 

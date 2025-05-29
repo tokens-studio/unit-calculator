@@ -1,213 +1,106 @@
-import test from "tape";
+import { describe, it, expect } from "vitest";
 import { calc } from "./parser.js";
 
-// Basic arithmetic tests
-test("1 + 2 * 3", (t) => {
-  t.equal(calc("1 + 2 * 3"), 7);
-  t.end();
+describe("Basic arithmetic", () => {
+  it("handles basic operations with correct precedence", () => {
+    expect(calc("1 + 2 * 3")).toBe(7);
+    expect(calc("(1 + 2) * 3")).toBe(9);
+    expect(calc("1")).toBe(1);
+    expect(calc("((1))")).toBe(1);
+  });
+
+  it("handles exponentiation correctly", () => {
+    expect(calc("3^4^.5")).toBe(9);
+    expect(calc("(2^3)^4")).toBe(4096);
+  });
+
+  it("handles negation correctly", () => {
+    expect(calc("-2*-2")).toBe(4);
+    expect(calc("-2*2")).toBe(-4);
+  });
+
+  it("handles division correctly", () => {
+    expect(calc("5/2/.5")).toBe(5);
+  });
+
+  it("handles subtraction correctly", () => {
+    expect(calc("5 - 3 - 1 - 4")).toBe(-3);
+  });
+
+  it("handles functions correctly", () => {
+    expect(calc("floor(ceil(0.5) / 2)")).toBe(0);
+    expect(calc("PI")).toBe(Math.PI);
+    expect(calc("abs(cos(PI)) + 9")).toBe(10);
+  });
 });
 
-test("(1 + 2) * 3", (t) => {
-  t.equal(calc("(1 + 2) * 3"), 9);
-  t.end();
+describe("Parser validation", () => {
+  it("throws on adjacent numbers", () => {
+    expect(() => calc("1 2")).toThrow();
+    expect(() => calc("1 2 + 3")).toThrow();
+    expect(() => calc("1 + 2 3")).toThrow();
+    expect(() => calc("1+1 2+2")).toThrow();
+  });
+
+  it("throws on consecutive operators", () => {
+    expect(() => calc("1 ++ 2")).toThrow();
+    expect(() => calc("1 +* 2")).toThrow();
+    expect(() => calc("1 */ 2")).toThrow();
+    expect(() => calc("1 -- 2")).toThrow();
+    expect(() => calc("1+++++++1")).toThrow();
+    expect(() => calc("2**3")).toThrow();
+    expect(() => calc("5--3")).toThrow();
+  });
+
+  it("handles valid negation", () => {
+    expect(calc("1 + -2")).toBe(-1);
+    expect(calc("2 * -3")).toBe(-6);
+    expect(calc("6 / -2")).toBe(-3);
+    expect(calc("2 ^ -2")).toBe(0.25);
+  });
+
+  it("handles complex expressions with negation", () => {
+    expect(calc("1 + 2 * -3 + 4")).toBe(-1);
+    expect(calc("-1 + 2 * -3")).toBe(-7);
+    expect(calc("-(1 + 2)")).toBe(-3);
+    expect(calc("(-1 + -2) * 3")).toBe(-9);
+  });
 });
 
-test("1", (t) => {
-  t.equal(calc("1"), 1);
-  t.end();
+describe("Parentheses validation", () => {
+  it("throws on unmatched parentheses", () => {
+    expect(() => calc("1 + 1)")).toThrow(/Unmatched closing parenthesis/);
+    expect(() => calc("(1 + 1")).toThrow(/Unmatched opening parenthesis/);
+    expect(() => calc("((1 + 2) + 3")).toThrow(/Unmatched opening parenthesis/);
+  });
 });
 
-test("((1))", (t) => {
-  t.equal(calc("((1))"), 1);
-  t.end();
-});
+describe("CSS unit calculations", () => {
+  it("handles addition with same units", () => {
+    expect(calc("1px + 2px")).toBe("3px");
+    expect(calc("1rem + 2rem")).toBe("3rem");
+  });
 
-test("3^4^.5", (t) => {
-  t.equal(calc("3^4^.5"), 9);
-  t.end();
-});
+  it("handles subtraction with same units", () => {
+    expect(calc("5px - 2px")).toBe("3px");
+  });
 
-test("(2^3)^4", (t) => {
-  t.equal(calc("(2^3)^4"), 4096);
-  t.end();
-});
+  it("handles multiplication with unitless", () => {
+    expect(calc("2px * 3")).toBe("6px");
+    expect(calc("2 * 3px")).toBe("6px");
+  });
 
-test("-2*-2", (t) => {
-  t.equal(calc("-2*-2"), 4);
-  t.end();
-});
+  it("handles division with unitless", () => {
+    expect(calc("6px / 2")).toBe("3px");
+  });
 
-test("-2*2", (t) => {
-  t.equal(calc("-2*2"), -4);
-  t.end();
-});
+  it("handles division with same units", () => {
+    expect(calc("6px / 2px")).toBe("3");
+  });
 
-test("5/2/.5", (t) => {
-  t.equal(calc("5/2/.5"), 5);
-  t.end();
-});
-
-test("5 - 3 - 1 - 4", (t) => {
-  t.equal(calc("5 - 3 - 1 - 4"), -3);
-  t.end();
-});
-
-test("floor(ceil(0.5) / 2)", (t) => {
-  t.equal(calc("floor(ceil(0.5) / 2)"), 0);
-  t.end();
-});
-
-test("PI", (t) => {
-  t.equal(calc("PI"), Math.PI);
-  t.end();
-});
-
-test("abs(cos(PI)) + 9", (t) => {
-  t.equal(calc("abs(cos(PI)) + 9"), 10);
-  t.end();
-});
-
-// Parser validation tests
-test("Parser validation tests", (t) => {
-  // Test for adjacent numbers
-  t.throws(() => calc("1 2"), Error, "Adjacent numbers should throw an error");
-  t.throws(
-    () => calc("1 2 + 3"),
-    Error,
-    "Adjacent numbers at start should throw an error"
-  );
-  t.throws(
-    () => calc("1 + 2 3"),
-    Error,
-    "Adjacent numbers at end should throw an error"
-  );
-  t.throws(
-    () => calc("1+1 2+2"),
-    Error,
-    "Expression with space between numbers should throw"
-  );
-
-  // Test for consecutive operators
-  t.throws(() => calc("1 ++ 2"), Error, "Double plus should throw an error");
-  t.throws(
-    () => calc("1 +* 2"),
-    Error,
-    "Plus followed by multiply should throw an error"
-  );
-  t.throws(
-    () => calc("1 */ 2"),
-    Error,
-    "Multiply followed by divide should throw an error"
-  );
-  t.throws(() => calc("1 -- 2"), Error, "Double minus should throw an error");
-  t.throws(
-    () => calc("1+++++++1"),
-    Error,
-    "Consecutive operators should throw an error"
-  );
-  t.throws(
-    () => calc("2**3"),
-    Error,
-    "Consecutive operators should throw an error"
-  );
-  t.throws(() => calc("5--3"), Error, "Double minus should throw an error");
-
-  // Test for valid negation
-  t.equal(calc("1 + -2"), -1, "Negation after plus should work");
-  // Skip the test for "1 - -2" as it's detected as double minus
-  t.equal(calc("2 * -3"), -6, "Negation after multiply should work");
-  t.equal(calc("6 / -2"), -3, "Negation after divide should work");
-  t.equal(calc("2 ^ -2"), 0.25, "Negation after power should work");
-
-  // Test for complex expressions with negation
-  t.equal(
-    calc("1 + 2 * -3 + 4"),
-    -1,
-    "Complex expression with negation should work"
-  );
-  // Use a different expression that doesn't have consecutive minus signs
-  t.equal(
-    calc("-1 + 2 * -3"),
-    -7,
-    "Expression with multiple negations should work"
-  );
-
-  // Test for expressions with parentheses and negation
-  t.equal(
-    calc("-(1 + 2)"),
-    -3,
-    "Negation of parenthesized expression should work"
-  );
-  t.equal(
-    calc("(-1 + -2) * 3"),
-    -9,
-    "Parenthesized expression with negations should work"
-  );
-
-  t.end();
-});
-
-// Unmatched parentheses tests
-test("Unmatched parentheses", (t) => {
-  // Test for unmatched closing parenthesis
-  t.throws(
-    () => calc("1 + 1)"),
-    /Unmatched closing parenthesis/,
-    "Expression with unmatched closing parenthesis should throw an error"
-  );
-
-  // Test for unmatched opening parenthesis
-  t.throws(
-    () => calc("(1 + 1"),
-    /Unmatched opening parenthesis/,
-    "Expression with unmatched opening parenthesis should throw an error"
-  );
-
-  // Test for nested unmatched parentheses
-  t.throws(
-    () => calc("((1 + 2) + 3"),
-    /Unmatched opening parenthesis/,
-    "Expression with nested unmatched parentheses should throw an error"
-  );
-
-  t.end();
-});
-
-// CSS unit calculations tests
-test("CSS unit calculations", (t) => {
-  // Addition with same units
-  t.equal(calc("1px + 2px"), "3px", "Addition with same units");
-  t.equal(calc("1rem + 2rem"), "3rem", "Addition with same units");
-
-  // Subtraction with same units
-  t.equal(calc("5px - 2px"), "3px", "Subtraction with same units");
-
-  // Multiplication with unitless
-  t.equal(calc("2px * 3"), "6px", "Multiplication with unitless");
-  t.equal(calc("2 * 3px"), "6px", "Multiplication with unitless (reversed)");
-
-  // Division with unitless
-  t.equal(calc("6px / 2"), "3px", "Division with unitless");
-
-  // Division with same units (becomes unitless)
-  t.equal(calc("6px / 2px"), "3", "Division with same units becomes unitless");
-
-  // Error cases
-  t.throws(
-    () => calc("1px + 1rem"),
-    Error,
-    "Addition with different units should throw"
-  );
-  t.throws(
-    () => calc("1px * 1rem"),
-    Error,
-    "Multiplication with different units should throw"
-  );
-  t.throws(
-    () => calc("1px / 1rem"),
-    Error,
-    "Division with different units should throw"
-  );
-
-  t.end();
+  it("throws on operations with incompatible units", () => {
+    expect(() => calc("1px + 1rem")).toThrow();
+    expect(() => calc("1px * 1rem")).toThrow();
+    expect(() => calc("1px / 1rem")).toThrow();
+  });
 });

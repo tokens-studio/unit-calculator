@@ -14,8 +14,8 @@
 		"format": "prettier --write 'src/**/*.ts'",
 		"precommit": "npm run lint",
 		"prepack": "npm run build && npm test",
-		"test": "bun test",
-		"test:watch": "bun test --watch",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"start": "npm run build && node dist/index.js"
 	},
 	"repository": {
@@ -31,12 +31,11 @@
 	"homepage": "https://github.com/floscr/pratt-calculator#readme",
 	"devDependencies": {
 		"@types/node": "^20.17.52",
-		"@types/tape": "^5.8.1",
 		"eslint": "^3.19.0",
 		"eslint-config-jrop": "^0.0.1",
 		"husky": "^0.14.3",
 		"prettier": "^2.8.8",
-		"tape": "^4.9.0",
-		"typescript": "^5.8.3"
+		"typescript": "^5.8.3",
+		"vitest": "^1.4.0"
 	}
 }

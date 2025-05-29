@@ -15,6 +15,7 @@
 		"precommit": "npm run lint",
 		"prepack": "npm run build && npm test",
 		"test": "npm run build && node dist/test.js",
+		"test:watch": "tsc --watch & nodemon --watch dist --exec 'node dist/test.js'",
 		"start": "npm run build && node dist/index.js"
 	},
 	"repository": {

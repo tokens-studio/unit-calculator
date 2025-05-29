@@ -1,6 +1,5 @@
 import _test from "tape";
 import { calc } from "./parser.js";
-// Import the parser tests
 import "./parser.test.js";
 
 const test = (expr: string, expected: number | string) =>
@@ -34,15 +33,21 @@ _test("should throw on adjacent numbers", (t) => {
   t.end();
 });
 
-// Test that expressions with consecutive operators throw errors
 _test("should throw on consecutive operators", (t) => {
-  t.throws(() => calc("1+++++++1"), Error, "Consecutive operators should throw an error");
-  t.throws(() => calc("2**3"), Error, "Consecutive operators should throw an error");
+  t.throws(
+    () => calc("1+++++++1"),
+    Error,
+    "Consecutive operators should throw an error"
+  );
+  t.throws(
+    () => calc("2**3"),
+    Error,
+    "Consecutive operators should throw an error"
+  );
   t.throws(() => calc("5--3"), Error, "Double minus should throw an error");
   t.end();
 });
 
-// Test CSS unit calculations
 _test("CSS unit calculations", (t) => {
   // Addition with same units
   t.equal(calc("1px + 2px"), "3px", "Addition with same units");

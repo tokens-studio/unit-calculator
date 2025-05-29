@@ -248,7 +248,6 @@ function parser(s: string): () => ASTNode {
     return left;
   }
 
-  // Helper function to check if a token type is an operator
   function isOperator(type: string | null): boolean {
     return (
       type === "+" ||
@@ -260,7 +259,7 @@ function parser(s: string): () => ASTNode {
   }
 
   return parse;
-} // parser
+}
 
 parser.visit = function visit(node: ASTNode): UnitValue {
   if (typeof node == "number") return new UnitValue(node);

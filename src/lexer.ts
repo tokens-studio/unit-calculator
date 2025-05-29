@@ -63,7 +63,9 @@ export default function lex(s: string): Lexer {
     if (!token) {
       // Check if this might be a malformed number with trailing garbage
       if (/^\d+[a-zA-Z0-9]/.test(s)) {
-        throw new Error(`Invalid number format: "${s.match(/^\d+[a-zA-Z0-9]+/)?.[0] || s}"`);
+        throw new Error(
+          `Invalid number format: "${s.match(/^\d+[a-zA-Z0-9]+/)?.[0] || s}"`
+        );
       }
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }

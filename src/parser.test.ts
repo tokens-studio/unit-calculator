@@ -48,7 +48,7 @@ test("Parser validation tests", (t) => {
     -7,
     "Expression with multiple negations should work"
   );
-  
+
   // Test for expressions with parentheses and negation
   t.equal(
     calc("-(1 + 2)"),
@@ -66,16 +66,25 @@ test("Parser validation tests", (t) => {
 
 test("Unmatched parentheses", (t) => {
   // Test for unmatched closing parenthesis
-  t.throws(() => calc("1 + 1)"), /Unmatched closing parenthesis/, 
-    "Expression with unmatched closing parenthesis should throw an error");
-  
+  t.throws(
+    () => calc("1 + 1)"),
+    /Unmatched closing parenthesis/,
+    "Expression with unmatched closing parenthesis should throw an error"
+  );
+
   // Test for unmatched opening parenthesis
-  t.throws(() => calc("(1 + 1"), /Unmatched opening parenthesis/, 
-    "Expression with unmatched opening parenthesis should throw an error");
-  
+  t.throws(
+    () => calc("(1 + 1"),
+    /Unmatched opening parenthesis/,
+    "Expression with unmatched opening parenthesis should throw an error"
+  );
+
   // Test for nested unmatched parentheses
-  t.throws(() => calc("((1 + 2) + 3"), /Unmatched opening parenthesis/, 
-    "Expression with nested unmatched parentheses should throw an error");
-  
+  t.throws(
+    () => calc("((1 + 2) + 3"),
+    /Unmatched opening parenthesis/,
+    "Expression with nested unmatched parentheses should throw an error"
+  );
+
   t.end();
 });

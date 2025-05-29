@@ -20,7 +20,11 @@ export class UnitValue {
   unit: string | null;
   fromUnitDivision: boolean;
 
-  constructor(value: number, unit: string | null = null, fromUnitDivision: boolean = false) {
+  constructor(
+    value: number,
+    unit: string | null = null,
+    fromUnitDivision: boolean = false
+  ) {
     this.value = value;
     this.unit = unit;
     this.fromUnitDivision = fromUnitDivision;
@@ -110,7 +114,6 @@ export class UnitValue {
   }
 }
 
-// Parse a string into a UnitValue
 export function parseUnitValue(str: string): UnitValue {
   // Match a number followed by optional unit
   const match = str.match(/^(-?\d*\.?\d+)([a-z%]+)?$/i);

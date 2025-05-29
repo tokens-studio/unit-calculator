@@ -7,7 +7,7 @@ This project demonstrates the fundamentals of a Pratt Parser. It's based on this
 ### In the console
 
 ``` sh
-bun run cli		  # Start a repl
+bun run cli       # Start a repl
 bun run cli "1+1" # Evaluate expression
 > 2
 ```
@@ -19,8 +19,8 @@ In general, the Pratt Parser solves the following problem: given the string "1 +
 The Pratt Parser is based on three computational units:
 
 ```js
-parser.expr(rbp)	// The expression parser
-token.nud()			// "Null Denotation" (operates on no "left" context)
+parser.expr(rbp)    // The expression parser
+token.nud()         // "Null Denotation" (operates on no "left" context)
 token.led(left, bp) // "Left Denotation" (operates with "left" context)
 ```
 
@@ -28,10 +28,10 @@ The `parser.expr(rbp)` function looks like:
 
 ```js
 function expr(rbp) {
-	let left = lexer.next().nud()				// (1)
-	while (rbp < lexer.peek().bp) {				// (2)
-		const operator = lexer.next()			// (3)
-		left = operator.led(left, operator.bp)	// (4)
+	let left = lexer.next().nud()               // (1)
+	while (rbp < lexer.peek().bp) {             // (2)
+		const operator = lexer.next()           // (3)
+		left = operator.led(left, operator.bp)  // (4)
 	}
 	return left
 }
@@ -43,10 +43,10 @@ The `expr` method can be summarized in english as "The loop (while) builds out t
 
 ```js
 function expr(rbp) {
-	// (1) handle prefix operator
-	// (2) continue until I encounter an operator of lesser precedence than myself
-	// (3) "eat" the operator
-	// (4) give the operator the left side of the tree, and let it build the right side; this new tree is our new "left"
+  // (1) handle prefix operator
+  // (2) continue until I encounter an operator of lesser precedence than myself
+  // (3) "eat" the operator
+  // (4) give the operator the left side of the tree, and let it build the right side; this new tree is our new "left"
 }
 ```
 

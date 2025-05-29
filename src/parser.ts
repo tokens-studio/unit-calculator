@@ -61,7 +61,7 @@ interface LedFunctions {
 
 function parser(s: string): () => ASTNode {
   const lexer: Lexer = createLexer(s);
-  
+
   // We'll check for adjacent numbers and consecutive operators during parsing
   const BPS: BindingPowers = {
     [null as unknown as string]: 0,
@@ -87,16 +87,23 @@ function parser(s: string): () => ASTNode {
         try {
           if (t.strpos) {
             const pos = t.strpos();
-            if (pos && pos.start && typeof pos.start.line === 'number' && typeof pos.start.column === 'number') {
+            if (
+              pos &&
+              pos.start &&
+              typeof pos.start.line === "number" &&
+              typeof pos.start.column === "number"
+            ) {
               posInfo = `at line ${pos.start.line}, column ${pos.start.column}`;
             }
           }
         } catch (e) {
           // If there's any error getting position, we'll use a generic message
         }
-        
+
         throw new Error(
-          `Unknown expression: '${t.match}'${posInfo ? ' ' + posInfo : ''}. Only Math constants and functions are supported.`
+          `Unknown expression: '${t.match}'${
+            posInfo ? " " + posInfo : ""
+          }. Only Math constants and functions are supported.`
         );
       }
       return { type: "id", ref: mbr, id: t.match! } as IdNode;
@@ -127,7 +134,7 @@ function parser(s: string): () => ASTNode {
       } as BinaryOpNode),
     "(": (left) => {
       if ((left as IdNode).type != "id") {
-        throw new Error(`Cannot invoke expression as if it was a function)`);
+        throw new Error(`Cannot invoke expression as if it was a function`);
       }
       const idNode = left as IdNode;
       if (typeof idNode.ref != "function") {
@@ -166,63 +173,71 @@ function parser(s: string): () => ASTNode {
     for (let i = 0; i < lexer.tokens.length - 1; i++) {
       const current = lexer.tokens[i];
       const next = lexer.tokens[i + 1];
-      
+
       // If we have two numbers in a row, that's an error
-      if ((current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") && 
-          (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")) {
+      if (
+        (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
+        (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
+      ) {
         throw new Error("Adjacent numbers are not allowed");
       }
     }
   }
-  
+
   // Check for consecutive operators
   function checkForConsecutiveOperators(): void {
     for (let i = 0; i < lexer.tokens.length - 1; i++) {
       const current = lexer.tokens[i];
       const next = lexer.tokens[i + 1];
-      
+
       if (isOperator(current.type) && isOperator(next.type)) {
         // Special case: double minus (--) is not allowed
         if (current.type === "-" && next.type === "-") {
           throw new Error("Double minus (--) is not allowed");
         }
-        
+
         // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
         if (next.type === "-" && current.type !== "-") {
           // Negation is allowed after operators other than minus
           continue;
         }
-        
+
         // All other consecutive operators are not allowed
         throw new Error("Consecutive operators are not allowed");
       }
     }
   }
-  
+
   // Run validation checks before parsing
   checkForAdjacentNumbers();
   checkForConsecutiveOperators();
-  
+
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
-    
+
     // Validate token
     if (token.type === null && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
-    
+
     let left = nud(token);
-    
+
     while (bp(lexer.peek()) > rbp) {
       left = led(left, lexer.next());
     }
-    
+
     return left;
   }
-  
+
   // Helper function to check if a token type is an operator
   function isOperator(type: string | null): boolean {
-    return type === "+" || type === "-" || type === "*" || type === "/" || type === "^";
+    return (
+      type === "+" ||
+      type === "-" ||
+      type === "*" ||
+      type === "/" ||
+      type === "^"
+    );
   }
 
   return parse;

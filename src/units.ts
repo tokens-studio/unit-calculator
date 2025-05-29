@@ -1,4 +1,3 @@
-// CSS units supported by the calculator
 export const CSS_UNITS = [
   "px",
   "em",

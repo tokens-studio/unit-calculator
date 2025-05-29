@@ -28,12 +28,12 @@ The `parser.expr(rbp)` function looks like:
 
 ```js
 function expr(rbp) {
-	let left = lexer.next().nud()               // (1)
-	while (rbp < lexer.peek().bp) {             // (2)
-		const operator = lexer.next()           // (3)
-		left = operator.led(left, operator.bp)  // (4)
-	}
-	return left
+  let left = lexer.next().nud()               // (1)
+  while (rbp < lexer.peek().bp) {             // (2)
+    const operator = lexer.next()           // (3)
+    left = operator.led(left, operator.bp)  // (4)
+  }
+  return left
 }
 ```
 

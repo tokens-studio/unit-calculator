@@ -1,30 +1,18 @@
 #!/usr/bin/env node
 import { calc } from "./parser.js";
-import readline from "readline";
+import { startRepl } from "./repl.js";
 
+// Export the main functionality
+export { calc } from "./parser.js";
+export { UnitValue } from "./units.js";
+
+// CLI functionality
 const args = process.argv.slice(2);
 if (args.length == 0) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: true,
-    prompt: "> ",
-  });
-
-  rl.on("line", function (line) {
-    try {
-      console.log(calc(line));
-    } catch (e) {
-      if (e instanceof Error) {
-        console.error(e.message);
-      } else {
-        console.error(String(e));
-      }
-    }
-    rl.prompt();
-  });
-  rl.prompt();
+  // Start REPL if no arguments provided
+  startRepl();
 } else {
+  // Calculate the expression from command line arguments
   const s = args.join(" ");
   console.log(calc(s));
 }

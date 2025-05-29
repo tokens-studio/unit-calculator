@@ -32,6 +32,9 @@ describe("Basic arithmetic", () => {
     expect(calc("PI")).toBe(Math.PI);
     expect(calc("abs(cos(PI)) + 9")).toBe(10);
   });
+  it("handles complex operations with correct precedence", () => {
+    expect(calc("(15 + 20 - 17 * 8 / 3) * 7px")).toBe("-72.33333333333334px");
+  });
 });
 
 describe("Parser validation", () => {

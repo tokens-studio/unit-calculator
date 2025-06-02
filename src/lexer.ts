@@ -1,10 +1,10 @@
 export interface Token {
-  type: string | null;
+  type: string;
   match?: string | null;
   strpos?: () => { start: { line: number; column: number } };
 }
 
-export const EOF: Token = { type: null, match: null };
+export const EOF: Token = { type: "EOF", match: null };
 
 export class Lexer {
   tokens: Token[];
@@ -16,11 +16,11 @@ export class Lexer {
   }
 
   peek(): Token {
-    return this.tokens[this.position] || EOF;
+    return this.position < this.tokens.length ? this.tokens[this.position] : EOF;
   }
 
   next(): Token {
-    return this.tokens[this.position++] || EOF;
+    return this.position < this.tokens.length ? this.tokens[this.position++] : EOF;
   }
 
   expect(type: string): void {

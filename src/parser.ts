@@ -1,5 +1,5 @@
 import createLexer, { Lexer, Token } from "./lexer.js";
-import { matchesType, matchesAnyType } from "./token.js";
+import { matchesType } from "./token.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";

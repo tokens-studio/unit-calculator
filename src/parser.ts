@@ -208,6 +208,8 @@ function parser(s: string): () => ASTNode {
     }
   }
 
+  console.log(lexer);
+
   // Run validation checks before parsing
   checkForAdjacentNumbers();
   checkForConsecutiveOperators();
@@ -260,6 +262,8 @@ function parser(s: string): () => ASTNode {
 
   return parse;
 }
+
+// console.log(parser("1+1 1+1")());
 
 parser.visit = function visit(node: ASTNode): UnitValue {
   if (typeof node == "number") return new UnitValue(node);
@@ -337,6 +341,7 @@ parser.visit = function visit(node: ASTNode): UnitValue {
 parser.calc = function calc(s: string): number | string {
   const parse = parser(s);
   const result = parser.visit(parse());
+  console.log("RESULT", result);
   // Make sure result is a UnitValue before checking isUnitless
   if (!(result instanceof UnitValue)) {
     // If not a UnitValue, convert it to one

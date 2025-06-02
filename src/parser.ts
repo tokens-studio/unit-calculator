@@ -142,7 +142,7 @@ function parser(s: string): () => ASTNode {
       }
 
       const args = parse();
-      lexer.expect(")");
+      currentLexer.expect(")");
       return { type: "()", target: idNode, args } as FunctionCallNode;
     },
   };

@@ -251,23 +251,24 @@ function parser(s: string): () => ASTNode {
   // Run validation checks and get the lexers for each expression
   let lexers = validateTokenStream();
 
-  // For now, only process the first lexer
-  if (lexers.length > 0) {
-    lexer = lexers[0];
-  }
+  const currentLexer = lexers[0] || lexer;
+
+  console.log(currentLexer);
 
   function parse(rbp = 0): ASTNode {
-    const token = lexer.next();
+    const token = currentLexer.next();
+
+    console.log("TOKEN", token);
 
     // Validate token
-    if (token.type === null && !lexer.eof()) {
+    if (token.type === null && !currentLexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
 
     let left = nud(token);
 
-    while (bp(lexer.peek()) > rbp) {
-      left = led(left, lexer.next());
+    while (bp(currentLexer.peek()) > rbp) {
+      left = led(left, currentLexer.next());
     }
 
     return left;

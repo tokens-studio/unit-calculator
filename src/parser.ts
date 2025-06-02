@@ -161,7 +161,6 @@ function getBp(token: Token): number {
   return BPS[token.type as keyof typeof BPS] || 0;
 }
 
-// Helper function to check if a token type is an operator
 function isOperator(type: string | null): boolean {
   return (
     type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
@@ -195,8 +194,8 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     }
 
     // Only split at paren level 0
+    // Check for adjacent numbers - this indicates we should split
     if (parenLevel === 0 && next) {
-      // Check for adjacent numbers - this indicates we should split
       if (
         (current.type === "NUMBER" ||
           current.type === "NUMBER_WITH_UNIT" ||
@@ -261,7 +260,6 @@ function createParseFunction(lexer: Lexer) {
     );
   }
 
-  // Create the led function with the current lexer
   function led(left: ASTNode, token: Token): ASTNode {
     if (!LEDS[token.type as keyof typeof LEDS])
       throw new Error(
@@ -276,7 +274,6 @@ function createParseFunction(lexer: Lexer) {
     );
   }
 
-  // The parse function that uses the specific lexer
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
 
@@ -300,10 +297,8 @@ function createParseFunction(lexer: Lexer) {
 function parser(s: string): () => ASTNode {
   const lexer: Lexer = createLexer(s);
 
-  // Run validation checks and get the lexers for each expression
   let lexers = validateTokenStream(lexer);
 
-  // Store results from all expressions
   const results: ASTNode[] = [];
 
   for (const currentLexer of lexers) {
@@ -401,19 +396,14 @@ parser.calc = function calc(s: string): number | string | (number | string)[] {
     }
 
     // Return number for unitless values, string for values with units
+    // If this is a result of dividing same units, return as string
     if (result.isUnitless()) {
-      // If this is a result of dividing same units, return as string
-      if (result.fromUnitDivision) {
-        return result.value.toString();
-      }
-      return result.value;
+      return result.fromUnitDivision ? result.value.toString() : result.value;
     } else {
       return result.toString();
     }
   });
 
-  // If there's only one result, return it directly
-  // Otherwise return the array of results
   return results.length === 1 ? results[0] : results;
 };
 

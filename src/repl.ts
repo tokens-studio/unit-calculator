@@ -25,7 +25,6 @@ export function startRepl(): void {
   rl.prompt();
 }
 
-// Run the REPL if this file is executed directly
 if (require.main === module) {
   startRepl();
 }

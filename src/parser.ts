@@ -1,5 +1,5 @@
 import createLexer, { Lexer, Token } from "./lexer.js";
-import { matchesType, matchesAnyType } from "./token.js";
+import { matchesType } from "./token.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
@@ -144,7 +144,7 @@ const LEDS: LedFunctions = {
       right: parse(bp - 1),
     } as BinaryOpNode),
   "(": (left, _t, _bp, parse, lexer) => {
-    if ((left as IdNode).type != "id") {
+    if ((left as IdNode).type !== "id") {
       throw new Error(`Cannot invoke expression as if it was a function`);
     }
     const idNode = left as IdNode;
@@ -179,13 +179,13 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     const next = lexer.tokens[i + 1];
 
     // Track paren level
-    if (current.type === "(") parenLevel++;
+    if (matchesType(current, "(")) parenLevel++;
 
     // Add current token to the current expression
     currentExpr.push(current);
 
     // Check if we need to split after this token
-    if (current.type === ")") {
+    if (matchesType(current, ")")) {
       parenLevel--;
       if (parenLevel < 0) {
         throw new Error("Unmatched closing parenthesis");
@@ -272,7 +272,7 @@ function createParseFunction(lexer: Lexer) {
     const token = lexer.next();
 
     // Validate token
-    if (token.type === null && !lexer.eof()) {
+    if (matchesType(token, null as unknown as string) && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
 
@@ -348,12 +348,7 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
     "()": (node: FunctionCallNode) => {
       const args = evaluateParserNodes(node.args);
       // Math functions should only operate on the numeric value
-      if (
-        node.target.id === "floor" ||
-        node.target.id === "ceil" ||
-        node.target.id === "abs" ||
-        node.target.id === "cos"
-      ) {
+      if (matchesType({ type: node.target.id } as Token, ["floor", "ceil", "abs", "cos"])) {
         return new UnitValue(
           (node.target.ref as Function)(args.value),
           args.unit

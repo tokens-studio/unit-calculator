@@ -163,9 +163,7 @@ function getBp(token: Token): number {
 }
 
 function isOperator(type: string | null): boolean {
-  return (
-    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
-  );
+  return type !== null && matchesType({ type } as Token, ["+", "-", "*", "/", "^"]);
 }
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
@@ -198,13 +196,8 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     // Check for adjacent numbers - this indicates we should split
     if (parenLevel === 0 && next) {
       if (
-        (current.type === "NUMBER" ||
-          current.type === "NUMBER_WITH_UNIT" ||
-          current.type === ")") &&
-        (next.type === "NUMBER" ||
-          next.type === "NUMBER_WITH_UNIT" ||
-          next.type === "(" ||
-          next.type === "ID")
+        matchesType(current, ["NUMBER", "NUMBER_WITH_UNIT", ")"]) &&
+        matchesType(next, ["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"])
       ) {
         splitNeeded = true;
       }
@@ -212,12 +205,12 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
       // Check for consecutive operators
       if (isOperator(current.type) && isOperator(next.type)) {
         // Special case: double minus (--) is not allowed
-        if (current.type === "-" && next.type === "-") {
+        if (matchesType(current, "-") && matchesType(next, "-")) {
           throw new Error("Double minus (--) is not allowed");
         }
 
         // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-        if (next.type === "-" && current.type !== "-") {
+        if (matchesType(next, "-") && !matchesType(current, "-")) {
           // Negation is allowed after operators other than minus
           splitNeeded = false;
         } else {

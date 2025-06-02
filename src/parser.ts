@@ -213,7 +213,8 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
           current.type === ")") &&
         (next.type === "NUMBER" ||
           next.type === "NUMBER_WITH_UNIT" ||
-          next.type === "(")
+          next.type === "(" ||
+          next.type === "ID")
       ) {
         splitNeeded = true;
       }

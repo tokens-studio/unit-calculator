@@ -254,12 +254,8 @@ function parser(s: string): () => ASTNode {
   // Use the first lexer for parsing
   let currentLexer = lexers[0] || lexer;
 
-  console.log(currentLexer);
-
   function parse(rbp = 0): ASTNode {
     const token = currentLexer.next();
-
-    console.log("TOKEN", token);
 
     // Validate token
     if (token.type === null && !currentLexer.eof()) {

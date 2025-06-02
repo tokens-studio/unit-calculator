@@ -249,46 +249,58 @@ function parser(s: string): () => ASTNode {
   // Run validation checks and get the lexers for each expression
   let lexers = validateTokenStream(lexer);
   
-  // Use the first lexer for parsing
-  let currentLexer = lexers[0] || lexer;
+  // Store results from all expressions
+  const results: ASTNode[] = [];
   
-  // Create the nud function with the current lexer
-  function nud(token: Token): ASTNode {
-    if (!NUDS[token.type as keyof typeof NUDS])
-      throw new Error(
-        `NUD not defined for token type: ${JSON.stringify(token.type)}`
-      );
-    return NUDS[token.type as keyof typeof NUDS](token, getBp(token), parse, currentLexer);
-  }
-  
-  // Create the led function with the current lexer
-  function led(left: ASTNode, token: Token): ASTNode {
-    if (!LEDS[token.type as keyof typeof LEDS])
-      throw new Error(
-        `LED not defined for token type: ${JSON.stringify(token.type)}`
-      );
-    return LEDS[token.type as keyof typeof LEDS](left, token, getBp(token), parse, currentLexer);
-  }
-  
-  // The parse function that uses the current lexer
-  function parse(rbp = 0): ASTNode {
-    const token = currentLexer.next();
-    
-    // Validate token
-    if (token.type === null && !currentLexer.eof()) {
-      throw new Error("Unexpected token in expression");
+  // Create a parse function factory for a specific lexer
+  function createParseFunction(lexer: Lexer) {
+    // Create the nud function with the current lexer
+    function nud(token: Token): ASTNode {
+      if (!NUDS[token.type as keyof typeof NUDS])
+        throw new Error(
+          `NUD not defined for token type: ${JSON.stringify(token.type)}`
+        );
+      return NUDS[token.type as keyof typeof NUDS](token, getBp(token), parse, lexer);
     }
     
-    let left = nud(token);
-    
-    while (getBp(currentLexer.peek()) > rbp) {
-      left = led(left, currentLexer.next());
+    // Create the led function with the current lexer
+    function led(left: ASTNode, token: Token): ASTNode {
+      if (!LEDS[token.type as keyof typeof LEDS])
+        throw new Error(
+          `LED not defined for token type: ${JSON.stringify(token.type)}`
+        );
+      return LEDS[token.type as keyof typeof LEDS](left, token, getBp(token), parse, lexer);
     }
     
-    return left;
+    // The parse function that uses the specific lexer
+    function parse(rbp = 0): ASTNode {
+      const token = lexer.next();
+      
+      // Validate token
+      if (token.type === null && !lexer.eof()) {
+        throw new Error("Unexpected token in expression");
+      }
+      
+      let left = nud(token);
+      
+      while (getBp(lexer.peek()) > rbp) {
+        left = led(left, lexer.next());
+      }
+      
+      return left;
+    }
+    
+    return parse;
   }
   
-  return parse;
+  // Process all lexers and store their results
+  for (const currentLexer of lexers) {
+    const parse = createParseFunction(currentLexer);
+    results.push(parse());
+  }
+  
+  // For backward compatibility, return a function that gives the first result
+  return () => results[0] || null;
 }
 
 // console.log(parser("1+1 1+1")());
@@ -366,9 +378,15 @@ parser.visit = function visit(node: ASTNode): UnitValue {
   return nodeHandlers[typedNode.type as keyof typeof nodeHandlers](node as any);
 };
 
-parser.calc = function calc(s: string): number | string {
+parser.calc = function calc(s: string): number | string | (number | string)[] {
   const parse = parser(s);
-  const result = parser.visit(parse());
+  
+  // Get the first result for backward compatibility
+  const firstResult = parse();
+  
+  // Process the first result
+  const result = parser.visit(firstResult);
+  
   // Make sure result is a UnitValue before checking isUnitless
   if (!(result instanceof UnitValue)) {
     // If not a UnitValue, convert it to one

@@ -1,5 +1,5 @@
 import createLexer, { Lexer, Token } from "./lexer.js";
-import { matchesType } from "./token.js";
+import { matchesType, matchesAnyType } from "./token.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
@@ -144,7 +144,7 @@ const LEDS: LedFunctions = {
       right: parse(bp - 1),
     } as BinaryOpNode),
   "(": (left, _t, _bp, parse, lexer) => {
-    if ((left as IdNode).type !== "id") {
+    if ((left as IdNode).type != "id") {
       throw new Error(`Cannot invoke expression as if it was a function`);
     }
     const idNode = left as IdNode;
@@ -163,7 +163,9 @@ function getBp(token: Token): number {
 }
 
 function isOperator(type: string | null): boolean {
-  return type !== null && matchesType({ type } as Token, ["+", "-", "*", "/", "^"]);
+  return (
+    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
+  );
 }
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
@@ -179,13 +181,13 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     const next = lexer.tokens[i + 1];
 
     // Track paren level
-    if (matchesType(current, "(")) parenLevel++;
+    if (current.type === "(") parenLevel++;
 
     // Add current token to the current expression
     currentExpr.push(current);
 
     // Check if we need to split after this token
-    if (matchesType(current, ")")) {
+    if (current.type === ")") {
       parenLevel--;
       if (parenLevel < 0) {
         throw new Error("Unmatched closing parenthesis");
@@ -196,8 +198,13 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     // Check for adjacent numbers - this indicates we should split
     if (parenLevel === 0 && next) {
       if (
-        matchesType(current, ["NUMBER", "NUMBER_WITH_UNIT", ")"]) &&
-        matchesType(next, ["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"])
+        (current.type === "NUMBER" ||
+          current.type === "NUMBER_WITH_UNIT" ||
+          current.type === ")") &&
+        (next.type === "NUMBER" ||
+          next.type === "NUMBER_WITH_UNIT" ||
+          next.type === "(" ||
+          next.type === "ID")
       ) {
         splitNeeded = true;
       }
@@ -205,12 +212,12 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
       // Check for consecutive operators
       if (isOperator(current.type) && isOperator(next.type)) {
         // Special case: double minus (--) is not allowed
-        if (matchesType(current, "-") && matchesType(next, "-")) {
+        if (current.type === "-" && next.type === "-") {
           throw new Error("Double minus (--) is not allowed");
         }
 
         // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-        if (matchesType(next, "-") && !matchesType(current, "-")) {
+        if (next.type === "-" && current.type !== "-") {
           // Negation is allowed after operators other than minus
           splitNeeded = false;
         } else {
@@ -272,7 +279,7 @@ function createParseFunction(lexer: Lexer) {
     const token = lexer.next();
 
     // Validate token
-    if (matchesType(token, null as unknown as string) && !lexer.eof()) {
+    if (token.type === null && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
 
@@ -348,7 +355,12 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
     "()": (node: FunctionCallNode) => {
       const args = evaluateParserNodes(node.args);
       // Math functions should only operate on the numeric value
-      if (matchesType({ type: node.target.id } as Token, ["floor", "ceil", "abs", "cos"])) {
+      if (
+        node.target.id === "floor" ||
+        node.target.id === "ceil" ||
+        node.target.id === "abs" ||
+        node.target.id === "cos"
+      ) {
         return new UnitValue(
           (node.target.ref as Function)(args.value),
           args.unit

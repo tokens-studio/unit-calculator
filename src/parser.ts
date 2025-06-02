@@ -72,7 +72,7 @@ interface LedFunctions {
 
 // BPS - binding powers of operators
 const BPS: BindingPowers = {
-  [null as unknown as string]: 0,
+  "EOF": 0,
   NUMBER: 0,
   ID: 0,
   ")": 0,
@@ -162,10 +162,8 @@ function getBp(token: Token): number {
   return BPS[token.type as keyof typeof BPS] || 0;
 }
 
-function isOperator(type: string | null): boolean {
-  return (
-    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
-  );
+function isOperator(type: string): boolean {
+  return matchesType({ type } as Token, ["+", "-", "*", "/", "^"]);
 }
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
@@ -212,12 +210,12 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
       // Check for consecutive operators
       if (isOperator(current.type) && isOperator(next.type)) {
         // Special case: double minus (--) is not allowed
-        if (current.type === "-" && next.type === "-") {
+        if (matchesType(current, "-") && matchesType(next, "-")) {
           throw new Error("Double minus (--) is not allowed");
         }
 
         // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-        if (next.type === "-" && current.type !== "-") {
+        if (matchesType(next, "-") && !matchesType(current, "-")) {
           // Negation is allowed after operators other than minus
           splitNeeded = false;
         } else {
@@ -279,7 +277,7 @@ function createParseFunction(lexer: Lexer) {
     const token = lexer.next();
 
     // Validate token
-    if (token.type === null && !lexer.eof()) {
+    if (token.type === "EOF" && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
 
@@ -355,12 +353,7 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
     "()": (node: FunctionCallNode) => {
       const args = evaluateParserNodes(node.args);
       // Math functions should only operate on the numeric value
-      if (
-        node.target.id === "floor" ||
-        node.target.id === "ceil" ||
-        node.target.id === "abs" ||
-        node.target.id === "cos"
-      ) {
+      if (matchesType({ type: node.target.id } as Token, ["floor", "ceil", "abs", "cos"])) {
         return new UnitValue(
           (node.target.ref as Function)(args.value),
           args.unit

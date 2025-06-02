@@ -167,9 +167,9 @@ function parser(s: string): () => ASTNode {
     return LEDS[token.type as keyof typeof LEDS](left, token, bp(token));
   }
 
-  // Check for adjacent numbers in the input
-  function checkForAdjacentNumbers(): void {
-    // Look ahead in the token stream for adjacent numbers
+  // Validate the token stream for common syntax errors
+  function validateTokenStream(): void {
+    // Check for adjacent numbers
     for (let i = 0; i < lexer.tokens.length - 1; i++) {
       const current = lexer.tokens[i];
       const next = lexer.tokens[i + 1];
@@ -181,15 +181,8 @@ function parser(s: string): () => ASTNode {
       ) {
         throw new Error("Adjacent numbers are not allowed");
       }
-    }
-  }
 
-  // Check for consecutive operators
-  function checkForConsecutiveOperators(): void {
-    for (let i = 0; i < lexer.tokens.length - 1; i++) {
-      const current = lexer.tokens[i];
-      const next = lexer.tokens[i + 1];
-
+      // Check for consecutive operators
       if (isOperator(current.type) && isOperator(next.type)) {
         // Special case: double minus (--) is not allowed
         if (current.type === "-" && next.type === "-") {
@@ -206,16 +199,8 @@ function parser(s: string): () => ASTNode {
         throw new Error("Consecutive operators are not allowed");
       }
     }
-  }
 
-  console.log(lexer);
-
-  // Run validation checks before parsing
-  checkForAdjacentNumbers();
-  checkForConsecutiveOperators();
-
-  // Check for unbalanced parentheses
-  function checkForUnbalancedParentheses(): void {
+    // Check for unbalanced parentheses
     let openCount = 0;
     for (const token of lexer.tokens) {
       if (token.type === "(") openCount++;
@@ -231,7 +216,8 @@ function parser(s: string): () => ASTNode {
     }
   }
 
-  checkForUnbalancedParentheses();
+  // Run validation checks before parsing
+  validateTokenStream();
 
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
@@ -341,7 +327,6 @@ parser.visit = function visit(node: ASTNode): UnitValue {
 parser.calc = function calc(s: string): number | string {
   const parse = parser(s);
   const result = parser.visit(parse());
-  console.log("RESULT", result);
   // Make sure result is a UnitValue before checking isUnitless
   if (!(result instanceof UnitValue)) {
     // If not a UnitValue, convert it to one

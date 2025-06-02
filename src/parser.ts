@@ -170,21 +170,6 @@ function isOperator(type: string | null): boolean {
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
 function validateTokenStream(lexer: Lexer): Lexer[] {
-  // Check for unbalanced parentheses
-  let openCount = 0;
-  for (const token of lexer.tokens) {
-    if (token.type === "(") openCount++;
-    if (token.type === ")") {
-      openCount--;
-      if (openCount < 0) {
-        throw new Error("Unmatched closing parenthesis");
-      }
-    }
-  }
-  if (openCount > 0) {
-    throw new Error("Unmatched opening parenthesis");
-  }
-
   // Split into multiple expressions at paren level 0
   const expressions: Token[][] = [];
   let currentExpr: Token[] = [];
@@ -202,7 +187,12 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     currentExpr.push(current);
 
     // Check if we need to split after this token
-    if (current.type === ")") parenLevel--;
+    if (current.type === ")") {
+      parenLevel--;
+      if (parenLevel < 0) {
+        throw new Error("Unmatched closing parenthesis");
+      }
+    }
 
     // Only split at paren level 0
     if (parenLevel === 0 && next) {
@@ -243,6 +233,9 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
         splitNeeded = false;
       }
     }
+  }
+  if (parenLevel > 0) {
+    throw new Error("Unmatched opening parenthesis");
   }
 
   // Add the last expression if it's not empty

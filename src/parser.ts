@@ -294,7 +294,7 @@ function createParseFunction(lexer: Lexer) {
   return parse;
 }
 
-function parser(s: string): () => ASTNode {
+function parse(s: string): () => ASTNode {
   const lexer: Lexer = createLexer(s);
 
   let lexers = validateTokenStream(lexer);
@@ -309,7 +309,7 @@ function parser(s: string): () => ASTNode {
   return results;
 }
 
-parser.visit = function visit(node: ASTNode): UnitValue {
+function evaluateParserNodes(node: ASTNode): UnitValue {
   if (typeof node == "number") return new UnitValue(node);
   if (node instanceof UnitValue) return node;
 
@@ -319,8 +319,8 @@ parser.visit = function visit(node: ASTNode): UnitValue {
       return new UnitValue(n.ref as number);
     },
     "^": (n: BinaryOpNode) => {
-      const left = visit(n.left);
-      const right = visit(n.right);
+      const left = evaluateParserNodes(n.left);
+      const right = evaluateParserNodes(n.right);
 
       // Only allow power operations on unitless values
       if (!left.isUnitless() || !right.isUnitless()) {
@@ -332,27 +332,27 @@ parser.visit = function visit(node: ASTNode): UnitValue {
       return new UnitValue(Math.pow(left.value, right.value));
     },
     "+": (n: BinaryOpNode) => {
-      const left = visit(n.left);
-      const right = visit(n.right);
+      const left = evaluateParserNodes(n.left);
+      const right = evaluateParserNodes(n.right);
       return left.add(right);
     },
     "-": (n: BinaryOpNode) => {
-      const left = visit(n.left);
-      const right = visit(n.right);
+      const left = evaluateParserNodes(n.left);
+      const right = evaluateParserNodes(n.right);
       return left.subtract(right);
     },
     "*": (n: BinaryOpNode) => {
-      const left = visit(n.left);
-      const right = visit(n.right);
+      const left = evaluateParserNodes(n.left);
+      const right = evaluateParserNodes(n.right);
       return left.multiply(right);
     },
     "/": (n: BinaryOpNode) => {
-      const left = visit(n.left);
-      const right = visit(n.right);
+      const left = evaluateParserNodes(n.left);
+      const right = evaluateParserNodes(n.right);
       return left.divide(right);
     },
     "()": (node: FunctionCallNode) => {
-      const args = visit(node.args);
+      const args = evaluateParserNodes(node.args);
       // Math functions should only operate on the numeric value
       if (
         node.target.id === "floor" ||
@@ -373,25 +373,24 @@ parser.visit = function visit(node: ASTNode): UnitValue {
       return new UnitValue((node.target.ref as Function)(args.value));
     },
     neg: (n: NegationNode) => {
-      const value = visit(n.value);
+      const value = evaluateParserNodes(n.value);
       return value.negate();
     },
   };
 
   const typedNode = node as BaseNode;
   return nodeHandlers[typedNode.type as keyof typeof nodeHandlers](node as any);
-};
+}
 
-parser.calc = function calc(s: string): number | string | (number | string)[] {
-  const parsers = parser(s);
+parse.calc = function calc(s: string): number | string | (number | string)[] {
+  const parsers = parse(s);
 
   // Process all results
   const results = parsers.map((p) => {
-    const result = parser.visit(p);
+    const result = evaluateParserNodes(p);
 
     // Make sure result is a UnitValue before checking isUnitless
     if (!(result instanceof UnitValue)) {
-      // If not a UnitValue, convert it to one
       return result as unknown as number;
     }
 
@@ -407,6 +406,6 @@ parser.calc = function calc(s: string): number | string | (number | string)[] {
   return results.length === 1 ? results[0] : results;
 };
 
-export default parser;
-export { parser };
-export const calc = parser.calc;
+export default parse;
+export { parse as parser };
+export const calc = parse.calc;

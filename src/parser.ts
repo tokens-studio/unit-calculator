@@ -209,8 +209,12 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     if (parenLevel === 0 && next) {
       // Check for adjacent numbers - this indicates we should split
       if (
-        (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
-        (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
+        (current.type === "NUMBER" ||
+          current.type === "NUMBER_WITH_UNIT" ||
+          current.type === ")") &&
+        (next.type === "NUMBER" ||
+          next.type === "NUMBER_WITH_UNIT" ||
+          next.type === "(")
       ) {
         splitNeeded = true;
       }

@@ -1,7 +1,6 @@
 import createLexer, { Lexer, Token } from "./lexer.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
-// Define node types for the AST
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 
 interface BaseNode {
@@ -70,7 +69,7 @@ interface LedFunctions {
   [key: string]: LedFunction;
 }
 
-// Define binding powers for operators
+// BPS - binding powers of operators
 const BPS: BindingPowers = {
   [null as unknown as string]: 0,
   NUMBER: 0,
@@ -84,7 +83,7 @@ const BPS: BindingPowers = {
   "(": 50,
 };
 
-// Define NUD functions (null denotation - tokens that start expressions)
+// NUDS - null denotation - tokens that start expressions
 const NUDS: NudFunctions = {
   NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer) => parseUnitValue(t.match!),
   NUMBER: (t, _bp, _parse, _lexer) => new UnitValue(parseFloat(t.match!)),
@@ -127,7 +126,7 @@ const NUDS: NudFunctions = {
   },
 };
 
-// Define LED functions (left denotation - tokens that continue expressions)
+// LEDS - left denotation - tokens that continue expressions)
 const LEDS: LedFunctions = {
   "+": (left, _t, bp, parse) =>
     ({ type: "+", left, right: parse(bp) } as BinaryOpNode),
@@ -158,7 +157,6 @@ const LEDS: LedFunctions = {
   },
 };
 
-// Helper function to get binding power of a token
 function getBp(token: Token): number {
   return BPS[token.type as keyof typeof BPS] || 0;
 }
@@ -323,8 +321,6 @@ function parser(s: string): () => ASTNode {
 
   return results;
 }
-
-// console.log(parser("1+1 1+1")());
 
 parser.visit = function visit(node: ASTNode): UnitValue {
   if (typeof node == "number") return new UnitValue(node);

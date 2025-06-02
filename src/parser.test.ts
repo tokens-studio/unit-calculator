@@ -38,11 +38,11 @@ describe("Basic arithmetic", () => {
 });
 
 describe("Parser validation", () => {
-  it("throws on adjacent numbers", () => {
-    expect(calc("1 2")).toBe(1);
-    expect(calc("1 2 + 3")).toBe(1);
-    expect(calc("1 + 2 3")).toBe(3);
-    expect(calc("1+1 2+2")).toBe(2);
+  it("handles multiple expressions", () => {
+    expect(calc("1 2")).toEqual([1, 2]);
+    expect(calc("1 2 + 3")).toEqual([1, 5]);
+    expect(calc("1 + 2 3")).toEqual([3, 3]);
+    expect(calc("1+1 2+2")).toEqual([2, 4]);
   });
 
   it("throws on consecutive operators", () => {

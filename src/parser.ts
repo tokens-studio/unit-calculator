@@ -398,28 +398,32 @@ parser.visit = function visit(node: ASTNode): UnitValue {
 
 parser.calc = function calc(s: string): number | string | (number | string)[] {
   const parsers = parser(s);
-
-  console.log(parsers.map((p) => parser.visit(p)));
-
-  // Process the first result
-  const result = parser.visit(parsers[0]);
-
-  // Make sure result is a UnitValue before checking isUnitless
-  if (!(result instanceof UnitValue)) {
-    // If not a UnitValue, convert it to one
-    return result as unknown as number;
-  }
-
-  // Return number for unitless values, string for values with units
-  if (result.isUnitless()) {
-    // If this is a result of dividing same units, return as string
-    if (result.fromUnitDivision) {
-      return result.value.toString();
+  
+  // Process all results
+  const results = parsers.map((p) => {
+    const result = parser.visit(p);
+    
+    // Make sure result is a UnitValue before checking isUnitless
+    if (!(result instanceof UnitValue)) {
+      // If not a UnitValue, convert it to one
+      return result as unknown as number;
     }
-    return result.value;
-  } else {
-    return result.toString();
-  }
+
+    // Return number for unitless values, string for values with units
+    if (result.isUnitless()) {
+      // If this is a result of dividing same units, return as string
+      if (result.fromUnitDivision) {
+        return result.value.toString();
+      }
+      return result.value;
+    } else {
+      return result.toString();
+    }
+  });
+  
+  // If there's only one result, return it directly
+  // Otherwise return the array of results
+  return results.length === 1 ? results[0] : results;
 };
 
 export default parser;

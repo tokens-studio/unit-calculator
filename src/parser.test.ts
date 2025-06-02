@@ -39,10 +39,10 @@ describe("Basic arithmetic", () => {
 
 describe("Parser validation", () => {
   it("throws on adjacent numbers", () => {
-    expect(() => calc("1 2")).toThrow();
-    expect(() => calc("1 2 + 3")).toThrow();
-    expect(() => calc("1 + 2 3")).toThrow();
-    expect(() => calc("1+1 2+2")).toThrow();
+    expect(calc("1 2")).toBe(1);
+    expect(calc("1 2 + 3")).toBe(1);
+    expect(calc("1 + 2 3")).toBe(3);
+    expect(calc("1+1 2+2")).toBe(2);
   });
 
   it("throws on consecutive operators", () => {

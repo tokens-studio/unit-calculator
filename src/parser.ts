@@ -112,7 +112,7 @@ function parser(s: string): () => ASTNode {
     "-": (_t, bp) => ({ type: "neg", value: parse(bp) } as NegationNode),
     "(": () => {
       const inner = parse();
-      lexer.expect(")");
+      currentLexer.expect(")");
       return inner;
     },
   };
@@ -251,7 +251,8 @@ function parser(s: string): () => ASTNode {
   // Run validation checks and get the lexers for each expression
   let lexers = validateTokenStream();
 
-  const currentLexer = lexers[0] || lexer;
+  // Use the first lexer for parsing
+  let currentLexer = lexers[0] || lexer;
 
   console.log(currentLexer);
 

@@ -86,9 +86,9 @@ const BPS: BindingPowers = {
 
 // Define NUD functions (null denotation - tokens that start expressions)
 const NUDS: NudFunctions = {
-  NUMBER_WITH_UNIT: (t) => parseUnitValue(t.match!),
-  NUMBER: (t) => new UnitValue(parseFloat(t.match!)),
-  ID: (t) => {
+  NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer) => parseUnitValue(t.match!),
+  NUMBER: (t, _bp, _parse, _lexer) => new UnitValue(parseFloat(t.match!)),
+  ID: (t, _bp, _parse, _lexer) => {
     const mbr = Math[t.match! as keyof typeof Math];
     if (typeof mbr == "undefined") {
       // Get the input string position from the token
@@ -117,8 +117,9 @@ const NUDS: NudFunctions = {
     }
     return { type: "id", ref: mbr, id: t.match! } as IdNode;
   },
-  "+": (_t, bp, parse) => parse(bp),
-  "-": (_t, bp, parse) => ({ type: "neg", value: parse(bp) } as NegationNode),
+  "+": (_t, bp, parse, _lexer) => parse(bp),
+  "-": (_t, bp, parse, _lexer) =>
+    ({ type: "neg", value: parse(bp) } as NegationNode),
   "(": (_t, _bp, parse, lexer) => {
     const inner = parse();
     lexer.expect(")");

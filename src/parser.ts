@@ -44,11 +44,11 @@ interface BindingPowers {
 }
 
 interface NudFunction {
-  (token: Token, bp: number): ASTNode;
+  (token: Token, bp: number, parse: (rbp?: number) => ASTNode, lexer: Lexer): ASTNode;
 }
 
 interface LedFunction {
-  (left: ASTNode, token: Token, bp: number): ASTNode;
+  (left: ASTNode, token: Token, bp: number, parse: (rbp?: number) => ASTNode, lexer: Lexer): ASTNode;
 }
 
 interface NudFunctions {
@@ -59,228 +59,235 @@ interface LedFunctions {
   [key: string]: LedFunction;
 }
 
-function parser(s: string): () => ASTNode {
-  const lexer: Lexer = createLexer(s);
+// Define binding powers for operators
+const BPS: BindingPowers = {
+  [null as unknown as string]: 0,
+  NUMBER: 0,
+  ID: 0,
+  ")": 0,
+  "+": 20,
+  "-": 20,
+  "*": 30,
+  "/": 30,
+  "^": 40,
+  "(": 50,
+};
 
-  // We'll check for adjacent numbers and consecutive operators during parsing
-  const BPS: BindingPowers = {
-    [null as unknown as string]: 0,
-    NUMBER: 0,
-    ID: 0,
-    ")": 0,
-    "+": 20,
-    "-": 20,
-    "*": 30,
-    "/": 30,
-    "^": 40,
-    "(": 50,
-  };
-
-  const NUDS: NudFunctions = {
-    NUMBER_WITH_UNIT: (t) => parseUnitValue(t.match!),
-    NUMBER: (t) => new UnitValue(parseFloat(t.match!)),
-    ID: (t) => {
-      const mbr = Math[t.match! as keyof typeof Math];
-      if (typeof mbr == "undefined") {
-        // Get the input string position from the token
-        let posInfo = "";
-        try {
-          if (t.strpos) {
-            const pos = t.strpos();
-            if (
-              pos &&
-              pos.start &&
-              typeof pos.start.line === "number" &&
-              typeof pos.start.column === "number"
-            ) {
-              posInfo = `at line ${pos.start.line}, column ${pos.start.column}`;
-            }
+// Define NUD functions (null denotation - tokens that start expressions)
+const NUDS: NudFunctions = {
+  NUMBER_WITH_UNIT: (t) => parseUnitValue(t.match!),
+  NUMBER: (t) => new UnitValue(parseFloat(t.match!)),
+  ID: (t) => {
+    const mbr = Math[t.match! as keyof typeof Math];
+    if (typeof mbr == "undefined") {
+      // Get the input string position from the token
+      let posInfo = "";
+      try {
+        if (t.strpos) {
+          const pos = t.strpos();
+          if (
+            pos &&
+            pos.start &&
+            typeof pos.start.line === "number" &&
+            typeof pos.start.column === "number"
+          ) {
+            posInfo = `at line ${pos.start.line}, column ${pos.start.column}`;
           }
-        } catch (e) {
-          // If there's any error getting position, we'll use a generic message
         }
-
-        throw new Error(
-          `Unknown expression: '${t.match}'${
-            posInfo ? " " + posInfo : ""
-          }. Only Math constants and functions are supported.`
-        );
-      }
-      return { type: "id", ref: mbr, id: t.match! } as IdNode;
-    },
-    "+": (_t, bp) => parse(bp),
-    "-": (_t, bp) => ({ type: "neg", value: parse(bp) } as NegationNode),
-    "(": () => {
-      const inner = parse();
-      currentLexer.expect(")");
-      return inner;
-    },
-  };
-
-  const LEDS: LedFunctions = {
-    "+": (left, _t, bp) =>
-      ({ type: "+", left, right: parse(bp) } as BinaryOpNode),
-    "-": (left, _t, bp) =>
-      ({ type: "-", left, right: parse(bp) } as BinaryOpNode),
-    "*": (left, _t, bp) =>
-      ({ type: "*", left, right: parse(bp) } as BinaryOpNode),
-    "/": (left, _t, bp) =>
-      ({ type: "/", left, right: parse(bp) } as BinaryOpNode),
-    "^": (left, _t, bp) =>
-      ({
-        type: "^",
-        left,
-        right: parse(bp - 1),
-      } as BinaryOpNode),
-    "(": (left) => {
-      if ((left as IdNode).type != "id") {
-        throw new Error(`Cannot invoke expression as if it was a function`);
-      }
-      const idNode = left as IdNode;
-      if (typeof idNode.ref != "function") {
-        throw new Error(`Cannot invoke non-function`);
+      } catch (e) {
+        // If there's any error getting position, we'll use a generic message
       }
 
-      const args = parse();
-      currentLexer.expect(")");
-      return { type: "()", target: idNode, args } as FunctionCallNode;
-    },
-  };
+      throw new Error(
+        `Unknown expression: '${t.match}'${
+          posInfo ? " " + posInfo : ""
+        }. Only Math constants and functions are supported.`
+      );
+    }
+    return { type: "id", ref: mbr, id: t.match! } as IdNode;
+  },
+  "+": (_t, bp, parse) => parse(bp),
+  "-": (_t, bp, parse) => ({ type: "neg", value: parse(bp) } as NegationNode),
+  "(": (_t, _bp, parse, lexer) => {
+    const inner = parse();
+    lexer.expect(")");
+    return inner;
+  },
+};
 
-  function bp(token: Token): number {
-    return BPS[token.type as keyof typeof BPS] || 0;
+// Define LED functions (left denotation - tokens that continue expressions)
+const LEDS: LedFunctions = {
+  "+": (left, _t, bp, parse) =>
+    ({ type: "+", left, right: parse(bp) } as BinaryOpNode),
+  "-": (left, _t, bp, parse) =>
+    ({ type: "-", left, right: parse(bp) } as BinaryOpNode),
+  "*": (left, _t, bp, parse) =>
+    ({ type: "*", left, right: parse(bp) } as BinaryOpNode),
+  "/": (left, _t, bp, parse) =>
+    ({ type: "/", left, right: parse(bp) } as BinaryOpNode),
+  "^": (left, _t, bp, parse) =>
+    ({
+      type: "^",
+      left,
+      right: parse(bp - 1),
+    } as BinaryOpNode),
+  "(": (left, _t, _bp, parse, lexer) => {
+    if ((left as IdNode).type != "id") {
+      throw new Error(`Cannot invoke expression as if it was a function`);
+    }
+    const idNode = left as IdNode;
+    if (typeof idNode.ref != "function") {
+      throw new Error(`Cannot invoke non-function`);
+    }
+
+    const args = parse();
+    lexer.expect(")");
+    return { type: "()", target: idNode, args } as FunctionCallNode;
+  },
+};
+
+// Helper function to get binding power of a token
+function getBp(token: Token): number {
+  return BPS[token.type as keyof typeof BPS] || 0;
+}
+
+// Helper function to check if a token type is an operator
+function isOperator(type: string | null): boolean {
+  return (
+    type === "+" ||
+    type === "-" ||
+    type === "*" ||
+    type === "/" ||
+    type === "^"
+  );
+}
+
+// Validate the token stream for common syntax errors and split into multiple expressions if needed
+function validateTokenStream(lexer: Lexer): Lexer[] {
+  // Check for unbalanced parentheses
+  let openCount = 0;
+  for (const token of lexer.tokens) {
+    if (token.type === "(") openCount++;
+    if (token.type === ")") {
+      openCount--;
+      if (openCount < 0) {
+        throw new Error("Unmatched closing parenthesis");
+      }
+    }
+  }
+  if (openCount > 0) {
+    throw new Error("Unmatched opening parenthesis");
   }
 
+  // Split into multiple expressions at paren level 0
+  const expressions: Token[][] = [];
+  let currentExpr: Token[] = [];
+  let parenLevel = 0;
+  let splitNeeded = false;
+
+  for (let i = 0; i < lexer.tokens.length; i++) {
+    const current = lexer.tokens[i];
+    const next = lexer.tokens[i + 1];
+
+    // Track paren level
+    if (current.type === "(") parenLevel++;
+
+    // Add current token to the current expression
+    currentExpr.push(current);
+
+    // Check if we need to split after this token
+    if (current.type === ")") parenLevel--;
+
+    // Only split at paren level 0
+    if (parenLevel === 0 && next) {
+      // Check for adjacent numbers - this indicates we should split
+      if (
+        (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
+        (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
+      ) {
+        splitNeeded = true;
+      }
+
+      // Check for consecutive operators
+      if (isOperator(current.type) && isOperator(next.type)) {
+        // Special case: double minus (--) is not allowed
+        if (current.type === "-" && next.type === "-") {
+          throw new Error("Double minus (--) is not allowed");
+        }
+
+        // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
+        if (next.type === "-" && current.type !== "-") {
+          // Negation is allowed after operators other than minus
+          splitNeeded = false;
+        } else {
+          // All other consecutive operators are not allowed
+          throw new Error("Consecutive operators are not allowed");
+        }
+      }
+
+      // If we need to split, finalize the current expression and start a new one
+      if (splitNeeded) {
+        expressions.push([...currentExpr]);
+        currentExpr = [];
+        splitNeeded = false;
+      }
+    }
+  }
+
+  // Add the last expression if it's not empty
+  if (currentExpr.length > 0) {
+    expressions.push(currentExpr);
+  }
+
+  // Convert token arrays to Lexer objects
+  return expressions.map((tokens) => new Lexer(tokens));
+}
+
+function parser(s: string): () => ASTNode {
+  const lexer: Lexer = createLexer(s);
+  
+  // Run validation checks and get the lexers for each expression
+  let lexers = validateTokenStream(lexer);
+  
+  // Use the first lexer for parsing
+  let currentLexer = lexers[0] || lexer;
+  
+  // Create the nud function with the current lexer
   function nud(token: Token): ASTNode {
     if (!NUDS[token.type as keyof typeof NUDS])
       throw new Error(
         `NUD not defined for token type: ${JSON.stringify(token.type)}`
       );
-    return NUDS[token.type as keyof typeof NUDS](token, bp(token));
+    return NUDS[token.type as keyof typeof NUDS](token, getBp(token), parse, currentLexer);
   }
-
+  
+  // Create the led function with the current lexer
   function led(left: ASTNode, token: Token): ASTNode {
     if (!LEDS[token.type as keyof typeof LEDS])
       throw new Error(
         `LED not defined for token type: ${JSON.stringify(token.type)}`
       );
-    return LEDS[token.type as keyof typeof LEDS](left, token, bp(token));
+    return LEDS[token.type as keyof typeof LEDS](left, token, getBp(token), parse, currentLexer);
   }
-
-  // Validate the token stream for common syntax errors and split into multiple expressions if needed
-  function validateTokenStream(): Lexer[] {
-    // Check for unbalanced parentheses
-    let openCount = 0;
-    for (const token of lexer.tokens) {
-      if (token.type === "(") openCount++;
-      if (token.type === ")") {
-        openCount--;
-        if (openCount < 0) {
-          throw new Error("Unmatched closing parenthesis");
-        }
-      }
-    }
-    if (openCount > 0) {
-      throw new Error("Unmatched opening parenthesis");
-    }
-
-    // Split into multiple expressions at paren level 0
-    const expressions: Token[][] = [];
-    let currentExpr: Token[] = [];
-    let parenLevel = 0;
-    let splitNeeded = false;
-
-    for (let i = 0; i < lexer.tokens.length; i++) {
-      const current = lexer.tokens[i];
-      const next = lexer.tokens[i + 1];
-
-      // Track paren level
-      if (current.type === "(") parenLevel++;
-
-      // Add current token to the current expression
-      currentExpr.push(current);
-
-      // Check if we need to split after this token
-      if (current.type === ")") parenLevel--;
-
-      // Only split at paren level 0
-      if (parenLevel === 0 && next) {
-        // Check for adjacent numbers - this indicates we should split
-        if (
-          (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
-          (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
-        ) {
-          splitNeeded = true;
-        }
-
-        // Check for consecutive operators
-        if (isOperator(current.type) && isOperator(next.type)) {
-          // Special case: double minus (--) is not allowed
-          if (current.type === "-" && next.type === "-") {
-            throw new Error("Double minus (--) is not allowed");
-          }
-
-          // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-          if (next.type === "-" && current.type !== "-") {
-            // Negation is allowed after operators other than minus
-            splitNeeded = false;
-          } else {
-            // All other consecutive operators are not allowed
-            throw new Error("Consecutive operators are not allowed");
-          }
-        }
-
-        // If we need to split, finalize the current expression and start a new one
-        if (splitNeeded) {
-          expressions.push([...currentExpr]);
-          currentExpr = [];
-          splitNeeded = false;
-        }
-      }
-    }
-
-    // Add the last expression if it's not empty
-    if (currentExpr.length > 0) {
-      expressions.push(currentExpr);
-    }
-
-    // Convert token arrays to Lexer objects
-    return expressions.map((tokens) => new Lexer(tokens));
-  }
-
-  // Run validation checks and get the lexers for each expression
-  let lexers = validateTokenStream();
-
-  // Use the first lexer for parsing
-  let currentLexer = lexers[0] || lexer;
-
+  
+  // The parse function that uses the current lexer
   function parse(rbp = 0): ASTNode {
     const token = currentLexer.next();
-
+    
     // Validate token
     if (token.type === null && !currentLexer.eof()) {
       throw new Error("Unexpected token in expression");
     }
-
+    
     let left = nud(token);
-
-    while (bp(currentLexer.peek()) > rbp) {
+    
+    while (getBp(currentLexer.peek()) > rbp) {
       left = led(left, currentLexer.next());
     }
-
+    
     return left;
   }
-
-  function isOperator(type: string | null): boolean {
-    return (
-      type === "+" ||
-      type === "-" ||
-      type === "*" ||
-      type === "/" ||
-      type === "^"
-    );
-  }
-
+  
   return parse;
 }
 

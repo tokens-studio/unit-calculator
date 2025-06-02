@@ -167,39 +167,8 @@ function parser(s: string): () => ASTNode {
     return LEDS[token.type as keyof typeof LEDS](left, token, bp(token));
   }
 
-  // Validate the token stream for common syntax errors
-  function validateTokenStream(): void {
-    // Check for adjacent numbers
-    for (let i = 0; i < lexer.tokens.length - 1; i++) {
-      const current = lexer.tokens[i];
-      const next = lexer.tokens[i + 1];
-
-      // If we have two numbers in a row, that's an error
-      if (
-        (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
-        (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
-      ) {
-        throw new Error("Adjacent numbers are not allowed");
-      }
-
-      // Check for consecutive operators
-      if (isOperator(current.type) && isOperator(next.type)) {
-        // Special case: double minus (--) is not allowed
-        if (current.type === "-" && next.type === "-") {
-          throw new Error("Double minus (--) is not allowed");
-        }
-
-        // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-        if (next.type === "-" && current.type !== "-") {
-          // Negation is allowed after operators other than minus
-          continue;
-        }
-
-        // All other consecutive operators are not allowed
-        throw new Error("Consecutive operators are not allowed");
-      }
-    }
-
+  // Validate the token stream for common syntax errors and split into multiple expressions if needed
+  function validateTokenStream(): Lexer[] {
     // Check for unbalanced parentheses
     let openCount = 0;
     for (const token of lexer.tokens) {
@@ -214,10 +183,78 @@ function parser(s: string): () => ASTNode {
     if (openCount > 0) {
       throw new Error("Unmatched opening parenthesis");
     }
+
+    // Split into multiple expressions at paren level 0
+    const expressions: Token[][] = [];
+    let currentExpr: Token[] = [];
+    let parenLevel = 0;
+    let splitNeeded = false;
+
+    for (let i = 0; i < lexer.tokens.length; i++) {
+      const current = lexer.tokens[i];
+      const next = lexer.tokens[i + 1];
+
+      // Track paren level
+      if (current.type === "(") parenLevel++;
+
+      // Add current token to the current expression
+      currentExpr.push(current);
+
+      // Check if we need to split after this token
+      if (current.type === ")") parenLevel--;
+
+      // Only split at paren level 0
+      if (parenLevel === 0 && next) {
+        // Check for adjacent numbers - this indicates we should split
+        if (
+          (current.type === "NUMBER" || current.type === "NUMBER_WITH_UNIT") &&
+          (next.type === "NUMBER" || next.type === "NUMBER_WITH_UNIT")
+        ) {
+          splitNeeded = true;
+        }
+
+        // Check for consecutive operators
+        if (isOperator(current.type) && isOperator(next.type)) {
+          // Special case: double minus (--) is not allowed
+          if (current.type === "-" && next.type === "-") {
+            throw new Error("Double minus (--) is not allowed");
+          }
+
+          // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
+          if (next.type === "-" && current.type !== "-") {
+            // Negation is allowed after operators other than minus
+            splitNeeded = false;
+          } else {
+            // All other consecutive operators are not allowed
+            throw new Error("Consecutive operators are not allowed");
+          }
+        }
+
+        // If we need to split, finalize the current expression and start a new one
+        if (splitNeeded) {
+          expressions.push([...currentExpr]);
+          currentExpr = [];
+          splitNeeded = false;
+        }
+      }
+    }
+
+    // Add the last expression if it's not empty
+    if (currentExpr.length > 0) {
+      expressions.push(currentExpr);
+    }
+
+    // Convert token arrays to Lexer objects
+    return expressions.map((tokens) => new Lexer(tokens));
   }
 
-  // Run validation checks before parsing
-  validateTokenStream();
+  // Run validation checks and get the lexers for each expression
+  let lexers = validateTokenStream();
+
+  // For now, only process the first lexer
+  if (lexers.length > 0) {
+    lexer = lexers[0];
+  }
 
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();

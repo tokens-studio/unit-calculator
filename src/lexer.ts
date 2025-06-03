@@ -99,7 +99,7 @@ export class Lexer {
   }
 }
 
-type TokenDefinitionFunction = (s: string) => Token | null;
+type TokenDefinitionFunction = (s: string) => Token | undefined;
 
 const validCssDimensions = new Set([
   "px",
@@ -117,7 +117,7 @@ const validCssDimensions = new Set([
 const numberWithUnitRegexp =
   /^(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
 
-const parseNumber = function (value: string): Token | null {
+const parseNumber = function (value: string): Token | undefined {
   const match = numberWithUnitRegexp.exec(value);
 
   if (!match || !match.groups) return;
@@ -145,7 +145,7 @@ const parseNumber = function (value: string): Token | null {
   } as NumberToken;
 };
 
-const parseIdentifier = function (s: string): Token | null {
+const parseIdentifier = function (s: string): Token | undefined {
   const match = /^[A-Za-z]+/.exec(s);
   if (match) {
     return {
@@ -153,33 +153,30 @@ const parseIdentifier = function (s: string): Token | null {
       match: match[0],
     } as IdentifierToken;
   }
-  return null;
 };
 
 const parseOperator = function (
   s: string,
   op: "+" | "-" | "*" | "/" | "^"
-): Token | null {
+): Token | undefined {
   if (s[0] === op) {
     return {
       type: op,
       match: op,
     } as OperatorToken;
   }
-  return null;
 };
 
-const parseParen = function (s: string, paren: "(" | ")"): Token | null {
+const parseParen = function (s: string, paren: "(" | ")"): Token | undefined {
   if (s[0] === paren) {
     return {
       type: paren,
       match: paren,
     } as ParenToken;
   }
-  return null;
 };
 
-const parseWhitespace = function (s: string): Token | null {
+const parseWhitespace = function (s: string): Token | undefined {
   const match = /^\s+/.exec(s);
   if (match) {
     return {
@@ -187,7 +184,6 @@ const parseWhitespace = function (s: string): Token | null {
       match: match[0],
     } as WhitespaceToken;
   }
-  return null;
 };
 
 const tokenDefinitions: TokenDefinitionFunction[] = [

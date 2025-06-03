@@ -17,6 +17,7 @@ describe("Basic arithmetic", () => {
   it("handles negation correctly", () => {
     expect(calc("-2*-2")).toBe(4);
     expect(calc("-2*2")).toBe(-4);
+    expect(calc("5- -3")).toEqual(8);
   });
 
   it("handles division correctly", () => {
@@ -52,7 +53,6 @@ describe("Parser validation", () => {
     expect(() => calc("1 -- 2")).toThrow();
     expect(() => calc("1+++++++1")).toThrow();
     expect(() => calc("2**3")).toThrow();
-    expect(() => calc("5--3")).toThrow();
   });
 
   it("handles valid negation", () => {

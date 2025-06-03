@@ -1,16 +1,21 @@
+import { CalcConfig, defaultConfig } from "./config.js";
+
 export class UnitValue {
   value: number;
   unit: string | null;
   fromUnitDivision: boolean;
+  config: CalcConfig;
 
   constructor(
     value: number,
     unit: string | null = null,
-    fromUnitDivision: boolean = false
+    fromUnitDivision: boolean = false,
+    config: CalcConfig = defaultConfig
   ) {
     this.value = value;
     this.unit = unit;
     this.fromUnitDivision = fromUnitDivision;
+    this.config = config;
   }
 
   static areAllCompatible(values: UnitValue[]): boolean {
@@ -50,7 +55,12 @@ export class UnitValue {
       );
     }
 
-    return new UnitValue(this.value + other.value, this.unit || other.unit);
+    return new UnitValue(
+      this.value + other.value,
+      this.unit || other.unit,
+      false,
+      this.config
+    );
   }
 
   subtract(other: UnitValue): UnitValue {
@@ -62,7 +72,12 @@ export class UnitValue {
       );
     }
 
-    return new UnitValue(this.value - other.value, this.unit || other.unit);
+    return new UnitValue(
+      this.value - other.value,
+      this.unit || other.unit,
+      false,
+      this.config
+    );
   }
 
   multiply(other: UnitValue): UnitValue {
@@ -78,7 +93,12 @@ export class UnitValue {
     // If both have the same unit, result has that unit
     // If both are unitless, result is unitless
     const resultUnit = this.isUnitless() ? other.unit : this.unit;
-    return new UnitValue(this.value * other.value, resultUnit);
+    return new UnitValue(
+      this.value * other.value,
+      resultUnit,
+      false,
+      this.config
+    );
   }
 
   divide(other: UnitValue): UnitValue {
@@ -92,16 +112,26 @@ export class UnitValue {
 
     // Special case: if units are the same, they cancel out and mark as from unit division
     if (this.unit === other.unit && this.unit !== null) {
-      return new UnitValue(this.value / other.value, null, true);
+      return new UnitValue(this.value / other.value, null, true, this.config);
     }
 
     // If denominator is unitless, result has unit of numerator
     // If numerator is unitless, result is unitless (can't have unit in denominator)
     const resultUnit = other.isUnitless() ? this.unit : null;
-    return new UnitValue(this.value / other.value, resultUnit, false);
+    return new UnitValue(
+      this.value / other.value,
+      resultUnit,
+      false,
+      this.config
+    );
   }
 
   negate(): UnitValue {
-    return new UnitValue(-this.value, this.unit, this.fromUnitDivision);
+    return new UnitValue(
+      -this.value,
+      this.unit,
+      this.fromUnitDivision,
+      this.config
+    );
   }
 }

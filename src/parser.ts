@@ -82,12 +82,14 @@ function getBp(token: Token): number {
 }
 
 const NUDS: Record<string, NudFunction> = {
-  NUMBER_WITH_UNIT: (t) =>
+  NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer, config) =>
     new UnitValue(
       (t as NumberWithUnitToken).value,
-      (t as NumberWithUnitToken).unit
+      (t as NumberWithUnitToken).unit,
+      false,
+      config
     ),
-  NUMBER: (t) => new UnitValue((t as NumberToken).value),
+  NUMBER: (t, _bp, _parse, _lexer, config) => new UnitValue((t as NumberToken).value, null, false, config),
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
@@ -251,15 +253,15 @@ function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   );
 }
 
-function evaluateParserNodes(node: ASTNode): UnitValue {
-  if (typeof node === "number") return new UnitValue(node);
+function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
+  if (typeof node === "number") return new UnitValue(node, null, false, config);
   if (node instanceof UnitValue) return node;
 
   const typedNode = node as BaseNode;
 
   switch (typedNode.type) {
     case "id":
-      return new UnitValue((node as IdNode).ref as number);
+      return new UnitValue((node as IdNode).ref as number, null, false, config);
 
     case "^": {
       const n = node as BinaryOpNode;
@@ -272,32 +274,32 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
         );
       }
 
-      return new UnitValue(Math.pow(left.value, right.value));
+      return new UnitValue(Math.pow(left.value, right.value), null, false, config);
     }
 
     case "+": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left).add(evaluateParserNodes(n.right));
+      return evaluateParserNodes(n.left, config).add(evaluateParserNodes(n.right, config));
     }
 
     case "-": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left).subtract(evaluateParserNodes(n.right));
+      return evaluateParserNodes(n.left, config).subtract(evaluateParserNodes(n.right, config));
     }
 
     case "*": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left).multiply(evaluateParserNodes(n.right));
+      return evaluateParserNodes(n.left, config).multiply(evaluateParserNodes(n.right, config));
     }
 
     case "/": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left).divide(evaluateParserNodes(n.right));
+      return evaluateParserNodes(n.left, config).divide(evaluateParserNodes(n.right, config));
     }
 
     case "()": {
       const n = node as FunctionCallNode;
-      const evaluatedArgs = n.args.map((arg) => evaluateParserNodes(arg));
+      const evaluatedArgs = n.args.map((arg) => evaluateParserNodes(arg, config));
 
       // Handle constants
       if (typeof n.target.ref === "number") {
@@ -321,11 +323,11 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
       const unit = unitArg ? unitArg.unit : null;
 
       // All functions preserve units
-      return new UnitValue((n.target.ref as Function)(...argValues), unit);
+      return new UnitValue((n.target.ref as Function)(...argValues), unit, false, config);
     }
 
     case "neg":
-      return evaluateParserNodes((node as NegationNode).value).negate();
+      return evaluateParserNodes((node as NegationNode).value, config).negate();
 
     default:
       throw new Error(`Unknown node type: ${typedNode.type}`);
@@ -336,10 +338,11 @@ export function calc(
   s: string,
   options: Partial<CalcConfig> = {}
 ): (number | string)[] {
+  const config = { ...defaultConfig, ...options };
   const parsers = parse(s, options);
 
   const results = parsers.map((p) => {
-    const result = evaluateParserNodes(p);
+    const result = evaluateParserNodes(p, config);
 
     // Return number for unitless values, string for values with units
     // If this is a result of dividing same units, return as string

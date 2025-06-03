@@ -174,7 +174,7 @@ function getBp(token: Token): number {
   return BPS[token.type as keyof typeof BPS] || 0;
 }
 
-function isOperator(type: TokenType): boolean {
+function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
   return (
     type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
   );
@@ -192,13 +192,11 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     const current = lexer.tokens[i];
     const next = lexer.tokens[i + 1];
 
-    // Track paren level
+    // Track paren level to determine where to split groups
     if (current.type === "(") parenLevel++;
 
-    // Add current token to the current expression
     currentExpr.push(current);
 
-    // Check if we need to split after this token
     if (current.type === ")") {
       parenLevel--;
       if (parenLevel < 0) {

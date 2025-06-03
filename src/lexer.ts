@@ -119,7 +119,9 @@ const numberWithUnitRegexp =
 
 const parseNumber = function (value: string): Token | null {
   const match = numberWithUnitRegexp.exec(value);
-  if (!match || !match.groups) return null;
+
+  if (!match || !match.groups) return;
+
   const { number, suffix } = match.groups;
   const numValue = parseFloat(number);
 

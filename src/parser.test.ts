@@ -3,6 +3,8 @@ import {
   CalcConfig,
   defaultMathFunctions,
   defaultUnitConversions,
+  createConfig,
+  addUnitConversions
 } from "./config.js";
 import { calc } from "./parser.js";
 
@@ -153,40 +155,40 @@ describe("CSS unit calculations", () => {
 
 describe("Unit conversions", () => {
   it("handles custom unit conversions", () => {
-    // Create a config with custom unit conversions
-    const options: Partial<CalcConfig> = {
-      unitConversions: new Map([
-        // px to rem conversions (assuming 1rem = 16px)
-        [
-          "px,+,rem",
-          (left, right) => ({
-            value: left.value + right.value * 16,
-            unit: "px",
-          }),
-        ],
-        [
-          "rem,+,px",
-          (left, right) => ({
-            value: left.value * 16 + right.value,
-            unit: "px",
-          }),
-        ],
-        [
-          "px,-,rem",
-          (left, right) => ({
-            value: left.value - right.value * 16,
-            unit: "px",
-          }),
-        ],
-        [
-          "rem,-,px",
-          (left, right) => ({
-            value: left.value * 16 - right.value,
-            unit: "px",
-          }),
-        ],
-      ]),
-    };
+    // Create a config with custom unit conversions using array syntax
+    const config = createConfig();
+    addUnitConversions(config, [
+      // px to rem conversions (assuming 1rem = 16px)
+      [
+        ["px", "+", "rem"],
+        (left, right) => ({
+          value: left.value + right.value * 16,
+          unit: "px",
+        }),
+      ],
+      [
+        ["rem", "+", "px"],
+        (left, right) => ({
+          value: left.value * 16 + right.value,
+          unit: "px",
+        }),
+      ],
+      [
+        ["px", "-", "rem"],
+        (left, right) => ({
+          value: left.value - right.value * 16,
+          unit: "px",
+        }),
+      ],
+      [
+        ["rem", "-", "px"],
+        (left, right) => ({
+          value: left.value * 16 - right.value,
+          unit: "px",
+        }),
+      ],
+    ]);
+    const options = config;
 
     // Addition with unit conversion
     expect(calc("10px + 1rem", options)).toEqual(["26px"]);
@@ -222,36 +224,41 @@ describe("Unit conversions", () => {
   });
 
   it("handles wildcard unit conversions", () => {
-    // Config with wildcard conversions
-    const options: Partial<CalcConfig> = {
-      unitConversions: new Map([
-        ...defaultUnitConversions,
-        // Wildcard for left unit (any unit to px)
-        [
-          "*,+,px",
-          (left, right) => ({
-            value: left.value * 10 + right.value,
-            unit: "px",
-          }),
-        ],
-        // Wildcard for right unit (px to any unit)
-        [
-          "px,+,*",
-          (left, right) => ({
-            value: left.value + right.value * 10,
-            unit: "px",
-          }),
-        ],
-        // Wildcard for both units (any unit to any unit)
-        [
-          "*,+,*",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "generic",
-          }),
-        ],
-      ]),
-    };
+    // Config with wildcard conversions using array syntax
+    const config = createConfig();
+    // Add default conversions
+    defaultUnitConversions.forEach((fn, key) => {
+      config.unitConversions.set(key, fn);
+    });
+    
+    // Add wildcard conversions
+    addUnitConversions(config, [
+      // Wildcard for left unit (any unit to px)
+      [
+        ["*", "+", "px"],
+        (left, right) => ({
+          value: left.value * 10 + right.value,
+          unit: "px",
+        }),
+      ],
+      // Wildcard for right unit (px to any unit)
+      [
+        ["px", "+", "*"],
+        (left, right) => ({
+          value: left.value + right.value * 10,
+          unit: "px",
+        }),
+      ],
+      // Wildcard for both units (any unit to any unit)
+      [
+        ["*", "+", "*"],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "generic",
+        }),
+      ],
+    ]);
+    const options = config;
 
     // Test wildcard conversions
     expect(calc("10px + 2em", options)).toEqual(["30px"]); // 10px + 2em*10 = 30px
@@ -264,27 +271,32 @@ describe("Unit conversions", () => {
   });
 
   it("handles unitless to unit conversions", () => {
-    // Config with unitless to px conversions
-    const options: Partial<CalcConfig> = {
-      unitConversions: new Map([
-        ...defaultUnitConversions,
-        // Unitless to px conversions (multiply unitless by 2)
-        [
-          "px,+,",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "px",
-          }),
-        ],
-        [
-          ",+,px",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "px",
-          }),
-        ],
-      ]),
-    };
+    // Config with unitless to px conversions using array syntax
+    const config = createConfig();
+    // Add default conversions
+    defaultUnitConversions.forEach((fn, key) => {
+      config.unitConversions.set(key, fn);
+    });
+    
+    // Add unitless conversions
+    addUnitConversions(config, [
+      // Unitless to px conversions
+      [
+        ["px", "+", null],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "px",
+        }),
+      ],
+      [
+        [null, "+", "px"],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "px",
+        }),
+      ],
+    ]);
+    const options = config;
 
     // Addition with unitless conversion
     expect(calc("10px + 5", options)).toEqual(["15px"]);

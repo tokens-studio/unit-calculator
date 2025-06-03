@@ -51,21 +51,18 @@ export const defaultMathFunctions: Record<
   min: Math.min,
 };
 
-// Default unit conversions with basic unitless operations
-export const defaultUnitConversions: Map<
-  UnitConversionKey,
-  UnitConversionFunction
-> = new Map([
+// Create default unit conversions with array syntax
+const defaultConversionsArray: Array<[UnitConversionKeyArray, UnitConversionFunction]> = [
   // Multiplication with unitless values
   [
-    ",*,*",
+    [null, "*", "*"],
     (left, right) => ({
       value: left.value * right.value,
       unit: right.unit,
     }),
   ],
   [
-    "*,*,",
+    ["*", "*", null],
     (left, right) => ({
       value: left.value * right.value,
       unit: left.unit,
@@ -73,14 +70,14 @@ export const defaultUnitConversions: Map<
   ],
   // Division with unitless values
   [
-    "*,/,",
+    ["*", "/", null],
     (left, right) => ({
       value: left.value / right.value,
       unit: left.unit,
     }),
   ],
   [
-    ",/,*",
+    [null, "/", "*"],
     (left, right) => ({
       value: left.value / right.value,
       unit: null,
@@ -88,7 +85,7 @@ export const defaultUnitConversions: Map<
   ],
   // Division with same units (results in unitless)
   [
-    "*,/,*",
+    ["*", "/", "*"],
     (left, right) => {
       if (left.unit === right.unit) {
         return {
@@ -103,7 +100,18 @@ export const defaultUnitConversions: Map<
       );
     },
   ],
-]);
+];
+
+// Convert array format to Map
+export const defaultUnitConversions: Map<
+  UnitConversionKey,
+  UnitConversionFunction
+> = new Map(
+  defaultConversionsArray.map(([keyArray, fn]) => [
+    arrayToConversionKey(keyArray),
+    fn,
+  ])
+);
 
 export const defaultConfig: CalcConfig = {
   allowedUnits: new Set(CSS_UNITS),
@@ -116,12 +124,35 @@ export function createConfig({
   mathFunctions = defaultConfig.mathFunctions,
   unitConversions = defaultConfig.unitConversions,
 }: Partial<CalcConfig> = {}): CalcConfig {
+  // Process unit conversions to handle array format
+  const processedConversions = new Map<UnitConversionKey, UnitConversionFunction>();
+  
+  // Copy existing conversions
+  unitConversions.forEach((fn, key) => {
+    processedConversions.set(key, fn);
+  });
+  
   return {
     allowedUnits: new Set(allowedUnits),
     mathFunctions,
-    unitConversions,
+    unitConversions: processedConversions,
   };
 }
+
+// Helper function to add unit conversions with array syntax
+export function addUnitConversions(
+  config: CalcConfig,
+  conversions: Array<[UnitConversionKeyArray, UnitConversionFunction]>
+): CalcConfig {
+  conversions.forEach(([keyArray, fn]) => {
+    const key = arrayToConversionKey(keyArray);
+    config.unitConversions.set(key, fn);
+  });
+  return config;
+}
+
+// Types for the array-based conversion key format
+export type UnitConversionKeyArray = [string | null, string, string | null];
 
 // Helper function to get a conversion key
 export function getConversionKey(
@@ -133,6 +164,14 @@ export function getConversionKey(
   const left = leftUnit === null ? "" : leftUnit;
   const right = rightUnit === null ? "" : rightUnit;
   return `${left},${operator},${right}`;
+}
+
+// Helper function to convert array format to string key
+export function arrayToConversionKey(
+  keyArray: UnitConversionKeyArray
+): UnitConversionKey {
+  const [leftUnit, operator, rightUnit] = keyArray;
+  return getConversionKey(leftUnit, operator, rightUnit);
 }
 
 // Function to find the best matching conversion key

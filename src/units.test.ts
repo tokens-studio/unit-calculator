@@ -1,48 +1,47 @@
 import { describe, expect, it } from "vitest";
 import { UnitValue } from "./units.js";
-import { createConfig } from "./config.js";
+import { createConfig, addUnitConversions } from "./config.js";
 
 describe("UnitValue with custom unit conversions", () => {
-  // Create a config with custom unit conversions
-  const config = createConfig({
-    unitConversions: new Map([
-      // px to rem conversions (assuming 1rem = 16px)
-      [
-        "px,+,rem",
-        (left, right) => ({ value: left.value + right.value * 16, unit: "px" }),
-      ],
-      [
-        "rem,+,px",
-        (left, right) => ({ value: left.value * 16 + right.value, unit: "px" }),
-      ],
-      [
-        "px,-,rem",
-        (left, right) => ({ value: left.value - right.value * 16, unit: "px" }),
-      ],
-      [
-        "rem,-,px",
-        (left, right) => ({ value: left.value * 16 - right.value, unit: "px" }),
-      ],
+  // Create a config with custom unit conversions using array syntax
+  const config = createConfig();
+  addUnitConversions(config, [
+    // px to rem conversions (assuming 1rem = 16px)
+    [
+      ["px", "+", "rem"],
+      (left, right) => ({ value: left.value + right.value * 16, unit: "px" }),
+    ],
+    [
+      ["rem", "+", "px"],
+      (left, right) => ({ value: left.value * 16 + right.value, unit: "px" }),
+    ],
+    [
+      ["px", "-", "rem"],
+      (left, right) => ({ value: left.value - right.value * 16, unit: "px" }),
+    ],
+    [
+      ["rem", "-", "px"],
+      (left, right) => ({ value: left.value * 16 - right.value, unit: "px" }),
+    ],
 
-      // cm to mm conversions (1cm = 10mm)
-      [
-        "cm,+,mm",
-        (left, right) => ({ value: left.value + right.value / 10, unit: "cm" }),
-      ],
-      [
-        "mm,+,cm",
-        (left, right) => ({ value: left.value + right.value * 10, unit: "mm" }),
-      ],
-      [
-        "cm,-,mm",
-        (left, right) => ({ value: left.value - right.value / 10, unit: "cm" }),
-      ],
-      [
-        "mm,-,cm",
-        (left, right) => ({ value: left.value - right.value * 10, unit: "mm" }),
-      ],
-    ]),
-  });
+    // cm to mm conversions (1cm = 10mm)
+    [
+      ["cm", "+", "mm"],
+      (left, right) => ({ value: left.value + right.value / 10, unit: "cm" }),
+    ],
+    [
+      ["mm", "+", "cm"],
+      (left, right) => ({ value: left.value + right.value * 10, unit: "mm" }),
+    ],
+    [
+      ["cm", "-", "mm"],
+      (left, right) => ({ value: left.value - right.value / 10, unit: "cm" }),
+    ],
+    [
+      ["mm", "-", "cm"],
+      (left, right) => ({ value: left.value - right.value * 10, unit: "mm" }),
+    ],
+  ]);
 
   describe("unit compatibility", () => {
     it("recognizes compatible units based on config", () => {
@@ -64,35 +63,34 @@ describe("UnitValue with custom unit conversions", () => {
   });
 
   describe("wildcard conversions", () => {
-    // Create a config with wildcard conversions
-    const wildcardConfig = createConfig({
-      unitConversions: new Map([
-        // Wildcard for left unit (any unit to px)
-        [
-          "*,+,px",
-          (left, right) => ({
-            value: left.value * 10 + right.value,
-            unit: "px",
-          }),
-        ],
-        // Wildcard for right unit (px to any unit)
-        [
-          "px,+,*",
-          (left, right) => ({
-            value: left.value + right.value * 10,
-            unit: "px",
-          }),
-        ],
-        // Wildcard for both units (any unit to any unit)
-        [
-          "*,+,*",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "generic",
-          }),
-        ],
-      ]),
-    });
+    // Create a config with wildcard conversions using array syntax
+    const wildcardConfig = createConfig();
+    addUnitConversions(wildcardConfig, [
+      // Wildcard for left unit (any unit to px)
+      [
+        ["*", "+", "px"],
+        (left, right) => ({
+          value: left.value * 10 + right.value,
+          unit: "px",
+        }),
+      ],
+      // Wildcard for right unit (px to any unit)
+      [
+        ["px", "+", "*"],
+        (left, right) => ({
+          value: left.value + right.value * 10,
+          unit: "px",
+        }),
+      ],
+      // Wildcard for both units (any unit to any unit)
+      [
+        ["*", "+", "*"],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "generic",
+        }),
+      ],
+    ]);
 
     it("converts using wildcard patterns", () => {
       const px = new UnitValue(10, "px", false, wildcardConfig);
@@ -116,43 +114,42 @@ describe("UnitValue with custom unit conversions", () => {
     });
 
     it("respects specificity order", () => {
-      // Config with both specific and wildcard conversions
-      const mixedConfig = createConfig({
-        unitConversions: new Map([
-          // Specific conversion (highest priority)
-          [
-            "em,+,rem",
-            (left, right) => ({
-              value: left.value * 2 + right.value * 3,
-              unit: "specific",
-            }),
-          ],
-          // Wildcard for left unit (medium priority)
-          [
-            "*,+,rem",
-            (left, right) => ({
-              value: left.value + right.value * 5,
-              unit: "leftWild",
-            }),
-          ],
-          // Wildcard for right unit (medium priority)
-          [
-            "em,+,*",
-            (left, right) => ({
-              value: left.value * 5 + right.value,
-              unit: "rightWild",
-            }),
-          ],
-          // Wildcard for both units (lowest priority)
-          [
-            "*,+,*",
-            (left, right) => ({
-              value: left.value + right.value,
-              unit: "bothWild",
-            }),
-          ],
-        ]),
-      });
+      // Config with both specific and wildcard conversions using array syntax
+      const mixedConfig = createConfig();
+      addUnitConversions(mixedConfig, [
+        // Specific conversion (highest priority)
+        [
+          ["em", "+", "rem"],
+          (left, right) => ({
+            value: left.value * 2 + right.value * 3,
+            unit: "specific",
+          }),
+        ],
+        // Wildcard for left unit (medium priority)
+        [
+          ["*", "+", "rem"],
+          (left, right) => ({
+            value: left.value + right.value * 5,
+            unit: "leftWild",
+          }),
+        ],
+        // Wildcard for right unit (medium priority)
+        [
+          ["em", "+", "*"],
+          (left, right) => ({
+            value: left.value * 5 + right.value,
+            unit: "rightWild",
+          }),
+        ],
+        // Wildcard for both units (lowest priority)
+        [
+          ["*", "+", "*"],
+          (left, right) => ({
+            value: left.value + right.value,
+            unit: "bothWild",
+          }),
+        ],
+      ]);
 
       const em = new UnitValue(2, "em", false, mixedConfig);
       const rem = new UnitValue(3, "rem", false, mixedConfig);
@@ -176,37 +173,36 @@ describe("UnitValue with custom unit conversions", () => {
   });
 
   describe("unitless conversions", () => {
-    // Create a config with unitless conversions
-    const unitlessConfig = createConfig({
-      unitConversions: new Map([
-        // Unitless to px conversions
-        [
-          "px,+,",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "px",
-          }),
-        ],
-        [
-          ",+,px",
-          (left, right) => ({
-            value: left.value + right.value,
-            unit: "px",
-          }),
-        ],
-        [
-          "px,-,",
-          (left, right) => ({
-            value: left.value - right.value,
-            unit: "px",
-          }),
-        ],
-        [
-          ",*,px",
-          (left, right) => ({ value: left.value * right.value, unit: "px" }),
-        ],
-      ]),
-    });
+    // Create a config with unitless conversions using array syntax
+    const unitlessConfig = createConfig();
+    addUnitConversions(unitlessConfig, [
+      // Unitless to px conversions
+      [
+        ["px", "+", null],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "px",
+        }),
+      ],
+      [
+        [null, "+", "px"],
+        (left, right) => ({
+          value: left.value + right.value,
+          unit: "px",
+        }),
+      ],
+      [
+        ["px", "-", null],
+        (left, right) => ({
+          value: left.value - right.value,
+          unit: "px",
+        }),
+      ],
+      [
+        [null, "*", "px"],
+        (left, right) => ({ value: left.value * right.value, unit: "px" }),
+      ],
+    ]);
 
     it("converts between unitless and units", () => {
       const px = new UnitValue(10, "px", false, unitlessConfig);

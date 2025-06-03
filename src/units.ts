@@ -1,22 +1,6 @@
-import { CalcConfig, defaultConfig } from "./config.js";
-
-type UnitConversionKey = string;
-interface ConversionOutput {
-  value: number;
-  unit: string | null;
-}
-type UnitConversionFunction = (left: UnitValue, right: UnitValue) => ConversionOutput;
+import { CalcConfig, defaultConfig, getConversionKey } from "./config.js";
 
 export class UnitValue {
-  // prettier-ignore
-  static unitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
-    // Example conversions
-    ["px,+,rem", (left, right) => ({ value: left.value + (right.value * 16), unit: "px" })],
-    ["rem,+,px", (left, right) => ({ value: (left.value * 16) + right.value, unit: "px" })],
-    ["px,-,rem", (left, right) => ({ value: left.value - (right.value * 16), unit: "px" })],
-    ["rem,-,px", (left, right) => ({ value: (left.value * 16) - right.value, unit: "px" })],
-    // Add more conversions as needed
-  ]);
   value: number;
   unit: string | null;
   fromUnitDivision: boolean;
@@ -47,15 +31,6 @@ export class UnitValue {
     return this.unit === null;
   }
 
-  static getConversionKey(
-    leftUnit: string | null,
-    operator: string,
-    rightUnit: string | null
-  ): UnitConversionKey {
-    const left = leftUnit || "";
-    const right = rightUnit || "";
-    return `${left},${operator},${right}`;
-  }
 
   isCompatibleWith(other: UnitValue): boolean {
     // Same units are always compatible
@@ -69,8 +44,8 @@ export class UnitValue {
     }
 
     // Check if there's a conversion defined for these units
-    const key = UnitValue.getConversionKey(this.unit, "+", other.unit);
-    return UnitValue.unitConversions.has(key);
+    const key = getConversionKey(this.unit, "+", other.unit);
+    return this.config.unitConversions.has(key);
   }
 
   canMultiplyWith(other: UnitValue): boolean {
@@ -93,8 +68,8 @@ export class UnitValue {
     }
 
     // Check for conversion
-    const key = UnitValue.getConversionKey(this.unit, "+", other.unit);
-    const conversion = UnitValue.unitConversions.get(key);
+    const key = getConversionKey(this.unit, "+", other.unit);
+    const conversion = this.config.unitConversions.get(key);
 
     if (conversion) {
       const result = conversion(this, other);
@@ -120,8 +95,8 @@ export class UnitValue {
     }
 
     // Check for conversion
-    const key = UnitValue.getConversionKey(this.unit, "-", other.unit);
-    const conversion = UnitValue.unitConversions.get(key);
+    const key = getConversionKey(this.unit, "-", other.unit);
+    const conversion = this.config.unitConversions.get(key);
 
     if (conversion) {
       const result = conversion(this, other);

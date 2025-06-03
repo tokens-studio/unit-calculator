@@ -1,16 +1,20 @@
 import { CalcConfig, defaultConfig } from "./config.js";
 
 type UnitConversionKey = string;
-type UnitConversionFunction = (left: UnitValue, right: UnitValue) => UnitValue;
+interface ConversionOutput {
+  value: number;
+  unit: string | null;
+}
+type UnitConversionFunction = (left: UnitValue, right: UnitValue) => ConversionOutput;
 
 export class UnitValue {
   // prettier-ignore
   static unitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
     // Example conversions
-    ["px,+,rem", (left, right) => new UnitValue(left.value + (right.value * 16), "px", false, left.config)],
-    ["rem,+,px", (left, right) => new UnitValue((left.value * 16) + right.value, "px", false, left.config)],
-    ["px,-,rem", (left, right) => new UnitValue(left.value - (right.value * 16), "px", false, left.config)],
-    ["rem,-,px", (left, right) => new UnitValue((left.value * 16) - right.value, "px", false, left.config)],
+    ["px,+,rem", (left, right) => ({ value: left.value + (right.value * 16), unit: "px" })],
+    ["rem,+,px", (left, right) => ({ value: (left.value * 16) + right.value, unit: "px" })],
+    ["px,-,rem", (left, right) => ({ value: left.value - (right.value * 16), unit: "px" })],
+    ["rem,-,px", (left, right) => ({ value: (left.value * 16) - right.value, unit: "px" })],
     // Add more conversions as needed
   ]);
   value: number;
@@ -93,7 +97,8 @@ export class UnitValue {
     const conversion = UnitValue.unitConversions.get(key);
 
     if (conversion) {
-      return conversion(this, other);
+      const result = conversion(this, other);
+      return new UnitValue(result.value, result.unit, false, this.config);
     }
 
     throw new Error(
@@ -119,7 +124,8 @@ export class UnitValue {
     const conversion = UnitValue.unitConversions.get(key);
 
     if (conversion) {
-      return conversion(this, other);
+      const result = conversion(this, other);
+      return new UnitValue(result.value, result.unit, false, this.config);
     }
 
     throw new Error(

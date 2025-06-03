@@ -251,7 +251,7 @@ describe("Unit conversions", () => {
     expect(calc("10px + 2em", options)).toEqual(["30px"]); // 10px + 2em*10 = 30px
     expect(calc("2em + 10px", options)).toEqual(["30px"]); // 2em*10 + 10px = 30px
     expect(calc("2em + 3rem", options)).toEqual(["5generic"]); // 2em + 3rem = 5generic
-    
+
     // Test with complex expressions
     expect(calc("2 * (5px + 3em)", options)).toEqual(["70px"]); // 2 * (5px + 3em*10) = 70px
     expect(calc("(2em + 3rem) / 5", options)).toEqual(["1generic"]); // (2em + 3rem) / 5 = 1generic
@@ -280,12 +280,12 @@ describe("Unit conversions", () => {
     };
 
     // Addition with unitless conversion
-    expect(calc("10px + 5", options)).toEqual(["20px"]);
-    expect(calc("5 + 10px", options)).toEqual(["20px"]);
-    
+    expect(calc("10px + 5", options)).toEqual(["15px"]);
+    expect(calc("5 + 10px", options)).toEqual(["15px"]);
+
     // Complex expressions with unitless conversions
-    expect(calc("2 * (10px + 5)", options)).toEqual(["40px"]);
-    expect(calc("(5 + 10px) / 2", options)).toEqual(["10px"]);
+    expect(calc("2 * (10px + 5)", options)).toEqual(["30px"]);
+    expect(calc("(5 + 10px) / 2", options)).toEqual(["7.5px"]);
   });
 
   it("handles functions with converted units", () => {

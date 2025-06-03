@@ -183,7 +183,7 @@ describe("UnitValue with custom unit conversions", () => {
         [
           "px,+,",
           (left, right) => ({
-            value: left.value + right * 2,
+            value: left.value + right.value * 2,
             unit: "px",
           }),
         ],

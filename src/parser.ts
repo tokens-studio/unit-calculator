@@ -72,7 +72,7 @@ interface LedFunctions {
 
 // BPS - binding powers of operators
 const BPS: BindingPowers = {
-  "EOF": 0,
+  EOF: 0,
   NUMBER: 0,
   ID: 0,
   ")": 0,
@@ -293,7 +293,7 @@ function createParseFunction(lexer: Lexer) {
   return parse;
 }
 
-function parse(s: string): () => ASTNode {
+function parse(s: string): ASTNode[] {
   const lexer: Lexer = createLexer(s);
 
   let lexers = validateTokenStream(lexer);
@@ -353,7 +353,14 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
     "()": (node: FunctionCallNode) => {
       const args = evaluateParserNodes(node.args);
       // Math functions should only operate on the numeric value
-      if (matchesType({ type: node.target.id } as Token, ["floor", "ceil", "abs", "cos"])) {
+      if (
+        matchesType({ type: node.target.id } as Token, [
+          "floor",
+          "ceil",
+          "abs",
+          "cos",
+        ])
+      ) {
         return new UnitValue(
           (node.target.ref as Function)(args.value),
           args.unit

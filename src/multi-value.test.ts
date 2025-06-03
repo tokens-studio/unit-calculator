@@ -1,4 +1,4 @@
-import { calc, calcMulti } from "./index.js";
+import { calc } from "./index.js";
 import { expect, describe, it } from "vitest";
 
 describe.skip("Multi-value expressions", () => {
@@ -13,8 +13,8 @@ describe.skip("Multi-value expressions", () => {
   });
 
   it("calcMulti always returns array", () => {
-    expect(calcMulti("1+1")).toEqual([2]);
-    expect(calcMulti("1+1 2em * 3")).toEqual([2, "6em"]);
+    expect(calc("1+1")).toEqual([2]);
+    expect(calc("1+1 2em * 3")).toEqual([2, "6em"]);
   });
 
   it("Handles expressions with parentheses", () => {
@@ -28,6 +28,6 @@ describe.skip("Multi-value expressions", () => {
 
   it("Handles empty input", () => {
     expect(calc("")).toBe(0);
-    expect(calcMulti("")).toEqual([0]);
+    expect(calc("")).toEqual([0]);
   });
 });

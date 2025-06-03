@@ -1,4 +1,9 @@
-import { CalcConfig, CalcOptions, createConfig } from "./config.js";
+import {
+  CalcConfig,
+  CalcOptions,
+  createConfig,
+  defaultConfig,
+} from "./config.js";
 
 export type TokenType =
   | "EOF"
@@ -226,7 +231,10 @@ const tokenizers: TokenParser[] = [
   parseWhitespace,
 ];
 
-export default function lex(s: string, options: CalcOptions = {}): Lexer {
+export default function lex(
+  s: string,
+  options: CalcOptions = defaultConfig
+): Lexer {
   const config = createConfig(options);
   const tokens: Token[] = [];
   let charpos = 0;

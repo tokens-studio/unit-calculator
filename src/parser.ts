@@ -1,4 +1,10 @@
-import createLexer, { Lexer, Token, TokenType } from "./lexer.js";
+import createLexer, {
+  Lexer,
+  Token,
+  TokenType,
+  NumberWithUnitToken,
+  NumberToken,
+} from "./lexer.js";
 import { matchesType } from "./token.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
@@ -86,8 +92,14 @@ const BPS: BindingPowers = {
 
 // NUDS - null denotation - tokens that start expressions
 const NUDS: NudFunctions = {
-  NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer) => parseUnitValue(t.match!),
-  NUMBER: (t, _bp, _parse, _lexer) => new UnitValue(parseFloat(t.match!)),
+  NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer) => {
+    const token = t as NumberWithUnitToken;
+    return new UnitValue(token.value, token.unit);
+  },
+  NUMBER: (t, _bp, _parse, _lexer) => {
+    const token = t as NumberToken;
+    return new UnitValue(token.value);
+  },
   ID: (t, _bp, _parse, _lexer) => {
     const mbr = Math[t.match! as keyof typeof Math];
     if (typeof mbr == "undefined") {

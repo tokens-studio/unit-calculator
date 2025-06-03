@@ -1,8 +1,4 @@
-import {
-  CalcConfig,
-  createConfig,
-  defaultConfig,
-} from "./config.js";
+import { CalcConfig, createConfig, defaultConfig } from "./config.js";
 
 export type TokenType =
   | "EOF"
@@ -129,12 +125,7 @@ const parseNumber = function (
 
   // If there's a negative sign, we need to determine if it's a negative number or a subtraction operator
   if (sign === "-") {
-    // Check if this minus sign should be treated as an operator instead of part of the number
-    // by looking at the previous token
     const prevToken = tokens.length > 0 ? tokens[tokens.length - 1] : null;
-
-    // If the previous token is a number, identifier, or closing parenthesis,
-    // then this minus is an operator, not part of a negative number
     if (
       prevToken &&
       (prevToken.type === "NUMBER" ||

@@ -1,4 +1,4 @@
-import { CalcConfig } from "./config.js";
+import { CalcConfig, defaultConfig } from "./config.js";
 import createLexer, {
   Lexer,
   NumberToken,
@@ -51,7 +51,8 @@ type NudFunction = (
   token: Token,
   bp: number,
   parse: ParseFunction,
-  lexer: Lexer
+  lexer: Lexer,
+  config: CalcConfig
 ) => ASTNode;
 
 type LedFunction = (
@@ -59,7 +60,8 @@ type LedFunction = (
   token: Token,
   bp: number,
   parse: ParseFunction,
-  lexer: Lexer
+  lexer: Lexer,
+  config: CalcConfig
 ) => ASTNode;
 
 const BPS = {
@@ -87,22 +89,43 @@ const NUDS: Record<string, NudFunction> = {
       (t as NumberWithUnitToken).unit
     ),
   NUMBER: (t) => new UnitValue((t as NumberToken).value),
-  ID: (t) => {
-    const mbr = Math[t.match! as keyof typeof Math];
-    if (typeof mbr === "undefined") {
-      const posInfo = t.charpos !== undefined ? `at position ${t.charpos}` : "";
-      throw new Error(
-        `Unknown expression: '${t.match}'${
-          posInfo ? " " + posInfo : ""
-        }. Only Math constants and functions are supported.`
-      );
+  ID: (t, _bp, _parse, _lexer, config) => {
+    const id = t.match!;
+
+    // Check if it's a custom math function
+    if (config.mathFunctions && id in config.mathFunctions) {
+      return {
+        type: "id",
+        ref: config.mathFunctions[id],
+        id,
+      } as IdNode;
     }
-    return { type: "id", ref: mbr, id: t.match! } as IdNode;
+
+    // Check if it's a Math constant (like PI)
+    const mathConstant = Math[id as keyof typeof Math];
+    if (
+      typeof mathConstant !== "undefined" &&
+      typeof mathConstant !== "function"
+    ) {
+      return {
+        type: "id",
+        ref: mathConstant,
+        id,
+      } as IdNode;
+    }
+
+    // Error if not found
+    const posInfo = t.charpos !== undefined ? `at position ${t.charpos}` : "";
+    throw new Error(
+      `Unknown expression: '${id}'${
+        posInfo ? " " + posInfo : ""
+      }. Only configured math functions and constants are supported.`
+    );
   },
-  "+": (_t, bp, parse, _lexer) => parse(bp),
-  "-": (_t, bp, parse, _lexer) =>
+  "+": (_t, bp, parse, _lexer, _config) => parse(bp),
+  "-": (_t, bp, parse, _lexer, _config) =>
     ({ type: "neg", value: parse(bp) } as NegationNode),
-  "(": (_t, _bp, parse, lexer) => {
+  "(": (_t, _bp, parse, lexer, _config) => {
     const inner = parse();
     lexer.expect(")");
     return inner;
@@ -111,7 +134,7 @@ const NUDS: Record<string, NudFunction> = {
 
 const createBinaryOp =
   (type: BinaryOpType): LedFunction =>
-  (left, _t, bp, parse) =>
+  (left, _t, bp, parse, _lexer, _config) =>
     ({ type, left, right: parse(bp) } as BinaryOpNode);
 
 const LEDS: Record<string, LedFunction> = {
@@ -119,10 +142,10 @@ const LEDS: Record<string, LedFunction> = {
   "-": createBinaryOp("-"),
   "*": createBinaryOp("*"),
   "/": createBinaryOp("/"),
-  "^": (left, _t, bp, parse) =>
+  "^": (left, _t, bp, parse, _lexer, _config) =>
     ({ type: "^", left, right: parse(bp - 1) } as BinaryOpNode),
 
-  "(": (left, _t, _bp, parse, lexer) => {
+  "(": (left, _t, _bp, parse, lexer, _config) => {
     if ((left as IdNode).type !== "id") {
       throw new Error("Cannot invoke expression as if it was a function");
     }
@@ -173,19 +196,19 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
   return expressions.map((tokens) => new Lexer(tokens));
 }
 
-function createParseFunction(lexer: Lexer): ParseFunction {
+function createParseFunction(lexer: Lexer, config: CalcConfig): ParseFunction {
   const nud = (token: Token): ASTNode => {
     const nudFn = NUDS[token.type];
     if (!nudFn)
       throw new Error(`NUD not defined for token type: ${token.type}`);
-    return nudFn(token, getBp(token), parse, lexer);
+    return nudFn(token, getBp(token), parse, lexer, config);
   };
 
   const led = (left: ASTNode, token: Token): ASTNode => {
     const ledFn = LEDS[token.type];
     if (!ledFn)
       throw new Error(`LED not defined for token type: ${token.type}`);
-    return ledFn(left, token, getBp(token), parse, lexer);
+    return ledFn(left, token, getBp(token), parse, lexer, config);
   };
 
   function parse(rbp = 0): ASTNode {
@@ -206,8 +229,9 @@ function createParseFunction(lexer: Lexer): ParseFunction {
 }
 
 function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
+  const config = { ...defaultConfig, ...options };
   return validateTokenStream(createLexer(s, options)).map((lexer) =>
-    createParseFunction(lexer)()
+    createParseFunction(lexer, config)()
   );
 }
 
@@ -259,22 +283,13 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
       const n = node as FunctionCallNode;
       const args = evaluateParserNodes(n.args);
 
-      if (
-        matchesType({ type: n.target.id } as Token, [
-          "floor",
-          "ceil",
-          "abs",
-          "cos",
-        ])
-      ) {
-        return new UnitValue((n.target.ref as Function)(args.value), args.unit);
-      }
-
+      // Handle constants
       if (typeof n.target.ref === "number") {
         return new UnitValue(n.target.ref);
       }
 
-      return new UnitValue((n.target.ref as Function)(args.value));
+      // All functions preserve units
+      return new UnitValue((n.target.ref as Function)(args.value), args.unit);
     }
 
     case "neg":

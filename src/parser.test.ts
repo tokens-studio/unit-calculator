@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { CalcConfig } from "./config.js";
+import { describe, expect, it, test } from "vitest";
+import { CalcConfig, defaultMathFunctions } from "./config.js";
 import { calc } from "./parser.js";
 
 describe("Basic arithmetic", () => {
@@ -155,5 +155,88 @@ describe("Multi-value expressions", () => {
 
   it("Ignores extra whitespace", () => {
     expect(calc("  1+1   2em * 3  ")).toEqual([2, "6em"]);
+  });
+});
+
+describe("Custom math functions", () => {
+  test("Default math functions work", () => {
+    expect(calc("sin(0)")).toEqual([0]);
+    expect(calc("cos(0)")).toEqual([1]);
+    expect(calc("sqrt(4)")).toEqual([2]);
+    expect(calc("floor(3.7)")).toEqual([3]);
+    expect(calc("ceil(3.2)")).toEqual([4]);
+    expect(calc("round(3.5)")).toEqual([4]);
+  });
+
+  test("All functions maintain units", () => {
+    // Add the units to the allowed units list
+    const options = {
+      allowedUnits: new Set(["cm", "in", "m", "px"]),
+    };
+
+    expect(calc("floor(3.7cm)", options)).toEqual(["3cm"]);
+    expect(calc("ceil(3.2in)", options)).toEqual(["4in"]);
+    expect(calc("abs(-5m)", options)).toEqual(["5m"]);
+    expect(calc("round(3.5m)", options)).toEqual(["4m"]);
+    expect(calc("sin(0.5cm)", options)).toEqual(["0.479425538604203cm"]);
+    expect(calc("sqrt(4px)", options)).toEqual(["2px"]);
+  });
+
+  test("Custom math functions can be added", () => {
+    const customFunctions = {
+      double: (x: number) => x * 2,
+      triple: (x: number) => x * 3,
+      square: (x: number) => x * x,
+    };
+
+    expect(calc("double(5)", { mathFunctions: customFunctions })).toEqual([10]);
+    expect(calc("triple(4)", { mathFunctions: customFunctions })).toEqual([12]);
+    expect(calc("square(3)", { mathFunctions: customFunctions })).toEqual([9]);
+  });
+
+  test("Custom functions with units", () => {
+    const customFunctions = {
+      double: (x: number) => x * 2,
+      square: (x: number) => x * x,
+    };
+
+    // All functions preserve units
+    expect(calc("square(3cm)", { mathFunctions: customFunctions })).toEqual([
+      "9cm",
+    ]);
+
+    expect(
+      calc("double(3cm)", {
+        mathFunctions: customFunctions,
+      })
+    ).toEqual(["6cm"]);
+  });
+
+  test("Custom functions can be combined with default functions", () => {
+    const customFunctions = {
+      ...defaultMathFunctions,
+      double: (x: number) => x * 2,
+    };
+
+    expect(
+      calc("sin(double(PI/4))", { mathFunctions: customFunctions })
+    ).toEqual([1]);
+    expect(calc("sqrt(double(8))", { mathFunctions: customFunctions })).toEqual(
+      [4]
+    );
+  });
+
+  test("Custom functions can be used in complex expressions", () => {
+    const customFunctions = {
+      double: (x: number) => x * 2,
+      half: (x: number) => x / 2,
+    };
+
+    expect(
+      calc("double(5) + half(8)", { mathFunctions: customFunctions })
+    ).toEqual([14]);
+    expect(
+      calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })
+    ).toEqual(["14cm"]);
   });
 });

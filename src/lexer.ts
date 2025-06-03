@@ -158,9 +158,9 @@ const parseNumber = function (
       } as NumberWithUnitToken;
     } else {
       throw new Error(
-        `Invalid unit: "${suffix}". Allowed units are: ${[...config.allowedUnits].join(
-          ", "
-        )}`
+        `Invalid unit: "${suffix}". Allowed units are: ${[
+          ...config.allowedUnits,
+        ].join(", ")}`
       );
     }
   }
@@ -172,11 +172,7 @@ const parseNumber = function (
   } as NumberToken;
 };
 
-const parseIdentifier = function (
-  s: string,
-  tokens: Token[],
-  config: LexerConfig
-): Token | undefined {
+const parseIdentifier = function (s: string): Token | undefined {
   const match = /^[A-Za-z]+/.exec(s);
   if (match) {
     return {
@@ -188,9 +184,7 @@ const parseIdentifier = function (
 
 const parseOperator = function (
   op: "+" | "-" | "*" | "/" | "^",
-  s: string,
-  tokens: Token[],
-  config: LexerConfig
+  s: string
 ): Token | undefined {
   if (s[0] === op) {
     return {
@@ -200,12 +194,7 @@ const parseOperator = function (
   }
 };
 
-const parseParen = function (
-  paren: "(" | ")",
-  s: string,
-  tokens: Token[],
-  config: LexerConfig
-): Token | undefined {
+const parseParen = function (paren: "(" | ")", s: string): Token | undefined {
   if (s[0] === paren) {
     return {
       type: paren,
@@ -214,11 +203,7 @@ const parseParen = function (
   }
 };
 
-const parseWhitespace = function (
-  s: string,
-  tokens: Token[],
-  config: LexerConfig
-): Token | undefined {
+const parseWhitespace = function (s: string): Token | undefined {
   const match = /^\s+/.exec(s);
   if (match) {
     return {
@@ -237,13 +222,13 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
 const tokenizers: TokenParser[] = [
   parseNumber,
   parseIdentifier,
-  (s, tokens, config) => parseOperator("+", s, tokens, config),
-  (s, tokens, config) => parseOperator("-", s, tokens, config),
-  (s, tokens, config) => parseOperator("*", s, tokens, config),
-  (s, tokens, config) => parseOperator("/", s, tokens, config),
-  (s, tokens, config) => parseOperator("^", s, tokens, config),
-  (s, tokens, config) => parseParen("(", s, tokens, config),
-  (s, tokens, config) => parseParen(")", s, tokens, config),
+  (s, _tokens, _config) => parseOperator("+", s),
+  (s, _tokens, _config) => parseOperator("-", s),
+  (s, _tokens, _config) => parseOperator("*", s),
+  (s, _tokens, _config) => parseOperator("/", s),
+  (s, _tokens, _config) => parseOperator("^", s),
+  (s, _tokens, _config) => parseParen("(", s),
+  (s, _tokens, _config) => parseParen(")", s),
   parseWhitespace,
 ];
 
@@ -254,11 +239,12 @@ export interface LexerOptions {
 export default function lex(s: string, options: LexerOptions = {}): Lexer {
   // Create config object with allowedUnits
   const config: LexerConfig = {
-    allowedUnits: options.allowedUnits instanceof Set
-      ? options.allowedUnits
-      : options.allowedUnits
-      ? new Set(options.allowedUnits)
-      : new Set(CSS_UNITS)
+    allowedUnits:
+      options.allowedUnits instanceof Set
+        ? options.allowedUnits
+        : options.allowedUnits
+        ? new Set(options.allowedUnits)
+        : new Set(CSS_UNITS),
   };
   const tokens: Token[] = [];
   let charpos = 0;
@@ -269,13 +255,16 @@ export default function lex(s: string, options: LexerOptions = {}): Lexer {
 
     for (const tokenizer of tokenizers) {
       const token = tokenizer(remaining, tokens, config);
-      
+
       if (token) {
         wasMatched = true;
+
         token.charpos = charpos;
         tokens.push(token);
+
         charpos += token.match!.length;
         remaining = remaining.substring(token.match!.length);
+
         break;
       }
     }

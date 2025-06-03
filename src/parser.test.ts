@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { calc, CalcOptions } from "./parser.js";
-import { CSS_UNITS } from "./units.js";
+import { calc } from "./parser.js";
+import { CalcOptions } from "./config.js";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {
@@ -116,12 +116,12 @@ describe("CSS unit calculations", () => {
   it("respects custom allowed units", () => {
     // Only allow px unit
     const options: CalcOptions = {
-      allowedUnits: new Set(["px"])
+      allowedUnits: new Set(["px"]),
     };
-    
+
     // Should work with px
     expect(calc("1px + 2px", options)).toEqual(["3px"]);
-    
+
     // Should throw with rem
     expect(() => calc("1rem + 2rem", options)).toThrow(/Invalid unit/);
   });
@@ -129,9 +129,9 @@ describe("CSS unit calculations", () => {
   it("allows custom units not in CSS_UNITS", () => {
     // Create a set with a custom unit
     const options: CalcOptions = {
-      allowedUnits: new Set(["custom"])
+      allowedUnits: new Set(["custom"]),
     };
-    
+
     expect(calc("1custom + 2custom", options)).toEqual(["3custom"]);
     expect(() => calc("1px", options)).toThrow(/Invalid unit/);
   });

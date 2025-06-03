@@ -359,8 +359,6 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
   return nodeHandlers[typedNode.type as keyof typeof nodeHandlers](node as any);
 }
 
-export { CalcOptions };
-
 export function calc(
   s: string,
   options: CalcOptions = {}

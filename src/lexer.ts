@@ -16,7 +16,6 @@ export interface BaseToken {
   type: TokenType;
   match?: string | null;
   charpos?: number;
-  strpos?: () => { start: { line: number; column: number } };
 }
 
 export interface EOFToken extends BaseToken {

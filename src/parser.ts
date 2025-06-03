@@ -104,10 +104,7 @@ const NUDS: NudFunctions = {
     const mbr = Math[t.match! as keyof typeof Math];
     if (typeof mbr == "undefined") {
       // Get the character position from the token
-      let posInfo = "";
-      if (typeof t.charpos === 'number') {
-        posInfo = `at position ${t.charpos}`;
-      }
+      const posInfo = typeof t.charpos === 'number' ? `at position ${t.charpos}` : "";
 
       throw new Error(
         `Unknown expression: '${t.match}'${

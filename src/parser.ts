@@ -208,12 +208,6 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
         splitNeeded = true;
       }
 
-      // Check for consecutive operators
-      // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-      if (matchesType(next, "-") && !matchesType(current, "-")) {
-        splitNeeded = false;
-      }
-
       // If we need to split, finalize the current expression and start a new one
       if (splitNeeded) {
         expressions.push([...currentExpr]);

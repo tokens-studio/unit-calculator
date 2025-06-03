@@ -99,7 +99,7 @@ export class Lexer {
   }
 }
 
-type TokenDefinitionFunction = (s: string) => Token | undefined;
+type TokenParser = (s: string) => Token | undefined;
 
 const validCssDimensions = new Set([
   "px",
@@ -186,7 +186,7 @@ const parseWhitespace = function (s: string): Token | undefined {
   }
 };
 
-const tokenDefinitions: TokenDefinitionFunction[] = [
+const parsers: TokenParser[] = [
   parseNumber,
   parseIdentifier,
   (s) => parseOperator(s, "+"),
@@ -203,11 +203,11 @@ export default function lex(s: string): Lexer {
   const tokens: Token[] = [];
   let charpos = 0;
   let remaining = s;
-  
+
   while (remaining.length > 0) {
     let wasMatched = false;
 
-    for (const tokenizer of tokenDefinitions) {
+    for (const tokenizer of parsers) {
       const token = tokenizer(remaining);
       if (token) {
         wasMatched = true;

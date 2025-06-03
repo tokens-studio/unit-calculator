@@ -54,7 +54,13 @@ export class UnitValue {
   }
 
   canMultiplyWith(other: UnitValue): boolean {
-    return this.isUnitless() || other.isUnitless() || this.unit === other.unit;
+    // Check if there's a conversion defined for these units
+    return !!findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "*",
+      other.unit
+    );
   }
 
   toString(): string {
@@ -124,48 +130,56 @@ export class UnitValue {
   }
 
   multiply(other: UnitValue): UnitValue {
-    if (!this.canMultiplyWith(other)) {
-      throw new Error(
-        `Cannot multiply incompatible units: ${this.unit || "unitless"} and ${
-          other.unit || "unitless"
-        }`
+    // Same units or one is unitless
+    if (this.unit === other.unit) {
+      return new UnitValue(
+        this.value * other.value,
+        this.unit,
+        false,
+        this.config
       );
     }
 
-    // If one is unitless, result has the unit of the other
-    // If both have the same unit, result has that unit
-    // If both are unitless, result is unitless
-    const resultUnit = this.isUnitless() ? other.unit : this.unit;
-    return new UnitValue(
-      this.value * other.value,
-      resultUnit,
-      false,
-      this.config
+    // Check for conversion using wildcard matching
+    const conversion = findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "*",
+      other.unit
+    );
+
+    if (conversion) {
+      const result = conversion(this, other);
+      return new UnitValue(result.value, result.unit, false, this.config);
+    }
+
+    throw new Error(
+      `Cannot multiply incompatible units: ${this.unit || "unitless"} and ${
+        other.unit || "unitless"
+      }`
     );
   }
 
   divide(other: UnitValue): UnitValue {
-    if (!this.canMultiplyWith(other)) {
-      throw new Error(
-        `Cannot divide incompatible units: ${this.unit || "unitless"} and ${
-          other.unit || "unitless"
-        }`
-      );
+    // Check for conversion using wildcard matching
+    const conversion = findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "/",
+      other.unit
+    );
+
+    if (conversion) {
+      const result = conversion(this, other);
+      // Mark as from unit division if units were the same
+      const fromUnitDivision = this.unit === other.unit && this.unit !== null;
+      return new UnitValue(result.value, result.unit, fromUnitDivision, this.config);
     }
 
-    // Special case: if units are the same, they cancel out and mark as from unit division
-    if (this.unit === other.unit && this.unit !== null) {
-      return new UnitValue(this.value / other.value, null, true, this.config);
-    }
-
-    // If denominator is unitless, result has unit of numerator
-    // If numerator is unitless, result is unitless (can't have unit in denominator)
-    const resultUnit = other.isUnitless() ? this.unit : null;
-    return new UnitValue(
-      this.value / other.value,
-      resultUnit,
-      false,
-      this.config
+    throw new Error(
+      `Cannot divide incompatible units: ${this.unit || "unitless"} and ${
+        other.unit || "unitless"
+      }`
     );
   }
 

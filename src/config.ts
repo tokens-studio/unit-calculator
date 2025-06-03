@@ -48,8 +48,52 @@ export const defaultMathFunctions: Record<
   min: Math.min,
 };
 
-// Default unit conversions - empty by default
-const defaultUnitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map();
+// Default unit conversions with basic unitless operations
+const defaultUnitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
+  // Multiplication with unitless values
+  [
+    ",*,*", 
+    (left, right) => ({
+      value: left.value * right.value,
+      unit: right.unit
+    })
+  ],
+  [
+    "*,*,", 
+    (left, right) => ({
+      value: left.value * right.value,
+      unit: left.unit
+    })
+  ],
+  // Division with unitless values
+  [
+    "*,/,", 
+    (left, right) => ({
+      value: left.value / right.value,
+      unit: left.unit
+    })
+  ],
+  [
+    ",/,*", 
+    (left, right) => ({
+      value: left.value / right.value,
+      unit: null
+    })
+  ],
+  // Division with same units (results in unitless)
+  [
+    "*,/,*", 
+    (left, right) => {
+      if (left.unit === right.unit) {
+        return {
+          value: left.value / right.value,
+          unit: null
+        };
+      }
+      throw new Error(`Cannot divide incompatible units: ${left.unit || "unitless"} and ${right.unit || "unitless"}`);
+    }
+  ]
+]);
 
 export const defaultConfig: CalcConfig = {
   allowedUnits: new Set(CSS_UNITS),

@@ -129,7 +129,7 @@ const parseNumber = function (value: string): Token | null {
         type: "NUMBER_WITH_UNIT",
         match: `${number}${suffix}`,
         value: numValue,
-        unit: suffix
+        unit: suffix,
       } as NumberWithUnitToken;
     } else {
       throw new Error(`Invalid number format: "${number}${suffix}"`);
@@ -139,55 +139,50 @@ const parseNumber = function (value: string): Token | null {
   return {
     type: "NUMBER",
     match: number,
-    value: numValue
+    value: numValue,
   } as NumberToken;
 };
 
-const parseIdentifier = function(s: string): Token | null {
+const parseIdentifier = function (s: string): Token | null {
   const match = /^[A-Za-z]+/.exec(s);
   if (match) {
     return {
       type: "ID",
-      match: match[0]
+      match: match[0],
     } as IdentifierToken;
   }
   return null;
 };
 
-const parseOperator = function(s: string, op: "+" | "-" | "*" | "/" | "^"): Token | null {
-  const pattern = op === "+" ? /^\+/ : 
-                 op === "-" ? /^-/ :
-                 op === "*" ? /^\*/ :
-                 op === "/" ? /^\// :
-                 /^\^/;
-  const match = pattern.exec(s);
-  if (match) {
+const parseOperator = function (
+  s: string,
+  op: "+" | "-" | "*" | "/" | "^"
+): Token | null {
+  if (s[0] === op) {
     return {
       type: op,
-      match: match[0]
+      match: op,
     } as OperatorToken;
   }
   return null;
 };
 
-const parseParen = function(s: string, paren: "(" | ")"): Token | null {
-  const pattern = paren === "(" ? /^\(/ : /^\)/;
-  const match = pattern.exec(s);
-  if (match) {
+const parseParen = function (s: string, paren: "(" | ")"): Token | null {
+  if (s[0] === paren) {
     return {
       type: paren,
-      match: match[0]
+      match: paren,
     } as ParenToken;
   }
   return null;
 };
 
-const parseWhitespace = function(s: string): Token | null {
+const parseWhitespace = function (s: string): Token | null {
   const match = /^\s+/.exec(s);
   if (match) {
     return {
       type: "WHITESPACE",
-      match: match[0]
+      match: match[0],
     } as WhitespaceToken;
   }
   return null;
@@ -203,7 +198,7 @@ const tokenDefinitions: TokenDefinitionFunction[] = [
   (s) => parseOperator(s, "^"),
   (s) => parseParen(s, "("),
   (s) => parseParen(s, ")"),
-  parseWhitespace
+  parseWhitespace,
 ];
 
 export default function lex(s: string): Lexer {

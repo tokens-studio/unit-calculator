@@ -16,11 +16,15 @@ export class Lexer {
   }
 
   peek(): Token {
-    return this.position < this.tokens.length ? this.tokens[this.position] : EOF;
+    return this.position < this.tokens.length
+      ? this.tokens[this.position]
+      : EOF;
   }
 
   next(): Token {
-    return this.position < this.tokens.length ? this.tokens[this.position++] : EOF;
+    return this.position < this.tokens.length
+      ? this.tokens[this.position++]
+      : EOF;
   }
 
   expect(type: string): void {
@@ -36,16 +40,31 @@ export class Lexer {
 
 interface TokenDefinition {
   type: string;
-  re: RegExp;
+  re?: RegExp;
+  fn?: () => Token;
 }
 
+const numberWithUnitRegexp =
+  /^(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
+const parseNumber = function (value: string): Token | null {
+  const { groups } = numberWithUnitRegexp.exec(value);
+  if (!groups) return;
+  const { number, suffix } = groups;
+
+  return suffix
+    ? {
+        type: "NUMBER_WITH_UNIT",
+        match: number,
+      }
+    : {
+        type: "NUMBER",
+        match: `${number}${suffix}`,
+      };
+};
+
 export default function lex(s: string): Lexer {
-  const tokens: TokenDefinition[] = [
-    {
-      type: "NUMBER_WITH_UNIT",
-      re: /(?:\d+(?:\.\d*)?|\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)(?![a-zA-Z0-9])/,
-    },
-    { type: "NUMBER", re: /(?:\d+(?:\.\d*)?|\.\d+)(?![a-zA-Z0-9])/ },
+  const tokenDefinitions: TokenDefinition[] = [
+    numberWithUnitRegexp,
     { type: "ID", re: /[A-Za-z]+/ },
     { type: "+", re: /\+/ },
     { type: "-", re: /-/ },
@@ -57,9 +76,13 @@ export default function lex(s: string): Lexer {
     { type: "WHITESPACE", re: /\s+/ },
   ];
   const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
-  const tkns: Token[] = [];
+  const tokens: Token[] = [];
   while (s.length > 0) {
-    const token = tokens.find((t) => normalizeRegExp(t.re).test(s));
+    const token = tokenDefinitions.find((matcher) =>
+      typeof matcher === "function"
+        ? matcher(s)
+        : normalizeRegExp(matcher.re).test(s)
+    );
     if (!token) {
       // Check if this might be a malformed number with trailing garbage
       if (/^\d+[a-zA-Z0-9]/.test(s)) {
@@ -69,14 +92,18 @@ export default function lex(s: string): Lexer {
       }
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }
-    const match = normalizeRegExp(token.re).exec(s);
+    const match =
+      typeof token === "function"
+        ? matcher(s)
+        : normalizeRegExp(token.re).test(s);
+    normalizeRegExp(token.re).exec(s);
     if (!match) {
       throw new Error(`Failed to match token: ${token.type}`);
     }
     if (token.type !== "WHITESPACE") {
-      tkns.push({ type: token.type, match: match[0] });
+      tokens.push({ type: token.type, match: match[0] });
     }
     s = s.substring(match[0].length);
   }
-  return new Lexer(tkns);
+  return new Lexer(tokens);
 }

@@ -77,52 +77,50 @@ const tokenDefinitions: TokenDefinition[] = [
   { type: ")", re: /\)/ },
   { type: "WHITESPACE", re: /\s+/ },
 ];
+const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
+
+const matchTokenDefinition = function (
+  s: string,
+  def: TokenDefinition
+): Token | null {
+  if (typeof def === "function") {
+    const token = def(s);
+    if (token) {
+      return {
+        type: token.type,
+        match: token.match as string,
+      };
+    }
+  } else {
+    const re = normalizeRegExp(def.re);
+    const match = re.exec(s);
+    if (match) {
+      return {
+        type: def.type,
+        match: match[0],
+      };
+    }
+  }
+};
 
 export default function lex(s: string): Lexer {
-  const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
   const tokens: Token[] = [];
   while (s.length > 0) {
-    let matched = false;
-
-    // Try each token definition
+    let wasMatched = false;
     for (const def of tokenDefinitions) {
-      let matchResult: { type: string; match: string } | null = null;
-
-      if (typeof def === "function") {
-        // Function-based matcher
-        const tokenResult = def(s);
-        if (tokenResult) {
-          matchResult = {
-            type: tokenResult.type,
-            match: tokenResult.match as string,
-          };
-        }
-      } else {
-        // RegExp-based matcher
-        const re = normalizeRegExp(def.re);
-        const regexMatch = re.exec(s);
-        if (regexMatch) {
-          matchResult = {
-            type: def.type,
-            match: regexMatch[0],
-          };
-        }
-      }
-
-      if (matchResult) {
-        matched = true;
-        if (matchResult.type !== "WHITESPACE") {
-          tokens.push({
-            type: matchResult.type,
-            match: matchResult.match,
-          });
-        }
-        s = s.substring(matchResult.match.length);
+      const token = matchTokenDefinition(s, def);
+      if (token) {
+        wasMatched = true;
+        tokens.push({
+          type: token.type,
+          match: token.match,
+        });
+        s = s.substring(token.match.length);
         break;
       }
     }
 
-    if (!matched) {
+    if (!wasMatched) {
       // Check if this might be a malformed number with trailing garbage
       if (/^\d+[a-zA-Z0-9]/.test(s)) {
         throw new Error(
@@ -132,5 +130,9 @@ export default function lex(s: string): Lexer {
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }
   }
-  return new Lexer(tokens);
+
+  const tokensWithoutWhitespace = tokens.filter(
+    ({ type }) => type !== "WHITESPACE"
+  );
+  return new Lexer(tokensWithoutWhitespace);
 }

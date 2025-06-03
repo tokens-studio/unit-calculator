@@ -9,15 +9,5 @@ export const defaultConfig: CalcConfig = {
 };
 
 export function createConfig(options: Partial<CalcConfig> = {}): CalcConfig {
-  let allowedUnits: Set<string>;
-  
-  if (options.allowedUnits instanceof Set) {
-    allowedUnits = options.allowedUnits;
-  } else if (options.allowedUnits) {
-    allowedUnits = new Set(options.allowedUnits);
-  } else {
-    allowedUnits = new Set(CSS_UNITS);
-  }
-  
-  return { allowedUnits };
+  return { allowedUnits: new Set(options.allowedUnits || CSS_UNITS) };
 }

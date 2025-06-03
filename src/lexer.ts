@@ -104,14 +104,13 @@ export class Lexer {
 // Define TokenParser to allow for the tokens parameter in parseNumber
 type TokenParser = (s: string, tokens?: Token[]) => Token | undefined;
 
-const validCssDimensions = new Set(CSS_UNITS);
-
 const numberWithUnitRegexp =
   /^(?<sign>-)?(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
 
 const parseNumber = function (
   value: string,
-  tokens: Token[]
+  tokens: Token[],
+  allowedUnits: Set<string>
 ): Token | undefined {
   const match = numberWithUnitRegexp.exec(value);
 
@@ -140,7 +139,7 @@ const parseNumber = function (
   }
 
   if (suffix) {
-    if (validCssDimensions.has(suffix)) {
+    if (allowedUnits.has(suffix)) {
       return {
         type: "NUMBER_WITH_UNIT",
         match: sign ? sign + number + suffix : number + suffix,
@@ -149,7 +148,9 @@ const parseNumber = function (
       } as NumberWithUnitToken;
     } else {
       throw new Error(
-        `Invalid number format: "${sign || ""}${number}${suffix}"`
+        `Invalid unit: "${suffix}". Allowed units are: ${[...allowedUnits].join(
+          ", "
+        )}`
       );
     }
   }
@@ -221,7 +222,18 @@ const parsers: TokenParser[] = [
   parseWhitespace,
 ];
 
-export default function lex(s: string): Lexer {
+export interface LexerOptions {
+  allowedUnits?: Set<string> | string[];
+}
+
+export default function lex(s: string, options: LexerOptions = {}): Lexer {
+  // Convert units to a Set if it's not already
+  const allowedUnits =
+    options.allowedUnits instanceof Set
+      ? options.allowedUnits
+      : options.allowedUnits
+      ? new Set(options.allowedUnits)
+      : new Set(CSS_UNITS);
   const tokens: Token[] = [];
   let charpos = 0;
   let remaining = s;
@@ -230,13 +242,16 @@ export default function lex(s: string): Lexer {
     let wasMatched = false;
 
     for (const tokenizer of parsers) {
-      // Special handling for number parser to pass the current tokens
+      // Special handling for number parser to pass the current tokens and allowedUnits
       const token =
         tokenizer === parseNumber
-          ? (tokenizer as (s: string, tokens: Token[]) => Token | undefined)(
-              remaining,
-              tokens
-            )
+          ? (
+              tokenizer as (
+                s: string,
+                tokens: Token[],
+                allowedUnits: Set<string>
+              ) => Token | undefined
+            )(remaining, tokens, allowedUnits)
           : tokenizer(remaining);
       if (token) {
         wasMatched = true;

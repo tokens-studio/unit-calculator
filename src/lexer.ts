@@ -99,14 +99,7 @@ export class Lexer {
   }
 }
 
-interface TokenDefinitionObject {
-  type: TokenType;
-  re: RegExp;
-}
-
 type TokenDefinitionFunction = (s: string) => Token | null;
-
-type TokenDefinition = TokenDefinitionObject | TokenDefinitionFunction;
 
 const validCssDimensions = new Set([
   "px",
@@ -123,6 +116,7 @@ const validCssDimensions = new Set([
 
 const numberWithUnitRegexp =
   /^(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
+
 const parseNumber = function (value: string): Token | null {
   const match = numberWithUnitRegexp.exec(value);
   if (!match || !match.groups) return null;
@@ -135,7 +129,7 @@ const parseNumber = function (value: string): Token | null {
         type: "NUMBER_WITH_UNIT",
         match: `${number}${suffix}`,
         value: numValue,
-        unit: suffix,
+        unit: suffix
       } as NumberWithUnitToken;
     } else {
       throw new Error(`Invalid number format: "${number}${suffix}"`);
@@ -145,66 +139,72 @@ const parseNumber = function (value: string): Token | null {
   return {
     type: "NUMBER",
     match: number,
-    value: numValue,
+    value: numValue
   } as NumberToken;
 };
 
-const tokenDefinitions: TokenDefinition[] = [
-  parseNumber,
-  { type: "ID", re: /[A-Za-z]+/ },
-  { type: "+", re: /\+/ },
-  { type: "-", re: /-/ },
-  { type: "*", re: /\*/ },
-  { type: "/", re: /\// },
-  { type: "^", re: /\^/ },
-  { type: "(", re: /\(/ },
-  { type: ")", re: /\)/ },
-  { type: "WHITESPACE", re: /\s+/ },
-];
-
-const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
-
-const matchTokenDefinition = function (
-  s: string,
-  def: TokenDefinition
-): Token | null {
-  if (typeof def === "function") {
-    return def(s);
-  } else {
-    const re = normalizeRegExp(def.re);
-    const match = re.exec(s);
-    if (match) {
-      if (def.type === "ID") {
-        return {
-          type: def.type,
-          match: match[0],
-        } as IdentifierToken;
-      } else if (
-        def.type === "+" ||
-        def.type === "-" ||
-        def.type === "*" ||
-        def.type === "/" ||
-        def.type === "^"
-      ) {
-        return {
-          type: def.type,
-          match: match[0],
-        } as OperatorToken;
-      } else if (def.type === "(" || def.type === ")") {
-        return {
-          type: def.type,
-          match: match[0],
-        } as ParenToken;
-      } else if (def.type === "WHITESPACE") {
-        return {
-          type: def.type,
-          match: match[0],
-        } as WhitespaceToken;
-      }
-    }
+const parseIdentifier = function(s: string): Token | null {
+  const match = /^[A-Za-z]+/.exec(s);
+  if (match) {
+    return {
+      type: "ID",
+      match: match[0]
+    } as IdentifierToken;
   }
   return null;
 };
+
+const parseOperator = function(s: string, op: "+" | "-" | "*" | "/" | "^"): Token | null {
+  const pattern = op === "+" ? /^\+/ : 
+                 op === "-" ? /^-/ :
+                 op === "*" ? /^\*/ :
+                 op === "/" ? /^\// :
+                 /^\^/;
+  const match = pattern.exec(s);
+  if (match) {
+    return {
+      type: op,
+      match: match[0]
+    } as OperatorToken;
+  }
+  return null;
+};
+
+const parseParen = function(s: string, paren: "(" | ")"): Token | null {
+  const pattern = paren === "(" ? /^\(/ : /^\)/;
+  const match = pattern.exec(s);
+  if (match) {
+    return {
+      type: paren,
+      match: match[0]
+    } as ParenToken;
+  }
+  return null;
+};
+
+const parseWhitespace = function(s: string): Token | null {
+  const match = /^\s+/.exec(s);
+  if (match) {
+    return {
+      type: "WHITESPACE",
+      match: match[0]
+    } as WhitespaceToken;
+  }
+  return null;
+};
+
+const tokenDefinitions: TokenDefinitionFunction[] = [
+  parseNumber,
+  parseIdentifier,
+  (s) => parseOperator(s, "+"),
+  (s) => parseOperator(s, "-"),
+  (s) => parseOperator(s, "*"),
+  (s) => parseOperator(s, "/"),
+  (s) => parseOperator(s, "^"),
+  (s) => parseParen(s, "("),
+  (s) => parseParen(s, ")"),
+  parseWhitespace
+];
 
 export default function lex(s: string): Lexer {
   const tokens: Token[] = [];

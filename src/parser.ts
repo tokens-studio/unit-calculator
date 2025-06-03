@@ -89,7 +89,8 @@ const NUDS: Record<string, NudFunction> = {
       false,
       config
     ),
-  NUMBER: (t, _bp, _parse, _lexer, config) => new UnitValue((t as NumberToken).value, null, false, config),
+  NUMBER: (t, _bp, _parse, _lexer, config) =>
+    new UnitValue((t as NumberToken).value, null, false, config),
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
@@ -160,10 +161,10 @@ const LEDS: Record<string, LedFunction> = {
     if (lexer.peek().type === ")") {
       throw new Error(`Function ${idNode.id}() called with no arguments`);
     }
-    
+
     // Parse first argument - use parse(0) to allow full expressions
     args.push(parse(0));
-    
+
     // Parse additional arguments if any
     while (lexer.peek().type === ",") {
       lexer.next(); // consume comma
@@ -274,36 +275,51 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
         );
       }
 
-      return new UnitValue(Math.pow(left.value, right.value), null, false, config);
+      return new UnitValue(
+        Math.pow(left.value, right.value),
+        null,
+        false,
+        config
+      );
     }
 
     case "+": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).add(evaluateParserNodes(n.right, config));
+      return evaluateParserNodes(n.left, config).add(
+        evaluateParserNodes(n.right, config)
+      );
     }
 
     case "-": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).subtract(evaluateParserNodes(n.right, config));
+      return evaluateParserNodes(n.left, config).subtract(
+        evaluateParserNodes(n.right, config)
+      );
     }
 
     case "*": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).multiply(evaluateParserNodes(n.right, config));
+      return evaluateParserNodes(n.left, config).multiply(
+        evaluateParserNodes(n.right, config)
+      );
     }
 
     case "/": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).divide(evaluateParserNodes(n.right, config));
+      return evaluateParserNodes(n.left, config).divide(
+        evaluateParserNodes(n.right, config)
+      );
     }
 
     case "()": {
       const n = node as FunctionCallNode;
-      const evaluatedArgs = n.args.map((arg) => evaluateParserNodes(arg, config));
+      const evaluatedArgs = n.args.map((arg) =>
+        evaluateParserNodes(arg, config)
+      );
 
       // Handle constants
       if (typeof n.target.ref === "number") {
-        return new UnitValue(n.target.ref);
+        return new UnitValue(n.target.ref, null, false, config);
       }
 
       // Check for unit compatibility between arguments
@@ -323,7 +339,12 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
       const unit = unitArg ? unitArg.unit : null;
 
       // All functions preserve units
-      return new UnitValue((n.target.ref as Function)(...argValues), unit, false, config);
+      return new UnitValue(
+        (n.target.ref as Function)(...argValues),
+        unit,
+        false,
+        config
+      );
     }
 
     case "neg":
@@ -338,8 +359,10 @@ export function calc(
   s: string,
   options: Partial<CalcConfig> = {}
 ): (number | string)[] {
+  console.log("OPTIONS", options);
   const config = { ...defaultConfig, ...options };
-  const parsers = parse(s, options);
+  console.log("CONFIG", config);
+  const parsers = parse(s, config);
 
   const results = parsers.map((p) => {
     const result = evaluateParserNodes(p, config);

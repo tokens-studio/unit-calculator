@@ -81,7 +81,6 @@ export class UnitValue {
       );
     }
 
-
     const conversion = findBestConversionKey(
       this.config.unitConversions,
       this.unit,

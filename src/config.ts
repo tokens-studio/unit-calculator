@@ -48,15 +48,8 @@ export const defaultMathFunctions: Record<
   min: Math.min,
 };
 
-// Default unit conversions
-const defaultUnitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
-  // Example conversions
-  ["px,+,rem", (left, right) => ({ value: left.value + (right.value * 16), unit: "px" })],
-  ["rem,+,px", (left, right) => ({ value: (left.value * 16) + right.value, unit: "px" })],
-  ["px,-,rem", (left, right) => ({ value: left.value - (right.value * 16), unit: "px" })],
-  ["rem,-,px", (left, right) => ({ value: (left.value * 16) - right.value, unit: "px" })],
-  // Add more conversions as needed
-]);
+// Default unit conversions - empty by default
+const defaultUnitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map();
 
 export const defaultConfig: CalcConfig = {
   allowedUnits: new Set(CSS_UNITS),

@@ -60,11 +60,15 @@ describe("Parser validation", () => {
     expect(() => calc("1+++++++1")).toThrow();
     expect(() => calc("2**3")).toThrow();
   });
-  
+
   it("throws on commas outside function calls", () => {
     expect(() => calc("1, 2")).toThrow(/Commas are only allowed inside/);
-    expect(() => calc("1 + 2, 3 * 4")).toThrow(/Commas are only allowed inside/);
-    expect(() => calc("max(1, 2), 3")).toThrow(/Commas are only allowed inside/);
+    expect(() => calc("1 + 2, 3 * 4")).toThrow(
+      /Commas are only allowed inside/
+    );
+    expect(() => calc("max(1, 2), 3")).toThrow(
+      /Commas are only allowed inside/
+    );
   });
 
   it("handles valid negation", () => {
@@ -140,6 +144,98 @@ describe("CSS unit calculations", () => {
 
     expect(calc("1custom + 2custom", options)).toEqual(["3custom"]);
     expect(() => calc("1px", options)).toThrow(/Invalid unit/);
+  });
+});
+
+describe("Unit conversions", () => {
+  it("handles custom unit conversions", () => {
+    // Create a config with custom unit conversions
+    const options: Partial<CalcConfig> = {
+      unitConversions: new Map([
+        // px to rem conversions (assuming 1rem = 16px)
+        [
+          "px,+,rem",
+          (left, right) => ({
+            value: left.value + right.value * 16,
+            unit: "px",
+          }),
+        ],
+        [
+          "rem,+,px",
+          (left, right) => ({
+            value: left.value * 16 + right.value,
+            unit: "px",
+          }),
+        ],
+        [
+          "px,-,rem",
+          (left, right) => ({
+            value: left.value - right.value * 16,
+            unit: "px",
+          }),
+        ],
+        [
+          "rem,-,px",
+          (left, right) => ({
+            value: left.value * 16 - right.value,
+            unit: "px",
+          }),
+        ],
+      ]),
+    };
+
+    // Addition with unit conversion
+    expect(calc("10px + 1rem", options)).toEqual(["26px"]);
+    expect(calc("1rem + 10px", options)).toEqual(["26px"]);
+
+    // Subtraction with unit conversion
+    expect(calc("26px - 1rem", options)).toEqual(["10px"]);
+    expect(calc("1rem - 10px", options)).toEqual(["6px"]);
+
+    // Complex expressions with unit conversions
+    expect(calc("2 * (10px + 0.5rem)", options)).toEqual(["36px"]);
+    expect(calc("(1rem - 8px) * 2", options)).toEqual(["16px"]);
+  });
+
+  it("throws on incompatible units without conversion", () => {
+    // Config with only px to rem conversions
+    const options: Partial<CalcConfig> = {
+      unitConversions: new Map([
+        [
+          "px,+,rem",
+          (left, right) => ({
+            value: left.value + right.value * 16,
+            unit: "px",
+          }),
+        ],
+      ]),
+    };
+
+    // Should throw for units without conversion rules
+    expect(() => calc("10px + 1em", options)).toThrow();
+    expect(() => calc("1rem - 10%", options)).toThrow();
+  });
+
+  it("handles functions with converted units", () => {
+    const options: Partial<CalcConfig> = {
+      unitConversions: new Map([
+        [
+          "px,+,rem",
+          (left, right) => ({
+            value: left.value + right.value * 16,
+            unit: "px",
+          }),
+        ],
+        [
+          "rem,+,px",
+          (left, right) => ({
+            value: left.value * 16 + right.value,
+            unit: "px",
+          }),
+        ],
+      ]),
+    };
+    expect(calc("round(10.5px + 0.3rem)", options)).toEqual(["15px"]);
   });
 });
 
@@ -220,7 +316,7 @@ describe("Custom math functions", () => {
         mathFunctions: customFunctions,
       })
     ).toEqual(["6cm"]);
-    
+
     expect(
       calc("sum(2cm, 3cm)", {
         mathFunctions: customFunctions,
@@ -259,71 +355,85 @@ describe("Custom math functions", () => {
       calc("add(double(2), half(8))", { mathFunctions: customFunctions })
     ).toEqual([8]);
   });
-  
+
   test("Functions with multiple arguments use argument units", () => {
     const customFunctions = {
       add: (a: number, b: number) => a + b,
       max: Math.max,
       min: Math.min,
     };
-    
+
     const options = {
       mathFunctions: customFunctions,
       allowedUnits: new Set(["px", "em", "rem"]),
     };
-    
+
     // When all arguments have the same unit, result has that unit
     expect(calc("add(2px, 3px)", options)).toEqual(["5px"]);
     expect(calc("max(1em, 2em, 3em)", options)).toEqual(["3em"]);
     expect(calc("min(1rem, 2rem, 0.5rem)", options)).toEqual(["0.5rem"]);
-    
+
     // When all arguments are unitless, result is unitless
     expect(calc("add(2, 3)", options)).toEqual([5]);
     expect(calc("max(1, 2, 3)", options)).toEqual([3]);
     expect(calc("min(1, 2, 0.5)", options)).toEqual([0.5]);
   });
-  
+
   test("Functions throw error when mixing different units", () => {
     const customFunctions = {
       add: (a: number, b: number) => a + b,
       max: Math.max,
       min: Math.min,
     };
-    
+
     const options = {
       mathFunctions: customFunctions,
       allowedUnits: new Set(["px", "em", "rem"]),
     };
-    
+
     // Should throw when mixing different units
-    expect(() => calc("add(2px, 3em)", options)).toThrow(/Cannot mix incompatible units/);
-    expect(() => calc("max(1px, 2em, 3rem)", options)).toThrow(/Cannot mix incompatible units/);
-    expect(() => calc("min(1rem, 2px)", options)).toThrow(/Cannot mix incompatible units/);
-    
+    expect(() => calc("add(2px, 3em)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
+    expect(() => calc("max(1px, 2em, 3rem)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
+    expect(() => calc("min(1rem, 2px)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
+
     // Should throw when mixing unitless with units
-    expect(() => calc("add(2px, 3)", options)).toThrow(/Cannot mix incompatible units/);
-    expect(() => calc("max(1, 2em, 3)", options)).toThrow(/Cannot mix incompatible units/);
-    expect(() => calc("min(1rem, 2)", options)).toThrow(/Cannot mix incompatible units/);
+    expect(() => calc("add(2px, 3)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
+    expect(() => calc("max(1, 2em, 3)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
+    expect(() => calc("min(1rem, 2)", options)).toThrow(
+      /Cannot mix incompatible units/
+    );
   });
-  
+
   test("Functions require at least one argument", () => {
     expect(() => calc("sin()")).toThrow(/called with no arguments/);
     expect(() => calc("max()")).toThrow(/called with no arguments/);
-    
+
     const customFunctions = {
       double: (x: number) => x * 2,
     };
-    
-    expect(() => calc("double()", { mathFunctions: customFunctions })).toThrow(/called with no arguments/);
+
+    expect(() => calc("double()", { mathFunctions: customFunctions })).toThrow(
+      /called with no arguments/
+    );
   });
-  
+
   test("Functions allow math expressions as arguments", () => {
     expect(calc("abs(1 + 1)")).toEqual([2]);
     expect(calc("abs(-2 * 3)")).toEqual([6]);
     expect(calc("sin(PI / 2)")).toEqual([1]);
     expect(calc("max(1 + 2, 2 * 2)")).toEqual([4]);
     expect(calc("min(3 - 1, 5 / 2, 1 + 0.5)")).toEqual([1.5]);
-    
+
     // With units
     expect(calc("abs(2px - 5px)")).toEqual(["3px"]);
     expect(calc("max(1px + 2px, 2px * 2)")).toEqual(["4px"]);

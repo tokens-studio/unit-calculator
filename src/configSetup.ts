@@ -9,9 +9,7 @@ export function createStandardConfig() {
     allowedUnits: new Set(["px", "rem"]),
   });
 
-  // Add unit conversions for px and rem
   addUnitConversions(config, [
-    // px + rem = px
     [
       ["px", "+", "rem"],
       (left, right) => ({
@@ -19,7 +17,6 @@ export function createStandardConfig() {
         unit: "px",
       }),
     ],
-    // rem + px = px
     [
       ["rem", "+", "px"],
       (left, right) => ({
@@ -27,7 +24,6 @@ export function createStandardConfig() {
         unit: "px",
       }),
     ],
-    // px - rem = px
     [
       ["px", "-", "rem"],
       (left, right) => ({
@@ -35,11 +31,24 @@ export function createStandardConfig() {
         unit: "px",
       }),
     ],
-    // rem - px = px
     [
       ["rem", "-", "px"],
       (left, right) => ({
         value: left.value * baseSize - right.value,
+        unit: "px",
+      }),
+    ],
+    [
+      ["px", "+", ""],
+      (left, right) => ({
+        value: left.value + right.value,
+        unit: "px",
+      }),
+    ],
+    [
+      ["", "+", "px"],
+      (left, right) => ({
+        value: left.value + right.value,
         unit: "px",
       }),
     ],

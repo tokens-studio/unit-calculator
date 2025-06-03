@@ -75,7 +75,8 @@ export function getConversionKey(
   operator: string,
   rightUnit: string | null
 ): UnitConversionKey {
-  const left = leftUnit || "";
-  const right = rightUnit || "";
+  // Empty string represents unitless values in conversion keys
+  const left = leftUnit === null ? "" : leftUnit;
+  const right = rightUnit === null ? "" : rightUnit;
   return `${left},${operator},${right}`;
 }

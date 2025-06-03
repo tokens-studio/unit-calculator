@@ -216,6 +216,37 @@ describe("Unit conversions", () => {
     expect(() => calc("1rem - 10%", options)).toThrow();
   });
 
+  it("handles unitless to unit conversions", () => {
+    // Config with unitless to px conversions
+    const options: Partial<CalcConfig> = {
+      unitConversions: new Map([
+        // Unitless to px conversions (multiply unitless by 2)
+        [
+          "px,+,",
+          (left, right) => ({
+            value: left.value + right.value * 2,
+            unit: "px",
+          }),
+        ],
+        [
+          ",+,px",
+          (left, right) => ({
+            value: left.value * 2 + right.value,
+            unit: "px",
+          }),
+        ],
+      ]),
+    };
+
+    // Addition with unitless conversion
+    expect(calc("10px + 5", options)).toEqual(["20px"]);
+    expect(calc("5 + 10px", options)).toEqual(["20px"]);
+    
+    // Complex expressions with unitless conversions
+    expect(calc("2 * (10px + 5)", options)).toEqual(["40px"]);
+    expect(calc("(5 + 10px) / 2", options)).toEqual(["10px"]);
+  });
+
   it("handles functions with converted units", () => {
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([

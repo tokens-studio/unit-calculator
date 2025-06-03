@@ -63,6 +63,62 @@ describe("UnitValue with custom unit conversions", () => {
     });
   });
 
+  describe("unitless conversions", () => {
+    // Create a config with unitless conversions
+    const unitlessConfig = createConfig({
+      unitConversions: new Map([
+        // Unitless to px conversions
+        [
+          "px,+,",
+          (left, right) => ({
+            value: left.value + right * 2,
+            unit: "px",
+          }),
+        ],
+        [
+          ",+,px",
+          (left, right) => ({
+            value: left.value * 2 + right.value,
+            unit: "px",
+          }),
+        ],
+        [
+          "px,-,",
+          (left, right) => ({
+            value: left.value - right.value * 2,
+            unit: "px",
+          }),
+        ],
+        [
+          ",*,px",
+          (left, right) => ({ value: left.value * right.value, unit: "px" }),
+        ],
+      ]),
+    });
+
+    it("converts between unitless and units", () => {
+      const px = new UnitValue(10, "px", false, unitlessConfig);
+      const unitless = new UnitValue(5, null, false, unitlessConfig);
+
+      const result1 = px.add(unitless);
+      expect(result1.value).toBe(15);
+      expect(result1.unit).toBe("px");
+
+      const result2 = unitless.add(px);
+      expect(result2.value).toBe(15);
+      expect(result2.unit).toBe("px");
+
+      const result3 = px.subtract(unitless);
+      expect(result3.value).toBe(5);
+      expect(result3.unit).toBe("px");
+
+      // 5 * 10px = 50px
+      const result4 = unitless.multiply(px);
+      expect(result4.value).toBe(50);
+      expect(result4.unit).toBe("px");
+    });
+  });
+
   describe("unit conversions", () => {
     it("converts px to rem and vice versa during addition", () => {
       const px = new UnitValue(10, "px", false, config);

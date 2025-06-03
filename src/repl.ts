@@ -1,54 +1,9 @@
 #!/usr/bin/env node
 import readline from "readline";
 import { calc } from "./parser.js";
-import {
-  createConfig,
-  defaultConversionsArray,
-  arrayToConversionKey,
-  addUnitConversions,
-} from "./config.js";
+import { createStandardConfig } from "./configSetup.js";
 
-const baseSize = 16;
-
-const config = createConfig({
-  allowedUnits: new Set(["px", "rem"]),
-});
-
-// Add unit conversions for px and rem
-addUnitConversions(config, [
-  // px + rem = px
-  [
-    ["px", "+", "rem"],
-    (left, right) => ({
-      value: left.value + right.value * baseSize,
-      unit: "px",
-    }),
-  ],
-  // rem + px = px
-  [
-    ["rem", "+", "px"],
-    (left, right) => ({
-      value: left.value * baseSize + right.value,
-      unit: "px",
-    }),
-  ],
-  // px - rem = px
-  [
-    ["px", "-", "rem"],
-    (left, right) => ({
-      value: left.value - right.value * baseSize,
-      unit: "px",
-    }),
-  ],
-  // rem - px = px
-  [
-    ["rem", "-", "px"],
-    (left, right) => ({
-      value: left.value * baseSize - right.value,
-      unit: "px",
-    }),
-  ],
-]);
+const config = createStandardConfig();
 
 export function startRepl(): void {
   const rl = readline.createInterface({

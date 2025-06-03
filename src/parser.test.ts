@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { calc } from "./parser.js";
+import { describe, expect, it } from "vitest";
 import { CalcOptions } from "./config.js";
+import { calc } from "./parser.js";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {

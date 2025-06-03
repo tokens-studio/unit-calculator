@@ -1,12 +1,12 @@
+import { CalcOptions } from "./config.js";
 import createLexer, {
   Lexer,
-  Token,
-  NumberWithUnitToken,
   NumberToken,
+  NumberWithUnitToken,
+  Token,
 } from "./lexer.js";
 import { matchesType } from "./token.js";
 import { UnitValue } from "./units.js";
-import { CalcOptions } from "./config.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 

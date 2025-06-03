@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { calc } from "./parser.js";
 import readline from "readline";
+import { calc } from "./parser.js";
 
 export function startRepl(): void {
   const rl = readline.createInterface({

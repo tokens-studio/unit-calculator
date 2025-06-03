@@ -54,6 +54,11 @@ export class UnitValue {
   }
 
   canMultiplyWith(other: UnitValue): boolean {
+    // Same units or one is unitless are always compatible
+    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
+      return true;
+    }
+    
     // Check if there's a conversion defined for these units
     return !!findBestConversionKey(
       this.config.unitConversions,
@@ -68,17 +73,64 @@ export class UnitValue {
   }
 
   add(other: UnitValue): UnitValue {
-    // Same units or one is unitless
-    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
+    // Same units
+    if (this.unit === other.unit) {
       return new UnitValue(
         this.value + other.value,
-        this.unit || other.unit,
+        this.unit,
+        false,
+        this.config
+      );
+    }
+    
+    // One is unitless
+    if (this.isUnitless()) {
+      // Check for conversion first
+      const conversion = findBestConversionKey(
+        this.config.unitConversions,
+        this.unit,
+        "+",
+        other.unit
+      );
+      
+      if (conversion) {
+        const result = conversion(this, other);
+        return new UnitValue(result.value, result.unit, false, this.config);
+      }
+      
+      // Default behavior for unitless + unit
+      return new UnitValue(
+        this.value + other.value,
+        other.unit,
+        false,
+        this.config
+      );
+    }
+    
+    if (other.isUnitless()) {
+      // Check for conversion first
+      const conversion = findBestConversionKey(
+        this.config.unitConversions,
+        this.unit,
+        "+",
+        other.unit
+      );
+      
+      if (conversion) {
+        const result = conversion(this, other);
+        return new UnitValue(result.value, result.unit, false, this.config);
+      }
+      
+      // Default behavior for unit + unitless
+      return new UnitValue(
+        this.value + other.value,
+        this.unit,
         false,
         this.config
       );
     }
 
-    // Check for conversion using wildcard matching
+    // Different units - check for conversion
     const conversion = findBestConversionKey(
       this.config.unitConversions,
       this.unit,
@@ -99,17 +151,64 @@ export class UnitValue {
   }
 
   subtract(other: UnitValue): UnitValue {
-    // Same units or one is unitless
-    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
+    // Same units
+    if (this.unit === other.unit) {
       return new UnitValue(
         this.value - other.value,
-        this.unit || other.unit,
+        this.unit,
+        false,
+        this.config
+      );
+    }
+    
+    // One is unitless
+    if (this.isUnitless()) {
+      // Check for conversion first
+      const conversion = findBestConversionKey(
+        this.config.unitConversions,
+        this.unit,
+        "-",
+        other.unit
+      );
+      
+      if (conversion) {
+        const result = conversion(this, other);
+        return new UnitValue(result.value, result.unit, false, this.config);
+      }
+      
+      // Default behavior for unitless - unit
+      return new UnitValue(
+        this.value - other.value,
+        other.unit,
+        false,
+        this.config
+      );
+    }
+    
+    if (other.isUnitless()) {
+      // Check for conversion first
+      const conversion = findBestConversionKey(
+        this.config.unitConversions,
+        this.unit,
+        "-",
+        other.unit
+      );
+      
+      if (conversion) {
+        const result = conversion(this, other);
+        return new UnitValue(result.value, result.unit, false, this.config);
+      }
+      
+      // Default behavior for unit - unitless
+      return new UnitValue(
+        this.value - other.value,
+        this.unit,
         false,
         this.config
       );
     }
 
-    // Check for conversion using wildcard matching
+    // Different units - check for conversion
     const conversion = findBestConversionKey(
       this.config.unitConversions,
       this.unit,
@@ -130,8 +229,27 @@ export class UnitValue {
   }
 
   multiply(other: UnitValue): UnitValue {
-    // Same units or one is unitless
+    // If both have the same unit
     if (this.unit === other.unit) {
+      return new UnitValue(
+        this.value * other.value,
+        this.unit,
+        false,
+        this.config
+      );
+    }
+    
+    // If one is unitless, result has the unit of the other
+    if (this.isUnitless()) {
+      return new UnitValue(
+        this.value * other.value,
+        other.unit,
+        false,
+        this.config
+      );
+    }
+    
+    if (other.isUnitless()) {
       return new UnitValue(
         this.value * other.value,
         this.unit,

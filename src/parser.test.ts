@@ -280,8 +280,8 @@ describe("Unit conversions", () => {
     };
 
     // Addition with unitless conversion
-    expect(calc("10px + 5", options)).toEqual(["15px"]);
-    expect(calc("5 + 10px", options)).toEqual(["15px"]);
+    expect(calc("10px + 5", options)).toEqual(["20px"]);
+    expect(calc("5 + 10px", options)).toEqual(["20px"]);
 
     // Complex expressions with unitless conversions
     expect(calc("2 * (10px + 5)", options)).toEqual(["30px"]);

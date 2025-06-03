@@ -1,10 +1,29 @@
-import { createConfig, addUnitConversions } from "./config.js";
+import { createConfig, addUnitConversions, CSS_UNITS } from "./config.js";
 
-// Base size for rem to px conversion (1rem = 16px)
-export const baseSize = 16;
+export const createPercentConfig = function () {
+  const addPercent = (percent, unit) => ({
+    value: (unit.value / 100) * percent.value + unit.value,
+    unit: "px",
+  });
 
-// Create a standard config with px and rem unit conversions
-export function createPenpotConfig() {
+  const config = createConfig();
+
+  // prettier-ignore
+  return addUnitConversions(config, [
+    [
+      ["%", "+", "*"], (left, right) => addPercent(left, right),
+    ],
+    [
+      ["*", "+", "%"], (left, right) => addPercent(right, left),
+    ],
+  ]);
+
+  return config;
+};
+
+export function createPenpotConfig(baseSize = 16) {
+  export const baseSize = 16;
+
   const config = createConfig({
     allowedUnits: new Set(["px", "rem"]),
   });

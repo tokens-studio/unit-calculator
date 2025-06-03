@@ -115,7 +115,7 @@ type TokenParser = (
 ) => Token | undefined;
 
 const numberWithUnitRegexp =
-  /^(?<sign>-)?(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
+  /^(?<sign>-)?(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9%]+)?/;
 
 const parseNumber = function (
   value: string,

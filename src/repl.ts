@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import readline from "readline";
 import { calc } from "./parser.js";
-import { createPenpotConfig } from "./configSetup.js";
+import * as configs from "./configSetup.js";
 
-const config = createPenpotConfig();
+const penpotConfig = configs.createPenpotConfig();
+const percentConfig = configs.createPercentConfig();
 
 export function startRepl(): void {
   const rl = readline.createInterface({
@@ -18,7 +19,7 @@ export function startRepl(): void {
 
   rl.on("line", function (line) {
     try {
-      const result = calc(line, config);
+      const result = calc(line, percentConfig);
       console.log(result);
     } catch (e) {
       if (e instanceof Error) {

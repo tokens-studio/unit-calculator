@@ -172,7 +172,6 @@ const isGroupSplit = (left: Token, right: Token): boolean =>
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
 function validateTokenStream(lexer: Lexer): Lexer[] {
-  // Split into multiple expressions at paren level 0
   const expressions: Token[][] = [];
   let currentExpr: Token[] = [];
   let parenLevel = 0;
@@ -362,7 +361,6 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
 export function calc(s: string): (number | string)[] {
   const parsers = parse(s);
 
-  // Process all results
   const results = parsers.map((p) => {
     const result = evaluateParserNodes(p);
 

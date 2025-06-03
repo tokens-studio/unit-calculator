@@ -187,10 +187,10 @@ const parseIdentifier = function (
 };
 
 const parseOperator = function (
+  op: "+" | "-" | "*" | "/" | "^",
   s: string,
   tokens: Token[],
-  config: LexerConfig,
-  op: "+" | "-" | "*" | "/" | "^"
+  config: LexerConfig
 ): Token | undefined {
   if (s[0] === op) {
     return {
@@ -201,10 +201,10 @@ const parseOperator = function (
 };
 
 const parseParen = function (
+  paren: "(" | ")",
   s: string,
   tokens: Token[],
-  config: LexerConfig,
-  paren: "(" | ")"
+  config: LexerConfig
 ): Token | undefined {
   if (s[0] === paren) {
     return {
@@ -237,13 +237,13 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
 const tokenizers: TokenParser[] = [
   parseNumber,
   parseIdentifier,
-  (s, tokens, config) => parseOperator(s, tokens, config, "+"),
-  (s, tokens, config) => parseOperator(s, tokens, config, "-"),
-  (s, tokens, config) => parseOperator(s, tokens, config, "*"),
-  (s, tokens, config) => parseOperator(s, tokens, config, "/"),
-  (s, tokens, config) => parseOperator(s, tokens, config, "^"),
-  (s, tokens, config) => parseParen(s, tokens, config, "("),
-  (s, tokens, config) => parseParen(s, tokens, config, ")"),
+  (s, tokens, config) => parseOperator("+", s, tokens, config),
+  (s, tokens, config) => parseOperator("-", s, tokens, config),
+  (s, tokens, config) => parseOperator("*", s, tokens, config),
+  (s, tokens, config) => parseOperator("/", s, tokens, config),
+  (s, tokens, config) => parseOperator("^", s, tokens, config),
+  (s, tokens, config) => parseParen("(", s, tokens, config),
+  (s, tokens, config) => parseParen(")", s, tokens, config),
   parseWhitespace,
 ];
 

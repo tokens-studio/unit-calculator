@@ -90,6 +90,10 @@ const BPS: BindingPowers = {
   "(": 50,
 };
 
+function getBp(token: Token): number {
+  return BPS[token.type as keyof typeof BPS] || 0;
+}
+
 // NUDS - null denotation - tokens that start expressions
 const NUDS: NudFunctions = {
   NUMBER_WITH_UNIT: (t, _bp, _parse, _lexer) => {
@@ -156,23 +160,22 @@ const LEDS: LedFunctions = {
   },
 };
 
-function getBp(token: Token): number {
-  return BPS[token.type as keyof typeof BPS] || 0;
-}
-
 function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
   return (
     type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
   );
 }
 
-const groupEndDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", ")"])
-const isGroupEndDelimiter = (t: Token): boolean => groupEndDelimiters.has(t.type)
+const groupEndDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", ")"]);
+const isGroupEndDelimiter = (t: Token): boolean =>
+  groupEndDelimiters.has(t.type);
 
-const groupStartDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"])
-const isGroupStartDelimiter = (t: Token): boolean => groupStartDelimiters.has(t.type)
+const groupStartDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"]);
+const isGroupStartDelimiter = (t: Token): boolean =>
+  groupStartDelimiters.has(t.type);
 
-const isGroupSplit = (left: Token, right: Token): boolean => isGroupEndDelimiter(left) && isGroupStartDelimiter(right);
+const isGroupSplit = (left: Token, right: Token): boolean =>
+  isGroupEndDelimiter(left) && isGroupStartDelimiter(right);
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
 function validateTokenStream(lexer: Lexer): Lexer[] {

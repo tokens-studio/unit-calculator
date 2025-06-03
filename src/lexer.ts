@@ -242,17 +242,14 @@ export default function lex(s: string, options: LexerOptions = {}): Lexer {
     let wasMatched = false;
 
     for (const tokenizer of parsers) {
-      // Special handling for number parser to pass the current tokens and allowedUnits
-      const token =
-        tokenizer === parseNumber
-          ? (
-              tokenizer as (
-                s: string,
-                tokens: Token[],
-                allowedUnits: Set<string>
-              ) => Token | undefined
-            )(remaining, tokens, allowedUnits)
-          : tokenizer(remaining);
+      let token: Token | undefined;
+      
+      if (tokenizer === parseNumber) {
+        token = parseNumber(remaining, tokens, allowedUnits);
+      } else {
+        token = tokenizer(remaining);
+      }
+      
       if (token) {
         wasMatched = true;
         token.charpos = charpos;

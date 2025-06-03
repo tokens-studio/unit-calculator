@@ -1,4 +1,4 @@
-import { CalcOptions } from "./config.js";
+import { CalcConfig } from "./config.js";
 import createLexer, {
   Lexer,
   NumberToken,
@@ -269,7 +269,7 @@ function createParseFunction(lexer: Lexer) {
   return parse;
 }
 
-function parse(s: string, options: CalcOptions = {}): ASTNode[] {
+function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   const lexer: Lexer = createLexer(s, options);
 
   let lexers = validateTokenStream(lexer);
@@ -361,7 +361,7 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
 
 export function calc(
   s: string,
-  options: CalcOptions = {}
+  options: Partial<CalcConfig> = {}
 ): (number | string)[] {
   const parsers = parse(s, options);
 

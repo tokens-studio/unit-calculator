@@ -1,6 +1,5 @@
 import {
   CalcConfig,
-  CalcOptions,
   createConfig,
   defaultConfig,
 } from "./config.js";
@@ -233,7 +232,7 @@ const tokenizers: TokenParser[] = [
 
 export default function lex(
   s: string,
-  options: CalcOptions = defaultConfig
+  options: Partial<CalcConfig> = defaultConfig
 ): Lexer {
   const config = createConfig(options);
   const tokens: Token[] = [];

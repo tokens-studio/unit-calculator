@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CalcOptions } from "./config.js";
+import { CalcConfig } from "./config.js";
 import { calc } from "./parser.js";
 
 describe("Basic arithmetic", () => {
@@ -115,7 +115,7 @@ describe("CSS unit calculations", () => {
 
   it("respects custom allowed units", () => {
     // Only allow px unit
-    const options: CalcOptions = {
+    const options: Partial<CalcConfig> = {
       allowedUnits: new Set(["px"]),
     };
 
@@ -128,7 +128,7 @@ describe("CSS unit calculations", () => {
 
   it("allows custom units not in CSS_UNITS", () => {
     // Create a set with a custom unit
-    const options: CalcOptions = {
+    const options: Partial<CalcConfig> = {
       allowedUnits: new Set(["custom"]),
     };
 

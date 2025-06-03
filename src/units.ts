@@ -13,6 +13,15 @@ export class UnitValue {
     this.fromUnitDivision = fromUnitDivision;
   }
 
+  static areAllCompatible(values: UnitValue[]): boolean {
+    if (values.length <= 1) {
+      return true;
+    }
+
+    const firstValue = values[0];
+    return values.every((value) => firstValue.isCompatibleWith(value));
+  }
+
   isUnitless(): boolean {
     return this.unit === null;
   }

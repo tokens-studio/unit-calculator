@@ -12,6 +12,7 @@ export type TokenType =
   | "^"
   | "("
   | ")"
+  | ","
   | "WHITESPACE";
 
 export interface BaseToken {
@@ -48,6 +49,11 @@ export interface OperatorToken extends BaseToken {
   match: string;
 }
 
+export interface CommaToken extends BaseToken {
+  type: ",";
+  match: string;
+}
+
 export interface ParenToken extends BaseToken {
   type: "(" | ")";
   match: string;
@@ -64,6 +70,7 @@ export type Token =
   | NumberWithUnitToken
   | IdentifierToken
   | OperatorToken
+  | CommaToken
   | ParenToken
   | WhitespaceToken;
 
@@ -182,6 +189,15 @@ const parseOperator = function (
   }
 };
 
+const parseComma = function (s: string): Token | undefined {
+  if (s[0] === ",") {
+    return {
+      type: ",",
+      match: ",",
+    } as CommaToken;
+  }
+};
+
 const parseParen = function (paren: "(" | ")", s: string): Token | undefined {
   if (s[0] === paren) {
     return {
@@ -215,6 +231,7 @@ const tokenizers: TokenParser[] = [
   (s, _tokens, _config) => parseOperator("*", s),
   (s, _tokens, _config) => parseOperator("/", s),
   (s, _tokens, _config) => parseOperator("^", s),
+  parseComma,
   (s, _tokens, _config) => parseParen("(", s),
   (s, _tokens, _config) => parseParen(")", s),
   parseWhitespace,

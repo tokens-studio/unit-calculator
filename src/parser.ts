@@ -30,7 +30,7 @@ interface BinaryOpNode extends BaseNode {
 interface FunctionCallNode extends BaseNode {
   type: "()";
   target: IdNode;
-  args: ASTNode;
+  args: ASTNode[];
 }
 
 interface NegationNode extends BaseNode {
@@ -154,7 +154,21 @@ const LEDS: Record<string, LedFunction> = {
       throw new Error("Cannot invoke non-function");
     }
 
-    const args = parse();
+    // Parse arguments (comma-separated)
+    const args: ASTNode[] = [];
+
+    // Handle empty argument list
+    if (lexer.peek().type !== ")") {
+      // Parse first argument
+      args.push(parse());
+
+      // Parse additional arguments if any
+      while (lexer.peek().type === ",") {
+        lexer.next(); // consume comma
+        args.push(parse());
+      }
+    }
+
     lexer.expect(")");
     return { type: "()", target: idNode, args } as FunctionCallNode;
   },
@@ -173,6 +187,10 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
   for (let i = 0; i < lexer.tokens.length; i++) {
     const current = lexer.tokens[i];
     const next = lexer.tokens[i + 1];
+
+    if (current.type === "," && parenLevel === 0) {
+      throw new Error("Commas are only allowed inside function arguments");
+    }
 
     if (current.type === "(") parenLevel++;
     currentExpr.push(current);
@@ -280,15 +298,31 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
 
     case "()": {
       const n = node as FunctionCallNode;
-      const args = evaluateParserNodes(n.args);
+      const evaluatedArgs = n.args.map((arg) => evaluateParserNodes(arg));
 
       // Handle constants
       if (typeof n.target.ref === "number") {
         return new UnitValue(n.target.ref);
       }
 
+      // Check for unit compatibility between arguments
+      if (!UnitValue.areAllCompatible(evaluatedArgs)) {
+        throw new Error(
+          `Cannot mix incompatible units in function arguments: ${
+            n.target.id
+          }(${evaluatedArgs.map((arg) => arg.toString()).join(", ")})`
+        );
+      }
+
+      // Extract values from UnitValue objects
+      const argValues = evaluatedArgs.map((arg) => arg.value);
+
+      // Find the first argument with a unit
+      const unitArg = evaluatedArgs.find((arg) => !arg.isUnitless());
+      const unit = unitArg ? unitArg.unit : null;
+
       // All functions preserve units
-      return new UnitValue((n.target.ref as Function)(args.value), args.unit);
+      return new UnitValue((n.target.ref as Function)(...argValues), unit);
     }
 
     case "neg":

@@ -60,6 +60,12 @@ describe("Parser validation", () => {
     expect(() => calc("1+++++++1")).toThrow();
     expect(() => calc("2**3")).toThrow();
   });
+  
+  it("throws on commas outside function calls", () => {
+    expect(() => calc("1, 2")).toThrow(/Commas are only allowed inside/);
+    expect(() => calc("1 + 2, 3 * 4")).toThrow(/Commas are only allowed inside/);
+    expect(() => calc("max(1, 2), 3")).toThrow(/Commas are only allowed inside/);
+  });
 
   it("handles valid negation", () => {
     expect(calc("1 + -2")).toEqual([-1]);
@@ -166,6 +172,8 @@ describe("Custom math functions", () => {
     expect(calc("floor(3.7)")).toEqual([3]);
     expect(calc("ceil(3.2)")).toEqual([4]);
     expect(calc("round(3.5)")).toEqual([4]);
+    expect(calc("max(1, 2)")).toEqual([2]);
+    expect(calc("min(1, 2, 3)")).toEqual([1]);
   });
 
   test("All functions maintain units", () => {
@@ -179,6 +187,8 @@ describe("Custom math functions", () => {
     expect(calc("round(3.5m)", options)).toEqual(["4m"]);
     expect(calc("sin(0.5cm)", options)).toEqual(["0.479425538604203cm"]);
     expect(calc("sqrt(4px)", options)).toEqual(["2px"]);
+    expect(calc("max(1cm, 2cm)", options)).toEqual(["2cm"]);
+    expect(calc("min(1px, 2px, 3px)", options)).toEqual(["1px"]);
   });
 
   test("Custom math functions can be added", () => {
@@ -197,6 +207,7 @@ describe("Custom math functions", () => {
     const customFunctions = {
       double: (x: number) => x * 2,
       square: (x: number) => x * x,
+      sum: (a: number, b: number) => a + b,
     };
 
     // All functions preserve units
@@ -209,6 +220,12 @@ describe("Custom math functions", () => {
         mathFunctions: customFunctions,
       })
     ).toEqual(["6cm"]);
+    
+    expect(
+      calc("sum(2cm, 3cm)", {
+        mathFunctions: customFunctions,
+      })
+    ).toEqual(["5cm"]);
   });
 
   test("Custom functions can be combined with default functions", () => {
@@ -229,6 +246,7 @@ describe("Custom math functions", () => {
     const customFunctions = {
       double: (x: number) => x * 2,
       half: (x: number) => x / 2,
+      add: (a: number, b: number) => a + b,
     };
 
     expect(
@@ -237,5 +255,54 @@ describe("Custom math functions", () => {
     expect(
       calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })
     ).toEqual(["14cm"]);
+    expect(
+      calc("add(double(2), half(8))", { mathFunctions: customFunctions })
+    ).toEqual([8]);
+  });
+  
+  test("Functions with multiple arguments use argument units", () => {
+    const customFunctions = {
+      add: (a: number, b: number) => a + b,
+      max: Math.max,
+      min: Math.min,
+    };
+    
+    const options = {
+      mathFunctions: customFunctions,
+      allowedUnits: new Set(["px", "em", "rem"]),
+    };
+    
+    // When all arguments have the same unit, result has that unit
+    expect(calc("add(2px, 3px)", options)).toEqual(["5px"]);
+    expect(calc("max(1em, 2em, 3em)", options)).toEqual(["3em"]);
+    expect(calc("min(1rem, 2rem, 0.5rem)", options)).toEqual(["0.5rem"]);
+    
+    // When all arguments are unitless, result is unitless
+    expect(calc("add(2, 3)", options)).toEqual([5]);
+    expect(calc("max(1, 2, 3)", options)).toEqual([3]);
+    expect(calc("min(1, 2, 0.5)", options)).toEqual([0.5]);
+  });
+  
+  test("Functions throw error when mixing different units", () => {
+    const customFunctions = {
+      add: (a: number, b: number) => a + b,
+      max: Math.max,
+      min: Math.min,
+    };
+    
+    const options = {
+      mathFunctions: customFunctions,
+      allowedUnits: new Set(["px", "em", "rem"]),
+    };
+    
+    // Should throw when mixing different units
+    expect(() => calc("add(2px, 3em)", options)).toThrow(/Cannot mix incompatible units/);
+    expect(() => calc("max(1px, 2em, 3rem)", options)).toThrow(/Cannot mix incompatible units/);
+    expect(() => calc("min(1rem, 2px)", options)).toThrow(/Cannot mix incompatible units/);
+    
+    // Should throw when mixing unitless with units
+    expect(() => calc("add(2px, 3)", options)).toThrow(/Cannot mix incompatible units/);
+    expect(() => calc("max(1, 2em, 3)", options)).toThrow(/Cannot mix incompatible units/);
+    expect(() => calc("min(1rem, 2)", options)).toThrow(/Cannot mix incompatible units/);
   });
 });

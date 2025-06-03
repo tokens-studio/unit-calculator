@@ -101,7 +101,6 @@ export class Lexer {
   }
 }
 
-// Define TokenParser with config parameter
 type TokenParser = (
   s: string,
   tokens: Token[],

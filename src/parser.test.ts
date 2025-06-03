@@ -316,4 +316,16 @@ describe("Custom math functions", () => {
     
     expect(() => calc("double()", { mathFunctions: customFunctions })).toThrow(/called with no arguments/);
   });
+  
+  test("Functions allow math expressions as arguments", () => {
+    expect(calc("abs(1 + 1)")).toEqual([2]);
+    expect(calc("abs(-2 * 3)")).toEqual([6]);
+    expect(calc("sin(PI / 2)")).toEqual([1]);
+    expect(calc("max(1 + 2, 2 * 2)")).toEqual([4]);
+    expect(calc("min(3 - 1, 5 / 2, 1 + 0.5)")).toEqual([1.5]);
+    
+    // With units
+    expect(calc("abs(2px - 5px)")).toEqual(["3px"]);
+    expect(calc("max(1px + 2px, 2px * 2)")).toEqual(["4px"]);
+  });
 });

@@ -159,13 +159,13 @@ const LEDS: Record<string, LedFunction> = {
       throw new Error(`Function ${idNode.id}() called with no arguments`);
     }
     
-    // Parse first argument
-    args.push(parse());
+    // Parse first argument - use parse(0) to allow full expressions
+    args.push(parse(0));
     
     // Parse additional arguments if any
     while (lexer.peek().type === ",") {
       lexer.next(); // consume comma
-      args.push(parse());
+      args.push(parse(0));
     }
 
     lexer.expect(")");

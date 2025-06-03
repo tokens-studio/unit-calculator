@@ -33,8 +33,11 @@ describe("Basic arithmetic", () => {
     expect(calc("PI")).toEqual([Math.PI]);
     expect(calc("abs(cos(PI)) + 9")).toEqual([10]);
   });
+
   it("handles complex operations with correct precedence", () => {
-    expect(calc("(15 + 20 - 17 * 8 / 3) * 7px")).toEqual(["-72.33333333333334px"]);
+    expect(calc("(15 + 20 - 17 * 8 / 3) * 7px")).toEqual([
+      "-72.33333333333334px",
+    ]);
   });
 });
 
@@ -44,6 +47,8 @@ describe("Parser validation", () => {
     expect(calc("1 2 + 3")).toEqual([1, 5]);
     expect(calc("1 + 2 3")).toEqual([3, 3]);
     expect(calc("1+1 2+2")).toEqual([2, 4]);
+    expect(calc("1+1 -2")).toEqual([2, -2]);
+    expect(calc("1+1 - -2")).toEqual([4]);
   });
 
   it("throws on consecutive operators", () => {

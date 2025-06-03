@@ -209,20 +209,9 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
       }
 
       // Check for consecutive operators
-      if (isOperator(current.type) && isOperator(next.type)) {
-        // Special case: double minus (--) is not allowed
-        if (matchesType(current, "-") && matchesType(next, "-")) {
-          throw new Error("Double minus (--) is not allowed");
-        }
-
-        // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
-        if (matchesType(next, "-") && !matchesType(current, "-")) {
-          // Negation is allowed after operators other than minus
-          splitNeeded = false;
-        } else {
-          // All other consecutive operators are not allowed
-          throw new Error("Consecutive operators are not allowed");
-        }
+      // Allow for negative numbers after other operators (e.g., 1 + -2, 3 * -4)
+      if (matchesType(next, "-") && !matchesType(current, "-")) {
+        splitNeeded = false;
       }
 
       // If we need to split, finalize the current expression and start a new one
@@ -277,7 +266,6 @@ function createParseFunction(lexer: Lexer) {
   function parse(rbp = 0): ASTNode {
     const token = lexer.next();
 
-    // Validate token
     if (token.type === "EOF" && !lexer.eof()) {
       throw new Error("Unexpected token in expression");
     }

@@ -6,7 +6,10 @@ import { Token } from "./lexer.js";
  * @param typeOrTypes The expected token type or array of possible token types
  * @returns True if the token type matches
  */
-export function matchesType(token: Token, typeOrTypes: string | string[]): boolean {
+export function matchesType(
+  token: Token,
+  typeOrTypes: string | string[]
+): boolean {
   if (Array.isArray(typeOrTypes)) {
     return typeOrTypes.includes(token.type);
   }

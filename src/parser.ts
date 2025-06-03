@@ -1,7 +1,6 @@
 import createLexer, {
   Lexer,
   Token,
-  TokenType,
   NumberWithUnitToken,
   NumberToken,
 } from "./lexer.js";

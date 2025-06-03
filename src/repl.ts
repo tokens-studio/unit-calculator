@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import readline from "readline";
 import { calc } from "./parser.js";
-import * as configs from "./configSetup.js";
+import { createStandardConfig } from "./configSetup.js";
 
-const penpotConfig = configs.createPenpotConfig();
-const percentConfig = configs.createPercentConfig();
+const config = createStandardConfig();
 
 export function startRepl(): void {
   const rl = readline.createInterface({
@@ -15,11 +14,12 @@ export function startRepl(): void {
   });
 
   console.log("Token Value Calculator REPL");
-  console.log("Type expressions like '2px + 2rem' or 'ctrl+c' to exit");
+  console.log("Type expressions like '2px + 2rem' or '2km + 500m' or 'ctrl+c' to exit");
+  console.log("Supported dimension units: km, m, cm, mm, kg, g, mg, h, min, s, ms");
 
   rl.on("line", function (line) {
     try {
-      const result = calc(line, percentConfig);
+      const result = calc(line, config);
       console.log(result);
     } catch (e) {
       if (e instanceof Error) {

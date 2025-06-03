@@ -224,6 +224,7 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
 }
 
 const tokenizers: TokenParser[] = [
+  parseWhitespace,
   parseNumber,
   parseIdentifier,
   (s, _tokens, _config) => parseOperator("+", s),
@@ -231,10 +232,9 @@ const tokenizers: TokenParser[] = [
   (s, _tokens, _config) => parseOperator("*", s),
   (s, _tokens, _config) => parseOperator("/", s),
   (s, _tokens, _config) => parseOperator("^", s),
-  parseComma,
   (s, _tokens, _config) => parseParen("(", s),
   (s, _tokens, _config) => parseParen(")", s),
-  parseWhitespace,
+  parseComma,
 ];
 
 export default function lex(

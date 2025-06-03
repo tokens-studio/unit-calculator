@@ -305,4 +305,15 @@ describe("Custom math functions", () => {
     expect(() => calc("max(1, 2em, 3)", options)).toThrow(/Cannot mix incompatible units/);
     expect(() => calc("min(1rem, 2)", options)).toThrow(/Cannot mix incompatible units/);
   });
+  
+  test("Functions require at least one argument", () => {
+    expect(() => calc("sin()")).toThrow(/called with no arguments/);
+    expect(() => calc("max()")).toThrow(/called with no arguments/);
+    
+    const customFunctions = {
+      double: (x: number) => x * 2,
+    };
+    
+    expect(() => calc("double()", { mathFunctions: customFunctions })).toThrow(/called with no arguments/);
+  });
 });

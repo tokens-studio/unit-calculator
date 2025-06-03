@@ -91,7 +91,6 @@ const NUDS: Record<string, NudFunction> = {
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
-    // Check if it's a custom math function
     if (config.mathFunctions && id in config.mathFunctions) {
       return {
         type: "id",
@@ -100,7 +99,6 @@ const NUDS: Record<string, NudFunction> = {
       } as IdNode;
     }
 
-    // Check if it's a Math constant (like PI)
     const mathConstant = Math[id as keyof typeof Math];
     if (
       typeof mathConstant !== "undefined" &&
@@ -113,7 +111,6 @@ const NUDS: Record<string, NudFunction> = {
       } as IdNode;
     }
 
-    // Error if not found
     const posInfo = t.charpos !== undefined ? `at position ${t.charpos}` : "";
     throw new Error(
       `Unknown expression: '${id}'${
@@ -157,16 +154,18 @@ const LEDS: Record<string, LedFunction> = {
     // Parse arguments (comma-separated)
     const args: ASTNode[] = [];
 
-    // Handle empty argument list
-    if (lexer.peek().type !== ")") {
-      // Parse first argument
+    // Functions must have at least one argument
+    if (lexer.peek().type === ")") {
+      throw new Error(`Function ${idNode.id}() called with no arguments`);
+    }
+    
+    // Parse first argument
+    args.push(parse());
+    
+    // Parse additional arguments if any
+    while (lexer.peek().type === ",") {
+      lexer.next(); // consume comma
       args.push(parse());
-
-      // Parse additional arguments if any
-      while (lexer.peek().type === ",") {
-        lexer.next(); // consume comma
-        args.push(parse());
-      }
     }
 
     lexer.expect(")");

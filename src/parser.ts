@@ -5,7 +5,7 @@ import createLexer, {
   NumberToken,
 } from "./lexer.js";
 import { matchesType } from "./token.js";
-import { UnitValue, CSS_UNITS } from "./units.js";
+import { UnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 

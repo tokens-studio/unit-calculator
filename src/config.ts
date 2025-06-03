@@ -9,12 +9,15 @@ export interface CalcOptions {
 }
 
 export function createConfig(options: CalcOptions = {}): CalcConfig {
-  return {
-    allowedUnits:
-      options.allowedUnits instanceof Set
-        ? options.allowedUnits
-        : options.allowedUnits
-        ? new Set(options.allowedUnits)
-        : new Set(CSS_UNITS),
-  };
+  let allowedUnits: Set<string>;
+  
+  if (options.allowedUnits instanceof Set) {
+    allowedUnits = options.allowedUnits;
+  } else if (options.allowedUnits) {
+    allowedUnits = new Set(options.allowedUnits);
+  } else {
+    allowedUnits = new Set(CSS_UNITS);
+  }
+  
+  return { allowedUnits };
 }

@@ -1,3 +1,5 @@
+import { CSS_UNITS } from "./units.js";
+
 export type TokenType =
   | "EOF"
   | "NUMBER"
@@ -101,18 +103,7 @@ export class Lexer {
 
 type TokenParser = (s: string) => Token | undefined;
 
-const validCssDimensions = new Set([
-  "px",
-  "em",
-  "rem",
-  "%",
-  "vh",
-  "vw",
-  "pt",
-  "cm",
-  "mm",
-  "in",
-]);
+const validCssDimensions = new Set(CSS_UNITS);
 
 const numberWithUnitRegexp =
   /^(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;

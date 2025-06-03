@@ -52,7 +52,9 @@ export const defaultMathFunctions: Record<
 };
 
 // Create default unit conversions with array syntax
-const defaultConversionsArray: Array<[UnitConversionKeyArray, UnitConversionFunction]> = [
+export const defaultConversionsArray: Array<
+  [UnitConversionKeyArray, UnitConversionFunction]
+> = [
   // Multiplication with unitless values
   [
     [null, "*", "*"],
@@ -125,13 +127,16 @@ export function createConfig({
   unitConversions = defaultConfig.unitConversions,
 }: Partial<CalcConfig> = {}): CalcConfig {
   // Process unit conversions to handle array format
-  const processedConversions = new Map<UnitConversionKey, UnitConversionFunction>();
-  
+  const processedConversions = new Map<
+    UnitConversionKey,
+    UnitConversionFunction
+  >();
+
   // Copy existing conversions
   unitConversions.forEach((fn, key) => {
     processedConversions.set(key, fn);
   });
-  
+
   return {
     allowedUnits: new Set(allowedUnits),
     mathFunctions,

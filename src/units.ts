@@ -1,4 +1,9 @@
-import { CalcConfig, defaultConfig, getConversionKey, findBestConversionKey } from "./config.js";
+import {
+  CalcConfig,
+  defaultConfig,
+  getConversionKey,
+  findBestConversionKey,
+} from "./config.js";
 
 export class UnitValue {
   value: number;
@@ -30,7 +35,6 @@ export class UnitValue {
   isUnitless(): boolean {
     return this.unit === null;
   }
-
 
   isCompatibleWith(other: UnitValue): boolean {
     // Same units are always compatible
@@ -68,7 +72,6 @@ export class UnitValue {
   }
 
   add(other: UnitValue): UnitValue {
-    // Same units
     if (this.unit === other.unit) {
       return new UnitValue(
         this.value + other.value,
@@ -77,55 +80,8 @@ export class UnitValue {
         this.config
       );
     }
-    
-    // One is unitless
-    if (this.isUnitless()) {
-      // Check for conversion first
-      const conversion = findBestConversionKey(
-        this.config.unitConversions,
-        this.unit,
-        "+",
-        other.unit
-      );
-      
-      if (conversion) {
-        const result = conversion(this, other);
-        return new UnitValue(result.value, result.unit, false, this.config);
-      }
-      
-      // Default behavior for unitless + unit
-      return new UnitValue(
-        this.value + other.value,
-        other.unit,
-        false,
-        this.config
-      );
-    }
-    
-    if (other.isUnitless()) {
-      // Check for conversion first
-      const conversion = findBestConversionKey(
-        this.config.unitConversions,
-        this.unit,
-        "+",
-        other.unit
-      );
-      
-      if (conversion) {
-        const result = conversion(this, other);
-        return new UnitValue(result.value, result.unit, false, this.config);
-      }
-      
-      // Default behavior for unit + unitless
-      return new UnitValue(
-        this.value + other.value,
-        this.unit,
-        false,
-        this.config
-      );
-    }
 
-    // Different units - check for conversion
+
     const conversion = findBestConversionKey(
       this.config.unitConversions,
       this.unit,
@@ -155,7 +111,7 @@ export class UnitValue {
         this.config
       );
     }
-    
+
     // One is unitless
     if (this.isUnitless()) {
       // Check for conversion first
@@ -165,12 +121,12 @@ export class UnitValue {
         "-",
         other.unit
       );
-      
+
       if (conversion) {
         const result = conversion(this, other);
         return new UnitValue(result.value, result.unit, false, this.config);
       }
-      
+
       // Default behavior for unitless - unit
       return new UnitValue(
         this.value - other.value,
@@ -179,7 +135,7 @@ export class UnitValue {
         this.config
       );
     }
-    
+
     if (other.isUnitless()) {
       // Check for conversion first
       const conversion = findBestConversionKey(
@@ -188,12 +144,12 @@ export class UnitValue {
         "-",
         other.unit
       );
-      
+
       if (conversion) {
         const result = conversion(this, other);
         return new UnitValue(result.value, result.unit, false, this.config);
       }
-      
+
       // Default behavior for unit - unitless
       return new UnitValue(
         this.value - other.value,
@@ -233,7 +189,7 @@ export class UnitValue {
         this.config
       );
     }
-    
+
     // If one is unitless, result has the unit of the other
     if (this.isUnitless()) {
       return new UnitValue(
@@ -243,7 +199,7 @@ export class UnitValue {
         this.config
       );
     }
-    
+
     if (other.isUnitless()) {
       return new UnitValue(
         this.value * other.value,
@@ -286,7 +242,12 @@ export class UnitValue {
       const result = conversion(this, other);
       // Mark as from unit division if units were the same
       const fromUnitDivision = this.unit === other.unit && this.unit !== null;
-      return new UnitValue(result.value, result.unit, fromUnitDivision, this.config);
+      return new UnitValue(
+        result.value,
+        result.unit,
+        fromUnitDivision,
+        this.config
+      );
     }
 
     throw new Error(

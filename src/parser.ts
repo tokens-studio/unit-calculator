@@ -266,8 +266,8 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
 
     case "^": {
       const n = node as BinaryOpNode;
-      const left = evaluateParserNodes(n.left);
-      const right = evaluateParserNodes(n.right);
+      const left = evaluateParserNodes(n.left, config);
+      const right = evaluateParserNodes(n.right, config);
 
       if (!left.isUnitless() || !right.isUnitless()) {
         throw new Error(
@@ -359,9 +359,7 @@ export function calc(
   s: string,
   options: Partial<CalcConfig> = {}
 ): (number | string)[] {
-  console.log("OPTIONS", options);
   const config = { ...defaultConfig, ...options };
-  console.log("CONFIG", config);
   const parsers = parse(s, config);
 
   const results = parsers.map((p) => {

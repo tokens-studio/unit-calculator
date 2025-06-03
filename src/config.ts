@@ -4,15 +4,11 @@ export interface CalcConfig {
   allowedUnits: Set<string>;
 }
 
-export interface CalcOptions {
-  allowedUnits?: Set<string> | string[];
-}
-
 export const defaultConfig: CalcConfig = {
   allowedUnits: new Set(CSS_UNITS),
 };
 
-export function createConfig(options: CalcOptions = {}): CalcConfig {
+export function createConfig(options: Partial<CalcConfig> = {}): CalcConfig {
   let allowedUnits: Set<string>;
   
   if (options.allowedUnits instanceof Set) {

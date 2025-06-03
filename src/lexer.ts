@@ -237,7 +237,6 @@ export interface LexerOptions {
 }
 
 export default function lex(s: string, options: LexerOptions = {}): Lexer {
-  // Create config object with allowedUnits
   const config: LexerConfig = {
     allowedUnits:
       options.allowedUnits instanceof Set

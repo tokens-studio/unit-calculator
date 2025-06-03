@@ -63,6 +63,118 @@ describe("UnitValue with custom unit conversions", () => {
     });
   });
 
+  describe("wildcard conversions", () => {
+    // Create a config with wildcard conversions
+    const wildcardConfig = createConfig({
+      unitConversions: new Map([
+        // Wildcard for left unit (any unit to px)
+        [
+          "*,+,px",
+          (left, right) => ({
+            value: left.value * 10 + right.value,
+            unit: "px",
+          }),
+        ],
+        // Wildcard for right unit (px to any unit)
+        [
+          "px,+,*",
+          (left, right) => ({
+            value: left.value + right.value * 10,
+            unit: "px",
+          }),
+        ],
+        // Wildcard for both units (any unit to any unit)
+        [
+          "*,+,*",
+          (left, right) => ({
+            value: left.value + right.value,
+            unit: "generic",
+          }),
+        ],
+      ]),
+    });
+
+    it("converts using wildcard patterns", () => {
+      const px = new UnitValue(10, "px", false, wildcardConfig);
+      const em = new UnitValue(2, "em", false, wildcardConfig);
+      const rem = new UnitValue(3, "rem", false, wildcardConfig);
+      
+      // Test "*,+,px" pattern: any unit to px
+      const result1 = em.add(px);
+      expect(result1.value).toBe(30); // 2em * 10 + 10px = 30px
+      expect(result1.unit).toBe("px");
+      
+      // Test "px,+,*" pattern: px to any unit
+      const result2 = px.add(rem);
+      expect(result2.value).toBe(40); // 10px + 3rem * 10 = 40px
+      expect(result2.unit).toBe("px");
+      
+      // Test "*,+,*" pattern: any unit to any unit (lowest priority)
+      const result3 = em.add(rem);
+      expect(result3.value).toBe(5); // 2em + 3rem = 5generic
+      expect(result3.unit).toBe("generic");
+    });
+
+    it("respects specificity order", () => {
+      // Config with both specific and wildcard conversions
+      const mixedConfig = createConfig({
+        unitConversions: new Map([
+          // Specific conversion (highest priority)
+          [
+            "em,+,rem",
+            (left, right) => ({
+              value: left.value * 2 + right.value * 3,
+              unit: "specific",
+            }),
+          ],
+          // Wildcard for left unit (medium priority)
+          [
+            "*,+,rem",
+            (left, right) => ({
+              value: left.value + right.value * 5,
+              unit: "leftWild",
+            }),
+          ],
+          // Wildcard for right unit (medium priority)
+          [
+            "em,+,*",
+            (left, right) => ({
+              value: left.value * 5 + right.value,
+              unit: "rightWild",
+            }),
+          ],
+          // Wildcard for both units (lowest priority)
+          [
+            "*,+,*",
+            (left, right) => ({
+              value: left.value + right.value,
+              unit: "bothWild",
+            }),
+          ],
+        ]),
+      });
+
+      const em = new UnitValue(2, "em", false, mixedConfig);
+      const rem = new UnitValue(3, "rem", false, mixedConfig);
+      const px = new UnitValue(4, "px", false, mixedConfig);
+      
+      // Should use specific conversion
+      const result1 = em.add(rem);
+      expect(result1.value).toBe(13); // 2em * 2 + 3rem * 3 = 13specific
+      expect(result1.unit).toBe("specific");
+      
+      // Should use left wildcard
+      const result2 = px.add(rem);
+      expect(result2.value).toBe(19); // 4px + 3rem * 5 = 19leftWild
+      expect(result2.unit).toBe("leftWild");
+      
+      // Should use right wildcard
+      const result3 = em.add(px);
+      expect(result3.value).toBe(14); // 2em * 5 + 4px = 14rightWild
+      expect(result3.unit).toBe("rightWild");
+    });
+  });
+
   describe("unitless conversions", () => {
     // Create a config with unitless conversions
     const unitlessConfig = createConfig({

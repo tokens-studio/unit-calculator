@@ -216,6 +216,47 @@ describe("Unit conversions", () => {
     expect(() => calc("1rem - 10%", options)).toThrow();
   });
 
+  it("handles wildcard unit conversions", () => {
+    // Config with wildcard conversions
+    const options: Partial<CalcConfig> = {
+      unitConversions: new Map([
+        // Wildcard for left unit (any unit to px)
+        [
+          "*,+,px",
+          (left, right) => ({
+            value: left.value * 10 + right.value,
+            unit: "px",
+          }),
+        ],
+        // Wildcard for right unit (px to any unit)
+        [
+          "px,+,*",
+          (left, right) => ({
+            value: left.value + right.value * 10,
+            unit: "px",
+          }),
+        ],
+        // Wildcard for both units (any unit to any unit)
+        [
+          "*,+,*",
+          (left, right) => ({
+            value: left.value + right.value,
+            unit: "generic",
+          }),
+        ],
+      ]),
+    };
+
+    // Test wildcard conversions
+    expect(calc("10px + 2em", options)).toEqual(["30px"]); // 10px + 2em*10 = 30px
+    expect(calc("2em + 10px", options)).toEqual(["30px"]); // 2em*10 + 10px = 30px
+    expect(calc("2em + 3rem", options)).toEqual(["5generic"]); // 2em + 3rem = 5generic
+    
+    // Test with complex expressions
+    expect(calc("2 * (5px + 3em)", options)).toEqual(["70px"]); // 2 * (5px + 3em*10) = 70px
+    expect(calc("(2em + 3rem) / 5", options)).toEqual(["1generic"]); // (2em + 3rem) / 5 = 1generic
+  });
+
   it("handles unitless to unit conversions", () => {
     // Config with unitless to px conversions
     const options: Partial<CalcConfig> = {

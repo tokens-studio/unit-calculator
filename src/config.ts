@@ -80,3 +80,39 @@ export function getConversionKey(
   const right = rightUnit === null ? "" : rightUnit;
   return `${left},${operator},${right}`;
 }
+
+// Function to find the best matching conversion key
+export function findBestConversionKey(
+  unitConversions: Map<UnitConversionKey, UnitConversionFunction>,
+  leftUnit: string | null,
+  operator: string,
+  rightUnit: string | null
+): UnitConversionFunction | undefined {
+  // Try exact match first
+  const exactKey = getConversionKey(leftUnit, operator, rightUnit);
+  if (unitConversions.has(exactKey)) {
+    return unitConversions.get(exactKey);
+  }
+
+  // Try wildcard patterns in order of specificity
+  // 1. Left specific, right wildcard
+  const leftWildcardKey = getConversionKey(leftUnit, operator, "*");
+  if (unitConversions.has(leftWildcardKey)) {
+    return unitConversions.get(leftWildcardKey);
+  }
+
+  // 2. Right specific, left wildcard
+  const rightWildcardKey = getConversionKey("*", operator, rightUnit);
+  if (unitConversions.has(rightWildcardKey)) {
+    return unitConversions.get(rightWildcardKey);
+  }
+
+  // 3. Both wildcard
+  const bothWildcardKey = getConversionKey("*", operator, "*");
+  if (unitConversions.has(bothWildcardKey)) {
+    return unitConversions.get(bothWildcardKey);
+  }
+
+  // No match found
+  return undefined;
+}

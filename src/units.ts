@@ -44,8 +44,13 @@ export class UnitValue {
     }
 
     // Check if there's a conversion defined for these units
-    const key = getConversionKey(this.unit, "+", other.unit);
-    return this.config.unitConversions.has(key);
+    // Try exact match first, then wildcards
+    return !!findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "+",
+      other.unit
+    );
   }
 
   canMultiplyWith(other: UnitValue): boolean {
@@ -67,9 +72,13 @@ export class UnitValue {
       );
     }
 
-    // Check for conversion
-    const key = getConversionKey(this.unit, "+", other.unit);
-    const conversion = this.config.unitConversions.get(key);
+    // Check for conversion using wildcard matching
+    const conversion = findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "+",
+      other.unit
+    );
 
     if (conversion) {
       const result = conversion(this, other);
@@ -94,9 +103,13 @@ export class UnitValue {
       );
     }
 
-    // Check for conversion
-    const key = getConversionKey(this.unit, "-", other.unit);
-    const conversion = this.config.unitConversions.get(key);
+    // Check for conversion using wildcard matching
+    const conversion = findBestConversionKey(
+      this.config.unitConversions,
+      this.unit,
+      "-",
+      other.unit
+    );
 
     if (conversion) {
       const result = conversion(this, other);

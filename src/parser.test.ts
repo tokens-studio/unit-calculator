@@ -169,7 +169,6 @@ describe("Custom math functions", () => {
   });
 
   test("All functions maintain units", () => {
-    // Add the units to the allowed units list
     const options = {
       allowedUnits: new Set(["cm", "in", "m", "px"]),
     };

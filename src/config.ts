@@ -1,4 +1,18 @@
-import { CSS_UNITS } from "./units.js";
+export const CSS_UNITS = [
+  "px",
+  "em",
+  "rem",
+  "%",
+  "vh",
+  "vw",
+  "vmin",
+  "vmax",
+  "cm",
+  "mm",
+  "in",
+  "pt",
+  "pc",
+];
 
 export interface CalcConfig {
   allowedUnits: Set<string>;

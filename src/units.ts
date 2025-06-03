@@ -1,19 +1,3 @@
-export const CSS_UNITS = [
-  "px",
-  "em",
-  "rem",
-  "%",
-  "vh",
-  "vw",
-  "vmin",
-  "vmax",
-  "cm",
-  "mm",
-  "in",
-  "pt",
-  "pc",
-];
-
 export class UnitValue {
   value: number;
   unit: string | null;

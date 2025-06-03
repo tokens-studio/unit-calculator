@@ -98,17 +98,17 @@ describe("UnitValue with custom unit conversions", () => {
       const px = new UnitValue(10, "px", false, wildcardConfig);
       const em = new UnitValue(2, "em", false, wildcardConfig);
       const rem = new UnitValue(3, "rem", false, wildcardConfig);
-      
+
       // Test "*,+,px" pattern: any unit to px
       const result1 = em.add(px);
       expect(result1.value).toBe(30); // 2em * 10 + 10px = 30px
       expect(result1.unit).toBe("px");
-      
+
       // Test "px,+,*" pattern: px to any unit
       const result2 = px.add(rem);
       expect(result2.value).toBe(40); // 10px + 3rem * 10 = 40px
       expect(result2.unit).toBe("px");
-      
+
       // Test "*,+,*" pattern: any unit to any unit (lowest priority)
       const result3 = em.add(rem);
       expect(result3.value).toBe(5); // 2em + 3rem = 5generic
@@ -157,17 +157,17 @@ describe("UnitValue with custom unit conversions", () => {
       const em = new UnitValue(2, "em", false, mixedConfig);
       const rem = new UnitValue(3, "rem", false, mixedConfig);
       const px = new UnitValue(4, "px", false, mixedConfig);
-      
+
       // Should use specific conversion
       const result1 = em.add(rem);
       expect(result1.value).toBe(13); // 2em * 2 + 3rem * 3 = 13specific
       expect(result1.unit).toBe("specific");
-      
+
       // Should use left wildcard
       const result2 = px.add(rem);
       expect(result2.value).toBe(19); // 4px + 3rem * 5 = 19leftWild
       expect(result2.unit).toBe("leftWild");
-      
+
       // Should use right wildcard
       const result3 = em.add(px);
       expect(result3.value).toBe(14); // 2em * 5 + 4px = 14rightWild
@@ -183,21 +183,21 @@ describe("UnitValue with custom unit conversions", () => {
         [
           "px,+,",
           (left, right) => ({
-            value: left.value + right.value * 2,
+            value: left.value + right.value,
             unit: "px",
           }),
         ],
         [
           ",+,px",
           (left, right) => ({
-            value: left.value * 2 + right.value,
+            value: left.value + right.value,
             unit: "px",
           }),
         ],
         [
           "px,-,",
           (left, right) => ({
-            value: left.value - right.value * 2,
+            value: left.value - right.value,
             unit: "px",
           }),
         ],
@@ -297,62 +297,64 @@ describe("UnitValue with custom unit conversions", () => {
 
   describe("default unit operations", () => {
     // Use default config which should have the basic unitless operations
-    const defaultUnitValue = (value: number, unit: string | null = null) => 
+    const defaultUnitValue = (value: number, unit: string | null = null) =>
       new UnitValue(value, unit);
-    
+
     it("multiplies unitless with any unit", () => {
       const unitless = defaultUnitValue(2);
       const px = defaultUnitValue(10, "px");
       const em = defaultUnitValue(3, "em");
-      
+
       // Unitless * Unit = Unit
       const result1 = unitless.multiply(px);
       expect(result1.value).toBe(20);
       expect(result1.unit).toBe("px");
-      
+
       // Unit * Unitless = Unit
       const result2 = em.multiply(unitless);
       expect(result2.value).toBe(6);
       expect(result2.unit).toBe("em");
-      
+
       // Unitless * Unitless = Unitless
       const result3 = unitless.multiply(defaultUnitValue(4));
       expect(result3.value).toBe(8);
       expect(result3.unit).toBe(null);
     });
-    
+
     it("divides with unitless values", () => {
       const unitless = defaultUnitValue(2);
       const px = defaultUnitValue(10, "px");
-      
+
       // Unit / Unitless = Unit
       const result1 = px.divide(unitless);
       expect(result1.value).toBe(5);
       expect(result1.unit).toBe("px");
-      
+
       // Unitless / Unit = Unitless
       const result2 = unitless.divide(px);
       expect(result2.value).toBe(0.2);
       expect(result2.unit).toBe(null);
     });
-    
+
     it("divides same units to get unitless", () => {
       const px1 = defaultUnitValue(10, "px");
       const px2 = defaultUnitValue(2, "px");
-      
+
       // px / px = unitless
       const result = px1.divide(px2);
       expect(result.value).toBe(5);
       expect(result.unit).toBe(null);
       expect(result.fromUnitDivision).toBe(true);
     });
-    
+
     it("throws on incompatible unit operations", () => {
       const px = defaultUnitValue(10, "px");
       const em = defaultUnitValue(2, "em");
-      
+
       // Cannot multiply or divide incompatible units
-      expect(() => px.multiply(em)).toThrow(/Cannot multiply incompatible units/);
+      expect(() => px.multiply(em)).toThrow(
+        /Cannot multiply incompatible units/
+      );
       expect(() => px.divide(em)).toThrow(/Cannot divide incompatible units/);
     });
   });

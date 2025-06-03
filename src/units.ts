@@ -54,11 +54,6 @@ export class UnitValue {
   }
 
   canMultiplyWith(other: UnitValue): boolean {
-    // Same units or one is unitless are always compatible
-    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
-      return true;
-    }
-    
     // Check if there's a conversion defined for these units
     return !!findBestConversionKey(
       this.config.unitConversions,

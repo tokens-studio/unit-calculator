@@ -21,7 +21,10 @@ interface ConversionOutput {
   unit: string | null;
 }
 
-export type UnitConversionFunction = (left: any, right: any) => ConversionOutput;
+export type UnitConversionFunction = (
+  left: any,
+  right: any
+) => ConversionOutput;
 
 export interface CalcConfig {
   allowedUnits: Set<string>;
@@ -49,50 +52,57 @@ export const defaultMathFunctions: Record<
 };
 
 // Default unit conversions with basic unitless operations
-const defaultUnitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
+export const defaultUnitConversions: Map<
+  UnitConversionKey,
+  UnitConversionFunction
+> = new Map([
   // Multiplication with unitless values
   [
-    ",*,*", 
+    ",*,*",
     (left, right) => ({
       value: left.value * right.value,
-      unit: right.unit
-    })
+      unit: right.unit,
+    }),
   ],
   [
-    "*,*,", 
+    "*,*,",
     (left, right) => ({
       value: left.value * right.value,
-      unit: left.unit
-    })
+      unit: left.unit,
+    }),
   ],
   // Division with unitless values
   [
-    "*,/,", 
+    "*,/,",
     (left, right) => ({
       value: left.value / right.value,
-      unit: left.unit
-    })
+      unit: left.unit,
+    }),
   ],
   [
-    ",/,*", 
+    ",/,*",
     (left, right) => ({
       value: left.value / right.value,
-      unit: null
-    })
+      unit: null,
+    }),
   ],
   // Division with same units (results in unitless)
   [
-    "*,/,*", 
+    "*,/,*",
     (left, right) => {
       if (left.unit === right.unit) {
         return {
           value: left.value / right.value,
-          unit: null
+          unit: null,
         };
       }
-      throw new Error(`Cannot divide incompatible units: ${left.unit || "unitless"} and ${right.unit || "unitless"}`);
-    }
-  ]
+      throw new Error(
+        `Cannot divide incompatible units: ${left.unit || "unitless"} and ${
+          right.unit || "unitless"
+        }`
+      );
+    },
+  ],
 ]);
 
 export const defaultConfig: CalcConfig = {

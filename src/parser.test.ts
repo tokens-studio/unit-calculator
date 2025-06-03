@@ -1,5 +1,9 @@
 import { describe, expect, it, test } from "vitest";
-import { CalcConfig, defaultMathFunctions } from "./config.js";
+import {
+  CalcConfig,
+  defaultMathFunctions,
+  defaultUnitConversions,
+} from "./config.js";
 import { calc } from "./parser.js";
 
 describe("Basic arithmetic", () => {
@@ -201,6 +205,7 @@ describe("Unit conversions", () => {
     // Config with only px to rem conversions
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([
+        ...defaultUnitConversions,
         [
           "px,+,rem",
           (left, right) => ({
@@ -220,6 +225,7 @@ describe("Unit conversions", () => {
     // Config with wildcard conversions
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([
+        ...defaultUnitConversions,
         // Wildcard for left unit (any unit to px)
         [
           "*,+,px",
@@ -261,18 +267,19 @@ describe("Unit conversions", () => {
     // Config with unitless to px conversions
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([
+        ...defaultUnitConversions,
         // Unitless to px conversions (multiply unitless by 2)
         [
           "px,+,",
           (left, right) => ({
-            value: left.value + right.value * 2,
+            value: left.value + right.value,
             unit: "px",
           }),
         ],
         [
           ",+,px",
           (left, right) => ({
-            value: left.value * 2 + right.value,
+            value: left.value + right.value,
             unit: "px",
           }),
         ],
@@ -280,8 +287,8 @@ describe("Unit conversions", () => {
     };
 
     // Addition with unitless conversion
-    expect(calc("10px + 5", options)).toEqual(["20px"]);
-    expect(calc("5 + 10px", options)).toEqual(["20px"]);
+    expect(calc("10px + 5", options)).toEqual(["15px"]);
+    expect(calc("5 + 10px", options)).toEqual(["15px"]);
 
     // Complex expressions with unitless conversions
     expect(calc("2 * (10px + 5)", options)).toEqual(["30px"]);

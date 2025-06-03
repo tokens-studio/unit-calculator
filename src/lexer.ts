@@ -211,8 +211,8 @@ export default function lex(s: string): Lexer {
   while (s.length > 0) {
     let wasMatched = false;
 
-    for (const def of tokenDefinitions) {
-      const token = matchTokenDefinition(s, def);
+    for (const tokenizer of tokenDefinitions) {
+      const token = tokenizer(s);
       if (token) {
         wasMatched = true;
         tokens.push(token);

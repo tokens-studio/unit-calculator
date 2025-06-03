@@ -109,28 +109,32 @@ const validCssDimensions = new Set(CSS_UNITS);
 const numberWithUnitRegexp =
   /^(?<sign>-)?(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
 
-const parseNumber = function (value: string, tokens: Token[]): Token | undefined {
+const parseNumber = function (
+  value: string,
+  tokens: Token[]
+): Token | undefined {
   const match = numberWithUnitRegexp.exec(value);
 
   if (!match || !match.groups) return;
 
   const { sign, number, suffix } = match.groups;
   const numValue = parseFloat(sign ? sign + number : number);
-  
+
   // If there's a negative sign, we need to determine if it's a negative number or a subtraction operator
-  if (sign === '-') {
+  if (sign === "-") {
     // Check if this minus sign should be treated as an operator instead of part of the number
     // by looking at the previous token
     const prevToken = tokens.length > 0 ? tokens[tokens.length - 1] : null;
-    
+
     // If the previous token is a number, identifier, or closing parenthesis,
     // then this minus is an operator, not part of a negative number
-    if (prevToken && (
-        prevToken.type === 'NUMBER' || 
-        prevToken.type === 'NUMBER_WITH_UNIT' || 
-        prevToken.type === 'ID' || 
-        prevToken.type === ')'
-    )) {
+    if (
+      prevToken &&
+      (prevToken.type === "NUMBER" ||
+        prevToken.type === "NUMBER_WITH_UNIT" ||
+        prevToken.type === "ID" ||
+        prevToken.type === ")")
+    ) {
       return;
     }
   }
@@ -144,7 +148,9 @@ const parseNumber = function (value: string, tokens: Token[]): Token | undefined
         unit: suffix,
       } as NumberWithUnitToken;
     } else {
-      throw new Error(`Invalid number format: "${sign || ''}${number}${suffix}"`);
+      throw new Error(
+        `Invalid number format: "${sign || ""}${number}${suffix}"`
+      );
     }
   }
 
@@ -196,6 +202,12 @@ const parseWhitespace = function (s: string): Token | undefined {
   }
 };
 
+function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
+  return (
+    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
+  );
+}
+
 const parsers: TokenParser[] = [
   parseNumber as TokenParser,
   parseIdentifier,
@@ -219,9 +231,13 @@ export default function lex(s: string): Lexer {
 
     for (const tokenizer of parsers) {
       // Special handling for number parser to pass the current tokens
-      const token = tokenizer === parseNumber 
-        ? (tokenizer as (s: string, tokens: Token[]) => Token | undefined)(remaining, tokens) 
-        : tokenizer(remaining);
+      const token =
+        tokenizer === parseNumber
+          ? (tokenizer as (s: string, tokens: Token[]) => Token | undefined)(
+              remaining,
+              tokens
+            )
+          : tokenizer(remaining);
       if (token) {
         wasMatched = true;
         token.charpos = charpos;
@@ -240,24 +256,24 @@ export default function lex(s: string): Lexer {
   const tokensWithoutWhitespace = tokens.filter(
     ({ type }) => type !== "WHITESPACE"
   );
-  
+
   // Validate no consecutive operators (except for negation cases)
   for (let i = 0; i < tokensWithoutWhitespace.length - 1; i++) {
     const current = tokensWithoutWhitespace[i];
     const next = tokensWithoutWhitespace[i + 1];
-    
+
     // Check for consecutive operators (except valid negation)
-    if (current.type === '+' || current.type === '*' || current.type === '/' || current.type === '^') {
-      if (next.type === '+' || next.type === '-' || next.type === '*' || next.type === '/' || next.type === '^') {
-        throw new Error(`Consecutive operators not allowed: ${current.match}${next.match}`);
-      }
+    if (isOperator(current.type) && isOperator(next.type)) {
+      throw new Error(
+        `Consecutive operators not allowed: ${current.match}${next.match}`
+      );
     }
-    
+
     // Special case for minus: allow it after operators as negation, but not after minus
-    if (current.type === '-' && next.type === '-') {
+    if (current.type === "-" && next.type === "-") {
       throw new Error("Consecutive minus operators not allowed");
     }
   }
-  
+
   return new Lexer(tokensWithoutWhitespace);
 }

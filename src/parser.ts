@@ -160,12 +160,6 @@ const LEDS: LedFunctions = {
   },
 };
 
-function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
-  return (
-    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
-  );
-}
-
 const groupEndDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", ")"]);
 const isGroupEndDelimiter = (t: Token): boolean =>
   groupEndDelimiters.has(t.type);

@@ -5,6 +5,7 @@ import {
   createConfig,
   defaultConversionsArray,
   arrayToConversionKey,
+  addUnitConversions,
 } from "./config.js";
 
 const baseSize = 16;
@@ -56,7 +57,7 @@ export function startRepl(): void {
     terminal: true,
     prompt: "> ",
   });
-  
+
   console.log("Token Value Calculator REPL");
   console.log("Type expressions like '2px + 2rem' or 'ctrl+c' to exit");
 

@@ -1,4 +1,4 @@
-import createLexer, { Lexer, Token } from "./lexer.js";
+import createLexer, { Lexer, Token, TokenType } from "./lexer.js";
 import { matchesType } from "./token.js";
 import { UnitValue, parseUnitValue } from "./units.js";
 
@@ -162,8 +162,10 @@ function getBp(token: Token): number {
   return BPS[token.type as keyof typeof BPS] || 0;
 }
 
-function isOperator(type: string): boolean {
-  return matchesType({ type } as Token, ["+", "-", "*", "/", "^"]);
+function isOperator(type: TokenType): boolean {
+  return (
+    type === "+" || type === "-" || type === "*" || type === "/" || type === "^"
+  );
 }
 
 // Validate the token stream for common syntax errors and split into multiple expressions if needed

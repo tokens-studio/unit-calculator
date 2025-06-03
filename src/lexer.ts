@@ -1,10 +1,71 @@
-export interface Token {
-  type: string;
+export type TokenType =
+  | "EOF"
+  | "NUMBER"
+  | "NUMBER_WITH_UNIT"
+  | "ID"
+  | "+"
+  | "-"
+  | "*"
+  | "/"
+  | "^"
+  | "("
+  | ")"
+  | "WHITESPACE";
+
+export interface BaseToken {
+  type: TokenType;
   match?: string | null;
   strpos?: () => { start: { line: number; column: number } };
 }
 
-export const EOF: Token = { type: "EOF", match: null };
+export interface EOFToken extends BaseToken {
+  type: "EOF";
+  match: null;
+}
+
+export interface NumberToken extends BaseToken {
+  type: "NUMBER";
+  match: string;
+  value: number;
+}
+
+export interface NumberWithUnitToken extends BaseToken {
+  type: "NUMBER_WITH_UNIT";
+  match: string;
+  value: number;
+  unit: string;
+}
+
+export interface IdentifierToken extends BaseToken {
+  type: "ID";
+  match: string;
+}
+
+export interface OperatorToken extends BaseToken {
+  type: "+" | "-" | "*" | "/" | "^";
+  match: string;
+}
+
+export interface ParenToken extends BaseToken {
+  type: "(" | ")";
+  match: string;
+}
+
+export interface WhitespaceToken extends BaseToken {
+  type: "WHITESPACE";
+  match: string;
+}
+
+export type Token =
+  | EOFToken
+  | NumberToken
+  | NumberWithUnitToken
+  | IdentifierToken
+  | OperatorToken
+  | ParenToken
+  | WhitespaceToken;
+
+export const EOF: EOFToken = { type: "EOF", match: null };
 
 export class Lexer {
   tokens: Token[];
@@ -27,7 +88,7 @@ export class Lexer {
       : EOF;
   }
 
-  expect(type: string): void {
+  expect(type: TokenType): void {
     const t = this.next();
     if (type != t.type)
       throw new Error(`Unexpected token: ${t.match || "<<EOF>>"}`);
@@ -39,7 +100,7 @@ export class Lexer {
 }
 
 interface TokenDefinitionObject {
-  type: string;
+  type: TokenType;
   re: RegExp;
 }
 
@@ -66,13 +127,16 @@ const parseNumber = function (value: string): Token | null {
   const match = numberWithUnitRegexp.exec(value);
   if (!match || !match.groups) return null;
   const { number, suffix } = match.groups;
+  const numValue = parseFloat(number);
 
   if (suffix) {
     if (validCssDimensions.has(suffix)) {
       return {
         type: "NUMBER_WITH_UNIT",
         match: `${number}${suffix}`,
-      };
+        value: numValue,
+        unit: suffix,
+      } as NumberWithUnitToken;
     } else {
       throw new Error(`Invalid number format: "${number}${suffix}"`);
     }
@@ -81,7 +145,8 @@ const parseNumber = function (value: string): Token | null {
   return {
     type: "NUMBER",
     match: number,
-  };
+    value: numValue,
+  } as NumberToken;
 };
 
 const tokenDefinitions: TokenDefinition[] = [
@@ -104,23 +169,41 @@ const matchTokenDefinition = function (
   def: TokenDefinition
 ): Token | null {
   if (typeof def === "function") {
-    const token = def(s);
-    if (token) {
-      return {
-        type: token.type,
-        match: token.match as string,
-      };
-    }
+    return def(s);
   } else {
     const re = normalizeRegExp(def.re);
     const match = re.exec(s);
     if (match) {
-      return {
-        type: def.type,
-        match: match[0],
-      };
+      if (def.type === "ID") {
+        return {
+          type: def.type,
+          match: match[0],
+        } as IdentifierToken;
+      } else if (
+        def.type === "+" ||
+        def.type === "-" ||
+        def.type === "*" ||
+        def.type === "/" ||
+        def.type === "^"
+      ) {
+        return {
+          type: def.type,
+          match: match[0],
+        } as OperatorToken;
+      } else if (def.type === "(" || def.type === ")") {
+        return {
+          type: def.type,
+          match: match[0],
+        } as ParenToken;
+      } else if (def.type === "WHITESPACE") {
+        return {
+          type: def.type,
+          match: match[0],
+        } as WhitespaceToken;
+      }
     }
   }
+  return null;
 };
 
 export default function lex(s: string): Lexer {
@@ -132,11 +215,8 @@ export default function lex(s: string): Lexer {
       const token = matchTokenDefinition(s, def);
       if (token) {
         wasMatched = true;
-        tokens.push({
-          type: token.type,
-          match: token.match,
-        });
-        s = s.substring(token.match.length);
+        tokens.push(token);
+        s = s.substring(token.match!.length);
         break;
       }
     }

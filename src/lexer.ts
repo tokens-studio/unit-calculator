@@ -101,8 +101,12 @@ export class Lexer {
   }
 }
 
-// Define TokenParser to allow for the tokens parameter in parseNumber
-type TokenParser = (s: string, tokens?: Token[]) => Token | undefined;
+// Define TokenParser with all parameters that might be needed
+type TokenParser = (
+  s: string,
+  tokens: Token[],
+  allowedUnits: Set<string>
+) => Token | undefined;
 
 const numberWithUnitRegexp =
   /^(?<sign>-)?(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
@@ -162,7 +166,11 @@ const parseNumber = function (
   } as NumberToken;
 };
 
-const parseIdentifier = function (s: string): Token | undefined {
+const parseIdentifier = function (
+  s: string,
+  tokens: Token[],
+  allowedUnits: Set<string>
+): Token | undefined {
   const match = /^[A-Za-z]+/.exec(s);
   if (match) {
     return {
@@ -174,6 +182,8 @@ const parseIdentifier = function (s: string): Token | undefined {
 
 const parseOperator = function (
   s: string,
+  tokens: Token[],
+  allowedUnits: Set<string>,
   op: "+" | "-" | "*" | "/" | "^"
 ): Token | undefined {
   if (s[0] === op) {
@@ -184,7 +194,12 @@ const parseOperator = function (
   }
 };
 
-const parseParen = function (s: string, paren: "(" | ")"): Token | undefined {
+const parseParen = function (
+  s: string,
+  tokens: Token[],
+  allowedUnits: Set<string>,
+  paren: "(" | ")"
+): Token | undefined {
   if (s[0] === paren) {
     return {
       type: paren,
@@ -193,7 +208,11 @@ const parseParen = function (s: string, paren: "(" | ")"): Token | undefined {
   }
 };
 
-const parseWhitespace = function (s: string): Token | undefined {
+const parseWhitespace = function (
+  s: string,
+  tokens: Token[],
+  allowedUnits: Set<string>
+): Token | undefined {
   const match = /^\s+/.exec(s);
   if (match) {
     return {
@@ -210,15 +229,15 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
 }
 
 const tokenizers: TokenParser[] = [
-  parseNumber as TokenParser,
+  parseNumber,
   parseIdentifier,
-  (s) => parseOperator(s, "+"),
-  (s) => parseOperator(s, "-"),
-  (s) => parseOperator(s, "*"),
-  (s) => parseOperator(s, "/"),
-  (s) => parseOperator(s, "^"),
-  (s) => parseParen(s, "("),
-  (s) => parseParen(s, ")"),
+  (s, tokens, allowedUnits) => parseOperator(s, tokens, allowedUnits, "+"),
+  (s, tokens, allowedUnits) => parseOperator(s, tokens, allowedUnits, "-"),
+  (s, tokens, allowedUnits) => parseOperator(s, tokens, allowedUnits, "*"),
+  (s, tokens, allowedUnits) => parseOperator(s, tokens, allowedUnits, "/"),
+  (s, tokens, allowedUnits) => parseOperator(s, tokens, allowedUnits, "^"),
+  (s, tokens, allowedUnits) => parseParen(s, tokens, allowedUnits, "("),
+  (s, tokens, allowedUnits) => parseParen(s, tokens, allowedUnits, ")"),
   parseWhitespace,
 ];
 
@@ -242,14 +261,8 @@ export default function lex(s: string, options: LexerOptions = {}): Lexer {
     let wasMatched = false;
 
     for (const tokenizer of tokenizers) {
-      let token: Token | undefined;
-
-      if (tokenizer === parseNumber) {
-        token = parseNumber(remaining, tokens, allowedUnits);
-      } else {
-        token = tokenizer(remaining);
-      }
-
+      const token = tokenizer(remaining, tokens, allowedUnits);
+      
       if (token) {
         wasMatched = true;
         token.charpos = charpos;

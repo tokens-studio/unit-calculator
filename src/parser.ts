@@ -384,7 +384,7 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
   return nodeHandlers[typedNode.type as keyof typeof nodeHandlers](node as any);
 }
 
-export function calc(s: string): number | string | (number | string)[] {
+export function calc(s: string): (number | string)[] {
   const parsers = parse(s);
 
   // Process all results
@@ -405,5 +405,5 @@ export function calc(s: string): number | string | (number | string)[] {
     }
   });
 
-  return results.length === 1 ? results[0] : results;
+  return results;
 }

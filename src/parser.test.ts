@@ -3,38 +3,38 @@ import { calc } from "./parser.js";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {
-    expect(calc("1 + 2 * 3")).toBe(7);
-    expect(calc("(1 + 2) * 3")).toBe(9);
-    expect(calc("1")).toBe(1);
-    expect(calc("((1))")).toBe(1);
+    expect(calc("1 + 2 * 3")).toEqual([7]);
+    expect(calc("(1 + 2) * 3")).toEqual([9]);
+    expect(calc("1")).toEqual([1]);
+    expect(calc("((1))")).toEqual([1]);
   });
 
   it("handles exponentiation correctly", () => {
-    expect(calc("3^4^.5")).toBe(9);
-    expect(calc("(2^3)^4")).toBe(4096);
+    expect(calc("3^4^.5")).toEqual([9]);
+    expect(calc("(2^3)^4")).toEqual([4096]);
   });
 
   it("handles negation correctly", () => {
-    expect(calc("-2*-2")).toBe(4);
-    expect(calc("-2*2")).toBe(-4);
-    expect(calc("5- -3")).toEqual(8);
+    expect(calc("-2*-2")).toEqual([4]);
+    expect(calc("-2*2")).toEqual([-4]);
+    expect(calc("5- -3")).toEqual([8]);
   });
 
   it("handles division correctly", () => {
-    expect(calc("5/2/.5")).toBe(5);
+    expect(calc("5/2/.5")).toEqual([5]);
   });
 
   it("handles subtraction correctly", () => {
-    expect(calc("5 - 3 - 1 - 4")).toBe(-3);
+    expect(calc("5 - 3 - 1 - 4")).toEqual([-3]);
   });
 
   it("handles functions correctly", () => {
-    expect(calc("floor(ceil(0.5) / 2)")).toBe(0);
-    expect(calc("PI")).toBe(Math.PI);
-    expect(calc("abs(cos(PI)) + 9")).toBe(10);
+    expect(calc("floor(ceil(0.5) / 2)")).toEqual([0]);
+    expect(calc("PI")).toEqual([Math.PI]);
+    expect(calc("abs(cos(PI)) + 9")).toEqual([10]);
   });
   it("handles complex operations with correct precedence", () => {
-    expect(calc("(15 + 20 - 17 * 8 / 3) * 7px")).toBe("-72.33333333333334px");
+    expect(calc("(15 + 20 - 17 * 8 / 3) * 7px")).toEqual(["-72.33333333333334px"]);
   });
 });
 
@@ -56,17 +56,17 @@ describe("Parser validation", () => {
   });
 
   it("handles valid negation", () => {
-    expect(calc("1 + -2")).toBe(-1);
-    expect(calc("2 * -3")).toBe(-6);
-    expect(calc("6 / -2")).toBe(-3);
-    expect(calc("2 ^ -2")).toBe(0.25);
+    expect(calc("1 + -2")).toEqual([-1]);
+    expect(calc("2 * -3")).toEqual([-6]);
+    expect(calc("6 / -2")).toEqual([-3]);
+    expect(calc("2 ^ -2")).toEqual([0.25]);
   });
 
   it("handles complex expressions with negation", () => {
-    expect(calc("1 + 2 * -3 + 4")).toBe(-1);
-    expect(calc("-1 + 2 * -3")).toBe(-7);
-    expect(calc("-(1 + 2)")).toBe(-3);
-    expect(calc("(-1 + -2) * 3")).toBe(-9);
+    expect(calc("1 + 2 * -3 + 4")).toEqual([-1]);
+    expect(calc("-1 + 2 * -3")).toEqual([-7]);
+    expect(calc("-(1 + 2)")).toEqual([-3]);
+    expect(calc("(-1 + -2) * 3")).toEqual([-9]);
   });
 });
 
@@ -80,25 +80,25 @@ describe("Parentheses validation", () => {
 
 describe("CSS unit calculations", () => {
   it("handles addition with same units", () => {
-    expect(calc("1px + 2px")).toBe("3px");
-    expect(calc("1rem + 2rem")).toBe("3rem");
+    expect(calc("1px + 2px")).toEqual(["3px"]);
+    expect(calc("1rem + 2rem")).toEqual(["3rem"]);
   });
 
   it("handles subtraction with same units", () => {
-    expect(calc("5px - 2px")).toBe("3px");
+    expect(calc("5px - 2px")).toEqual(["3px"]);
   });
 
   it("handles multiplication with unitless", () => {
-    expect(calc("2px * 3")).toBe("6px");
-    expect(calc("2 * 3px")).toBe("6px");
+    expect(calc("2px * 3")).toEqual(["6px"]);
+    expect(calc("2 * 3px")).toEqual(["6px"]);
   });
 
   it("handles division with unitless", () => {
-    expect(calc("6px / 2")).toBe("3px");
+    expect(calc("6px / 2")).toEqual(["3px"]);
   });
 
   it("handles division with same units", () => {
-    expect(calc("6px / 2px")).toBe("3");
+    expect(calc("6px / 2px")).toEqual(["3"]);
   });
 
   it("throws on operations with incompatible units", () => {
@@ -114,8 +114,8 @@ describe("Multi-value expressions", () => {
     expect(calc("1+1 2em * 3 + 1em 2px")).toEqual([2, "7em", "2px"]);
   });
 
-  it("calcMulti always returns array", () => {
-    expect(calc("1+1")).toEqual(2);
+  it("calc always returns array", () => {
+    expect(calc("1+1")).toEqual([2]);
     expect(calc("1+1 2em * 3")).toEqual([2, "6em"]);
   });
 

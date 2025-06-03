@@ -131,6 +131,12 @@ describe("Integration with Calculator", () => {
     // Complex expressions
     expect(calc("(1km + 200m) / 2", config)).toEqual(["600m"]);
     expect(calc("2 * (500m + 50cm)", config)).toEqual(["100100cm"]);
+    
+    // Multiplication and division
+    expect(calc("2km * 3", config)).toEqual(["6km"]);
+    expect(calc("6km / 2", config)).toEqual(["3km"]);
+    expect(calc("6km / 2km", config)).toEqual(["3"]);
+    expect(calc("3m * 2m", config)).toEqual(["6m"]);
   });
 
   it("performs calculations with time units", () => {
@@ -155,6 +161,11 @@ describe("Integration with Calculator", () => {
 
     // Complex expressions
     expect(calc("(2h + 30min) / 2", config)).toEqual(["75min"]);
+    
+    // Multiplication and division
+    expect(calc("2h * 3", config)).toEqual(["6h"]);
+    expect(calc("6h / 2", config)).toEqual(["3h"]);
+    expect(calc("6h / 2h", config)).toEqual(["3"]);
   });
 
   it("performs calculations with weight units", () => {
@@ -178,5 +189,11 @@ describe("Integration with Calculator", () => {
 
     // Complex expressions
     expect(calc("(1kg + 200g) * 2", config)).toEqual(["2400g"]);
+    
+    // Multiplication and division
+    expect(calc("2kg * 3", config)).toEqual(["6kg"]);
+    expect(calc("6kg / 2", config)).toEqual(["3kg"]);
+    expect(calc("6kg / 2kg", config)).toEqual(["3"]);
+    expect(calc("3g * 2g", config)).toEqual(["6g"]);
   });
 });

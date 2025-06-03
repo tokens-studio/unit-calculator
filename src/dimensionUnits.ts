@@ -165,6 +165,60 @@ export function generateConversionsFromTable(
             }
           },
         ]);
+      } else if (operator === "*") {
+        // For multiplication, convert to the smaller unit and multiply
+        conversions.push([
+          [sourceUnit, operator, targetUnit],
+          (left, right) => {
+            if (targetIsSmaller) {
+              // Convert left to target's unit (the smaller one)
+              const convertedLeft = left.value * sourceToTargetFactor;
+              return {
+                value: convertedLeft * right.value,
+                unit: targetUnit,
+              };
+            } else {
+              // Convert right to source's unit (the smaller one)
+              const convertedRight = right.value * targetToSourceFactor;
+              return {
+                value: left.value * convertedRight,
+                unit: sourceUnit,
+              };
+            }
+          },
+        ]);
+      } else if (operator === "/") {
+        // For division, we have two cases:
+        // 1. Same units: result is unitless
+        // 2. Different units: convert to same unit, then divide
+        conversions.push([
+          [sourceUnit, operator, targetUnit],
+          (left, right) => {
+            // If same unit, result is unitless
+            if (sourceUnit === targetUnit) {
+              return {
+                value: left.value / right.value,
+                unit: null,
+              };
+            }
+            
+            if (targetIsSmaller) {
+              // Convert left to target's unit
+              const convertedLeft = left.value * sourceToTargetFactor;
+              return {
+                value: convertedLeft / right.value,
+                unit: targetUnit,
+              };
+            } else {
+              // Convert right to source's unit
+              const convertedRight = right.value * targetToSourceFactor;
+              return {
+                value: left.value / convertedRight,
+                unit: sourceUnit,
+              };
+            }
+          },
+        ]);
       }
     });
   });

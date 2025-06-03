@@ -100,21 +100,27 @@ export function createDimensionConfig() {
   // Add length unit conversions
   const lengthConversions = [
     ...generateConversionsFromTable(lengthTable, '+'),
-    ...generateConversionsFromTable(lengthTable, '-')
+    ...generateConversionsFromTable(lengthTable, '-'),
+    ...generateConversionsFromTable(lengthTable, '*'),
+    ...generateConversionsFromTable(lengthTable, '/')
   ];
   addUnitConversions(config, lengthConversions);
 
   // Add time unit conversions
   const timeConversions = [
     ...generateConversionsFromTable(timeTable, '+'),
-    ...generateConversionsFromTable(timeTable, '-')
+    ...generateConversionsFromTable(timeTable, '-'),
+    ...generateConversionsFromTable(timeTable, '*'),
+    ...generateConversionsFromTable(timeTable, '/')
   ];
   addUnitConversions(config, timeConversions);
 
   // Add weight unit conversions
   const weightConversions = [
     ...generateConversionsFromTable(weightTable, '+'),
-    ...generateConversionsFromTable(weightTable, '-')
+    ...generateConversionsFromTable(weightTable, '-'),
+    ...generateConversionsFromTable(weightTable, '*'),
+    ...generateConversionsFromTable(weightTable, '/')
   ];
   addUnitConversions(config, weightConversions);
 

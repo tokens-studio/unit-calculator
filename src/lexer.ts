@@ -15,6 +15,7 @@ export type TokenType =
 export interface BaseToken {
   type: TokenType;
   match?: string | null;
+  charpos?: number;
   strpos?: () => { start: { line: number; column: number } };
 }
 
@@ -65,7 +66,7 @@ export type Token =
   | ParenToken
   | WhitespaceToken;
 
-export const EOF: EOFToken = { type: "EOF", match: null };
+export const EOF: EOFToken = { type: "EOF", match: null, charpos: -1 };
 
 export class Lexer {
   tokens: Token[];
@@ -205,21 +206,26 @@ const tokenDefinitions: TokenDefinitionFunction[] = [
 
 export default function lex(s: string): Lexer {
   const tokens: Token[] = [];
-  while (s.length > 0) {
+  let charpos = 0;
+  let remaining = s;
+  
+  while (remaining.length > 0) {
     let wasMatched = false;
 
     for (const tokenizer of tokenDefinitions) {
-      const token = tokenizer(s);
+      const token = tokenizer(remaining);
       if (token) {
         wasMatched = true;
+        token.charpos = charpos;
         tokens.push(token);
-        s = s.substring(token.match!.length);
+        charpos += token.match!.length;
+        remaining = remaining.substring(token.match!.length);
         break;
       }
     }
 
     if (!wasMatched) {
-      throw new Error(`Unexpected character in input: ${s[0]}`);
+      throw new Error(`Unexpected character in input: ${remaining[0]}`);
     }
   }
 

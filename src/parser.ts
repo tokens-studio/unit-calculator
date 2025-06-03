@@ -103,22 +103,10 @@ const NUDS: NudFunctions = {
   ID: (t, _bp, _parse, _lexer) => {
     const mbr = Math[t.match! as keyof typeof Math];
     if (typeof mbr == "undefined") {
-      // Get the input string position from the token
+      // Get the character position from the token
       let posInfo = "";
-      try {
-        if (t.strpos) {
-          const pos = t.strpos();
-          if (
-            pos &&
-            pos.start &&
-            typeof pos.start.line === "number" &&
-            typeof pos.start.column === "number"
-          ) {
-            posInfo = `at line ${pos.start.line}, column ${pos.start.column}`;
-          }
-        }
-      } catch (e) {
-        // If there's any error getting position, we'll use a generic message
+      if (typeof t.charpos === 'number') {
+        posInfo = `at position ${t.charpos}`;
       }
 
       throw new Error(

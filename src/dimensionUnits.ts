@@ -39,7 +39,7 @@ export function createDimensionTable(
 
     // sourceUnit to targetUnit (e.g., km to m: multiply by 1000)
     table[sourceUnit][targetUnit] = factor;
-    
+
     // targetUnit to sourceUnit (e.g., m to km: divide by 1000)
     table[targetUnit][sourceUnit] = 1 / factor;
   }
@@ -47,10 +47,10 @@ export function createDimensionTable(
   // Fill in indirect conversions (non-adjacent units)
   for (let i = 0; i < units.length; i++) {
     const sourceUnit = units[i];
-    
+
     for (let j = 0; j < units.length; j++) {
       const targetUnit = units[j];
-      
+
       // Skip if it's the same unit or if conversion is already defined
       if (i === j || table[sourceUnit][targetUnit] !== undefined) {
         continue;
@@ -59,14 +59,14 @@ export function createDimensionTable(
       // Calculate conversion through intermediate units
       let factor = 1;
       let currentUnit = sourceUnit;
-      
+
       // If source comes before target in the array, move forward
       if (i < j) {
         for (let k = i; k < j; k++) {
           factor *= table[currentUnit][units[k + 1]];
           currentUnit = units[k + 1];
         }
-      } 
+      }
       // If source comes after target in the array, move backward
       else {
         for (let k = i; k > j; k--) {
@@ -74,7 +74,7 @@ export function createDimensionTable(
           currentUnit = units[k - 1];
         }
       }
-      
+
       table[sourceUnit][targetUnit] = factor;
     }
   }
@@ -109,36 +109,65 @@ export const weightTable = createDimensionTable(weightUnits, weightFactors);
 export function generateConversionsFromTable(
   table: UnitConversionTable,
   operator: string
-): Array<[Array<string | null>, (left: any, right: any) => { value: number; unit: string | null }]> {
-  const conversions: Array<[Array<string | null>, (left: any, right: any) => { value: number; unit: string | null }]> = [];
-  
+): Array<
+  [
+    Array<string | null>,
+    (left: any, right: any) => { value: number; unit: string | null }
+  ]
+> {
+  const conversions: Array<
+    [
+      Array<string | null>,
+      (left: any, right: any) => { value: number; unit: string | null }
+    ]
+  > = [];
+
   // For each source unit
-  Object.keys(table).forEach(sourceUnit => {
+  Object.keys(table).forEach((sourceUnit) => {
     // For each target unit
-    Object.keys(table[sourceUnit]).forEach(targetUnit => {
+    Object.keys(table[sourceUnit]).forEach((targetUnit) => {
       // Get the conversion factor from target to source
       // This is the factor we need to convert right operand to left's unit
       const factor = table[targetUnit][sourceUnit];
-      
+
+      // Determine which unit is "smaller" (has larger conversion factor)
+      // In dimension tables, the smaller unit has a larger number when converting
+      // e.g., 1km = 1000m, so m is the smaller unit
+      const sourceToTargetFactor = table[sourceUnit][targetUnit];
+      const targetToSourceFactor = factor;
+      const targetIsSmaller = sourceToTargetFactor > 1;
+
       // Add conversion from source to target
-      if (operator === '+' || operator === '-') {
+      if (operator === "+" || operator === "-") {
         conversions.push([
           [sourceUnit, operator, targetUnit],
           (left, right) => {
-            // Convert right to left's unit
-            const convertedRight = right.value * factor;
-            
-            return {
-              value: operator === '+' 
-                ? left.value + convertedRight
-                : left.value - convertedRight,
-              unit: sourceUnit
-            };
-          }
+            if (targetIsSmaller) {
+              // Convert left to target's unit (the smaller one)
+              const convertedLeft = left.value * sourceToTargetFactor;
+              return {
+                value:
+                  operator === "+"
+                    ? convertedLeft + right.value
+                    : convertedLeft - right.value,
+                unit: targetUnit,
+              };
+            } else {
+              // Convert right to source's unit (the smaller one)
+              const convertedRight = right.value * targetToSourceFactor;
+              return {
+                value:
+                  operator === "+"
+                    ? left.value + convertedRight
+                    : left.value - convertedRight,
+                unit: sourceUnit,
+              };
+            }
+          },
         ]);
       }
     });
   });
-  
+
   return conversions;
 }

@@ -47,6 +47,19 @@ type TokenDefinitionFunction = (s: string) => Token | null;
 
 type TokenDefinition = TokenDefinitionObject | TokenDefinitionFunction;
 
+const validCssDimensions = new Set([
+  "px",
+  "em",
+  "rem",
+  "%",
+  "vh",
+  "vw",
+  "pt",
+  "cm",
+  "mm",
+  "in",
+]);
+
 const numberWithUnitRegexp =
   /^(?<number>\d+(?:\.\d*)?|\.\d+)(?<suffix>[a-zA-Z0-9]+)?/;
 const parseNumber = function (value: string): Token | null {
@@ -54,15 +67,21 @@ const parseNumber = function (value: string): Token | null {
   if (!match || !match.groups) return null;
   const { number, suffix } = match.groups;
 
-  return suffix
-    ? {
+  if (suffix) {
+    if (validCssDimensions.has(suffix)) {
+      return {
         type: "NUMBER_WITH_UNIT",
         match: `${number}${suffix}`,
-      }
-    : {
-        type: "NUMBER",
-        match: number,
       };
+    } else {
+      throw new Error(`Invalid number format: "${number}${suffix}"`);
+    }
+  }
+
+  return {
+    type: "NUMBER",
+    match: number,
+  };
 };
 
 const tokenDefinitions: TokenDefinition[] = [
@@ -77,6 +96,7 @@ const tokenDefinitions: TokenDefinition[] = [
   { type: ")", re: /\)/ },
   { type: "WHITESPACE", re: /\s+/ },
 ];
+
 const normalizeRegExp = (re: RegExp) => new RegExp(`^${re.source}`);
 
 const matchTokenDefinition = function (
@@ -107,6 +127,7 @@ export default function lex(s: string): Lexer {
   const tokens: Token[] = [];
   while (s.length > 0) {
     let wasMatched = false;
+
     for (const def of tokenDefinitions) {
       const token = matchTokenDefinition(s, def);
       if (token) {
@@ -121,12 +142,6 @@ export default function lex(s: string): Lexer {
     }
 
     if (!wasMatched) {
-      // Check if this might be a malformed number with trailing garbage
-      if (/^\d+[a-zA-Z0-9]/.test(s)) {
-        throw new Error(
-          `Invalid number format: "${s.match(/^\d+[a-zA-Z0-9]+/)?.[0] || s}"`
-        );
-      }
       throw new Error(`Unexpected character in input: ${s[0]}`);
     }
   }

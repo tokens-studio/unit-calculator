@@ -166,6 +166,14 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
   );
 }
 
+const groupEndDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", ")"])
+const isGroupEndDelimiter = (t: Token): boolean => groupEndDelimiters.has(t.type)
+
+const groupStartDelimiters = new Set(["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"])
+const isGroupStartDelimiter = (t: Token): boolean => groupStartDelimiters.has(t.type)
+
+const isGroupSplit = (left: Token, right: Token): boolean => isGroupEndDelimiter(left) && isGroupStartDelimiter(right);
+
 // Validate the token stream for common syntax errors and split into multiple expressions if needed
 function validateTokenStream(lexer: Lexer): Lexer[] {
   // Split into multiple expressions at paren level 0
@@ -193,15 +201,7 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
     // Only split at paren level 0
     // Check for adjacent numbers - this indicates we should split
     if (parenLevel === 0 && next) {
-      if (
-        (current.type === "NUMBER" ||
-          current.type === "NUMBER_WITH_UNIT" ||
-          current.type === ")") &&
-        (next.type === "NUMBER" ||
-          next.type === "NUMBER_WITH_UNIT" ||
-          next.type === "(" ||
-          next.type === "ID")
-      ) {
+      if (isGroupSplit(current, next)) {
         splitNeeded = true;
       }
 

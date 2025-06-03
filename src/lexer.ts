@@ -1,4 +1,4 @@
-import { CSS_UNITS } from "./units.js";
+import { CalcConfig, CalcOptions, createConfig } from "./config.js";
 
 export type TokenType =
   | "EOF"
@@ -101,17 +101,11 @@ export class Lexer {
   }
 }
 
-// Define configuration interface
-export interface LexerConfig {
-  allowedUnits: Set<string>;
-  // Can be extended with more config options in the future
-}
-
 // Define TokenParser with config parameter
 type TokenParser = (
   s: string,
   tokens: Token[],
-  config: LexerConfig
+  config: CalcConfig
 ) => Token | undefined;
 
 const numberWithUnitRegexp =
@@ -120,7 +114,7 @@ const numberWithUnitRegexp =
 const parseNumber = function (
   value: string,
   tokens: Token[],
-  config: LexerConfig
+  config: CalcConfig
 ): Token | undefined {
   const match = numberWithUnitRegexp.exec(value);
 
@@ -232,19 +226,8 @@ const tokenizers: TokenParser[] = [
   parseWhitespace,
 ];
 
-export interface LexerOptions {
-  allowedUnits?: Set<string> | string[];
-}
-
-export default function lex(s: string, options: LexerOptions = {}): Lexer {
-  const config: LexerConfig = {
-    allowedUnits:
-      options.allowedUnits instanceof Set
-        ? options.allowedUnits
-        : options.allowedUnits
-        ? new Set(options.allowedUnits)
-        : new Set(CSS_UNITS),
-  };
+export default function lex(s: string, options: CalcOptions = {}): Lexer {
+  const config = createConfig(options);
   const tokens: Token[] = [];
   let charpos = 0;
   let remaining = s;

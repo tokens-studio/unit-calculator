@@ -6,6 +6,7 @@ import createLexer, {
 } from "./lexer.js";
 import { matchesType } from "./token.js";
 import { UnitValue } from "./units.js";
+import { CalcOptions } from "./config.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 
@@ -269,7 +270,7 @@ function createParseFunction(lexer: Lexer) {
 }
 
 function parse(s: string, options: CalcOptions = {}): ASTNode[] {
-  const lexer: Lexer = createLexer(s, { allowedUnits: options.allowedUnits });
+  const lexer: Lexer = createLexer(s, options);
 
   let lexers = validateTokenStream(lexer);
 
@@ -358,9 +359,7 @@ function evaluateParserNodes(node: ASTNode): UnitValue {
   return nodeHandlers[typedNode.type as keyof typeof nodeHandlers](node as any);
 }
 
-export interface CalcOptions {
-  allowedUnits?: Set<string>;
-}
+export { CalcOptions };
 
 export function calc(
   s: string,

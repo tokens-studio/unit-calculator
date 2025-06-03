@@ -371,11 +371,6 @@ export function calc(
   const results = parsers.map((p) => {
     const result = evaluateParserNodes(p);
 
-    // Make sure result is a UnitValue before checking isUnitless
-    if (!(result instanceof UnitValue)) {
-      return result as unknown as number;
-    }
-
     // Return number for unitless values, string for values with units
     // If this is a result of dividing same units, return as string
     if (result.isUnitless()) {

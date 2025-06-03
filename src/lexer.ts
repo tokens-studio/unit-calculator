@@ -209,7 +209,7 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
   );
 }
 
-const parsers: TokenParser[] = [
+const tokenizers: TokenParser[] = [
   parseNumber as TokenParser,
   parseIdentifier,
   (s) => parseOperator(s, "+"),
@@ -241,15 +241,15 @@ export default function lex(s: string, options: LexerOptions = {}): Lexer {
   while (remaining.length > 0) {
     let wasMatched = false;
 
-    for (const tokenizer of parsers) {
+    for (const tokenizer of tokenizers) {
       let token: Token | undefined;
-      
+
       if (tokenizer === parseNumber) {
         token = parseNumber(remaining, tokens, allowedUnits);
       } else {
         token = tokenizer(remaining);
       }
-      
+
       if (token) {
         wasMatched = true;
         token.charpos = charpos;

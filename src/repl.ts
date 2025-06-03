@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import readline from "readline";
 import { calc } from "./parser.js";
-import { createStandardConfig } from "./configSetup.js";
+import { createPenpotConfig } from "./configSetup.js";
 
-const config = createStandardConfig();
+const config = createPenpotConfig();
 
 export function startRepl(): void {
   const rl = readline.createInterface({

@@ -4,7 +4,7 @@ import { createConfig, addUnitConversions } from "./config.js";
 export const baseSize = 16;
 
 // Create a standard config with px and rem unit conversions
-export function createStandardConfig() {
+export function createPenpotConfig() {
   const config = createConfig({
     allowedUnits: new Set(["px", "rem"]),
   });

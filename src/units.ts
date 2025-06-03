@@ -1,6 +1,18 @@
 import { CalcConfig, defaultConfig } from "./config.js";
 
+type UnitConversionKey = string;
+type UnitConversionFunction = (left: UnitValue, right: UnitValue) => UnitValue;
+
 export class UnitValue {
+  // prettier-ignore
+  static unitConversions: Map<UnitConversionKey, UnitConversionFunction> = new Map([
+    // Example conversions
+    ["px,+,rem", (left, right) => new UnitValue(left.value + (right.value * 16), "px", false, left.config)],
+    ["rem,+,px", (left, right) => new UnitValue((left.value * 16) + right.value, "px", false, left.config)],
+    ["px,-,rem", (left, right) => new UnitValue(left.value - (right.value * 16), "px", false, left.config)],
+    ["rem,-,px", (left, right) => new UnitValue((left.value * 16) - right.value, "px", false, left.config)],
+    // Add more conversions as needed
+  ]);
   value: number;
   unit: string | null;
   fromUnitDivision: boolean;
@@ -31,11 +43,30 @@ export class UnitValue {
     return this.unit === null;
   }
 
+  static getConversionKey(
+    leftUnit: string | null,
+    operator: string,
+    rightUnit: string | null
+  ): UnitConversionKey {
+    const left = leftUnit || "";
+    const right = rightUnit || "";
+    return `${left},${operator},${right}`;
+  }
+
   isCompatibleWith(other: UnitValue): boolean {
-    return (
-      (this.isUnitless() && other.isUnitless()) ||
-      (this.unit === other.unit && this.unit !== null)
-    );
+    // Same units are always compatible
+    if (this.unit === other.unit) {
+      return true;
+    }
+
+    // Both unitless is compatible
+    if (this.isUnitless() && other.isUnitless()) {
+      return true;
+    }
+
+    // Check if there's a conversion defined for these units
+    const key = UnitValue.getConversionKey(this.unit, "+", other.unit);
+    return UnitValue.unitConversions.has(key);
   }
 
   canMultiplyWith(other: UnitValue): boolean {
@@ -47,36 +78,54 @@ export class UnitValue {
   }
 
   add(other: UnitValue): UnitValue {
-    if (!this.isCompatibleWith(other)) {
-      throw new Error(
-        `Cannot add incompatible units: ${this.unit || "unitless"} and ${
-          other.unit || "unitless"
-        }`
+    // Same units or one is unitless
+    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
+      return new UnitValue(
+        this.value + other.value,
+        this.unit || other.unit,
+        false,
+        this.config
       );
     }
 
-    return new UnitValue(
-      this.value + other.value,
-      this.unit || other.unit,
-      false,
-      this.config
+    // Check for conversion
+    const key = UnitValue.getConversionKey(this.unit, "+", other.unit);
+    const conversion = UnitValue.unitConversions.get(key);
+
+    if (conversion) {
+      return conversion(this, other);
+    }
+
+    throw new Error(
+      `Cannot add incompatible units: ${this.unit || "unitless"} and ${
+        other.unit || "unitless"
+      }`
     );
   }
 
   subtract(other: UnitValue): UnitValue {
-    if (!this.isCompatibleWith(other)) {
-      throw new Error(
-        `Cannot subtract incompatible units: ${this.unit || "unitless"} and ${
-          other.unit || "unitless"
-        }`
+    // Same units or one is unitless
+    if (this.unit === other.unit || this.isUnitless() || other.isUnitless()) {
+      return new UnitValue(
+        this.value - other.value,
+        this.unit || other.unit,
+        false,
+        this.config
       );
     }
 
-    return new UnitValue(
-      this.value - other.value,
-      this.unit || other.unit,
-      false,
-      this.config
+    // Check for conversion
+    const key = UnitValue.getConversionKey(this.unit, "-", other.unit);
+    const conversion = UnitValue.unitConversions.get(key);
+
+    if (conversion) {
+      return conversion(this, other);
+    }
+
+    throw new Error(
+      `Cannot subtract incompatible units: ${this.unit || "unitless"} and ${
+        other.unit || "unitless"
+      }`
     );
   }
 

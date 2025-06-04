@@ -2,6 +2,7 @@ import type { CalcConfig } from "./config.js";
 import { defaultConfig } from "./config.js";
 import createLexer, { Lexer } from "./lexer.js";
 import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
+import type { IUnitValue } from "./utils/units.d.js";
 import { UnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
@@ -40,7 +41,7 @@ type ASTNode =
   | BinaryOpNode
   | FunctionCallNode
   | NegationNode
-  | UnitValue
+  | IUnitValue
   | number;
 
 type NudFunction = (
@@ -251,7 +252,7 @@ function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   );
 }
 
-function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
+function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
   if (typeof node === "number") return new UnitValue(node, null, false, config);
   if (node instanceof UnitValue) return node;
 
@@ -354,7 +355,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
 
 export interface RunResult {
   parsers: ASTNode[];
-  exec: () => UnitValue[];
+  exec: () => IUnitValue[];
 }
 
 export function run(s: string, options: Partial<CalcConfig> = {}): RunResult {

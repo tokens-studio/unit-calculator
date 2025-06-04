@@ -4,8 +4,9 @@ import {
   getConversionKey,
   findBestConversionKey,
 } from "./config.js";
+import type { IUnitValue, UnitValueConstructor } from "./utils/units.d.js";
 
-export class UnitValue {
+export class UnitValue implements IUnitValue {
   value: number;
   unit: string | null;
   fromUnitDivision: boolean;
@@ -23,7 +24,7 @@ export class UnitValue {
     this.config = config;
   }
 
-  static areAllCompatible(values: UnitValue[]): boolean {
+  static areAllCompatible(values: IUnitValue[]): boolean {
     if (values.length <= 1) {
       return true;
     }
@@ -36,7 +37,7 @@ export class UnitValue {
     return this.unit === null;
   }
 
-  isCompatibleWith(other: UnitValue): boolean {
+  isCompatibleWith(other: IUnitValue): boolean {
     // Same units are always compatible
     if (this.unit === other.unit) {
       return true;
@@ -57,7 +58,7 @@ export class UnitValue {
     );
   }
 
-  canMultiplyWith(other: UnitValue): boolean {
+  canMultiplyWith(other: IUnitValue): boolean {
     // Check if there's a conversion defined for these units
     return !!findBestConversionKey(
       this.config.unitConversions,
@@ -71,7 +72,7 @@ export class UnitValue {
     return this.isUnitless() ? `${this.value}` : `${this.value}${this.unit}`;
   }
 
-  add(other: UnitValue): UnitValue {
+  add(other: IUnitValue): IUnitValue {
     if (this.unit === other.unit) {
       return new UnitValue(
         this.value + other.value,
@@ -100,7 +101,7 @@ export class UnitValue {
     );
   }
 
-  subtract(other: UnitValue): UnitValue {
+  subtract(other: IUnitValue): IUnitValue {
     // Same units
     if (this.unit === other.unit) {
       return new UnitValue(
@@ -178,7 +179,7 @@ export class UnitValue {
     );
   }
 
-  multiply(other: UnitValue): UnitValue {
+  multiply(other: IUnitValue): IUnitValue {
     // If both have the same unit
     if (this.unit === other.unit) {
       return new UnitValue(
@@ -228,7 +229,7 @@ export class UnitValue {
     );
   }
 
-  divide(other: UnitValue): UnitValue {
+  divide(other: IUnitValue): IUnitValue {
     // Check for conversion using wildcard matching
     const conversion = findBestConversionKey(
       this.config.unitConversions,
@@ -256,7 +257,7 @@ export class UnitValue {
     );
   }
 
-  negate(): UnitValue {
+  negate(): IUnitValue {
     return new UnitValue(
       -this.value,
       this.unit,

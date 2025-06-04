@@ -8,14 +8,21 @@ It lets you define custom rule sets on how mixed units will be converted.
 You can run the repl with a few presets (css units, dimensions, durations, etc)
 
 ``` typescript
+// Allows defining custom units
 > 1h + 1min
 [ "61min" ]
 
+// Allows unit mixing defined per custom functions
 > 10px + 1rem
 [ "26px" ]
 
+// Allows functions
 > abs(2px)
 [ "2px" ]
+
+// Allows multiple groups
+> (2px * 4) - (2rem * 10) 1rem 2% * 10
+[ "-312px", "1rem", "20%" ]
 ```
 
 ## Running it

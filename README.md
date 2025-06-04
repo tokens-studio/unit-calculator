@@ -20,7 +20,7 @@ You can run the repl with a few presets (css units, dimensions, durations, etc)
 > abs(2px)
 [ "2px" ]
 
-// Allows multiple groups
+// Handles multiple expressions
 > (2px * 4) - (2rem * 10) 1rem 2% * 10
 [ "-312px", "1rem", "20%" ]
 ```

@@ -14,8 +14,12 @@ export function startRepl(): void {
   });
 
   console.log("Token Value Calculator REPL");
-  console.log("Type expressions like '2px + 2rem' or '2km + 500m' or 'ctrl+c' to exit");
-  console.log("Supported dimension units: km, m, cm, mm, kg, g, mg, h, min, s, ms");
+  console.log(
+    "Type expressions like '2px + 2rem' or '2km + 500m' or 'ctrl+c' to exit"
+  );
+  console.log(
+    "Supported dimension units: km, m, cm, mm, kg, g, mg, h, min, s, ms"
+  );
 
   rl.on("line", function (line) {
     try {

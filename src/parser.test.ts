@@ -4,7 +4,7 @@ import {
   defaultMathFunctions,
   defaultUnitConversions,
   createConfig,
-  addUnitConversions
+  addUnitConversions,
 } from "./config.js";
 import { calc } from "./parser.js";
 
@@ -230,7 +230,7 @@ describe("Unit conversions", () => {
     defaultUnitConversions.forEach((fn, key) => {
       config.unitConversions.set(key, fn);
     });
-    
+
     // Add wildcard conversions
     addUnitConversions(config, [
       // Wildcard for left unit (any unit to px)
@@ -277,7 +277,7 @@ describe("Unit conversions", () => {
     defaultUnitConversions.forEach((fn, key) => {
       config.unitConversions.set(key, fn);
     });
-    
+
     // Add unitless conversions
     addUnitConversions(config, [
       // Unitless to px conversions

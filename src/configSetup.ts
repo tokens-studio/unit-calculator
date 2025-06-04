@@ -1,9 +1,9 @@
 import { createConfig, addUnitConversions, CSS_UNITS } from "./config.js";
-import { 
-  lengthTable, 
-  timeTable, 
+import {
+  lengthTable,
+  timeTable,
   weightTable,
-  generateConversionsFromTable 
+  generateConversionsFromTable,
 } from "./dimensionUnits.js";
 
 // Base size for rem to px conversion (1rem = 16px)
@@ -90,37 +90,37 @@ export function createDimensionConfig() {
   const allDimensionUnits = [
     ...Object.keys(lengthTable),
     ...Object.keys(timeTable),
-    ...Object.keys(weightTable)
+    ...Object.keys(weightTable),
   ];
-  
+
   const config = createConfig({
     allowedUnits: new Set([...CSS_UNITS, ...allDimensionUnits]),
   });
 
   // Add length unit conversions
   const lengthConversions = [
-    ...generateConversionsFromTable(lengthTable, '+'),
-    ...generateConversionsFromTable(lengthTable, '-'),
-    ...generateConversionsFromTable(lengthTable, '*'),
-    ...generateConversionsFromTable(lengthTable, '/')
+    ...generateConversionsFromTable(lengthTable, "+"),
+    ...generateConversionsFromTable(lengthTable, "-"),
+    ...generateConversionsFromTable(lengthTable, "*"),
+    ...generateConversionsFromTable(lengthTable, "/"),
   ];
   addUnitConversions(config, lengthConversions);
 
   // Add time unit conversions
   const timeConversions = [
-    ...generateConversionsFromTable(timeTable, '+'),
-    ...generateConversionsFromTable(timeTable, '-'),
-    ...generateConversionsFromTable(timeTable, '*'),
-    ...generateConversionsFromTable(timeTable, '/')
+    ...generateConversionsFromTable(timeTable, "+"),
+    ...generateConversionsFromTable(timeTable, "-"),
+    ...generateConversionsFromTable(timeTable, "*"),
+    ...generateConversionsFromTable(timeTable, "/"),
   ];
   addUnitConversions(config, timeConversions);
 
   // Add weight unit conversions
   const weightConversions = [
-    ...generateConversionsFromTable(weightTable, '+'),
-    ...generateConversionsFromTable(weightTable, '-'),
-    ...generateConversionsFromTable(weightTable, '*'),
-    ...generateConversionsFromTable(weightTable, '/')
+    ...generateConversionsFromTable(weightTable, "+"),
+    ...generateConversionsFromTable(weightTable, "-"),
+    ...generateConversionsFromTable(weightTable, "*"),
+    ...generateConversionsFromTable(weightTable, "/"),
   ];
   addUnitConversions(config, weightConversions);
 
@@ -133,7 +133,7 @@ export function createDimensionConfig() {
 export function createStandardConfig() {
   // Start with dimension units
   const config = createDimensionConfig();
-  
+
   // Add px/rem conversions
   addUnitConversions(config, [
     [
@@ -165,6 +165,6 @@ export function createStandardConfig() {
       }),
     ],
   ]);
-  
+
   return config;
 }

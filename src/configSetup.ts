@@ -10,7 +10,7 @@ import {
 export const baseSize = 16;
 
 export const createPercentConfig = function () {
-  const addPercent = (percent, unit) => ({
+  const addPercent = (percent: { value: number }, unit: { value: number }) => ({
     value: (unit.value / 100) * percent.value + unit.value,
     unit: "px",
   });

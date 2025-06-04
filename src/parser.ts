@@ -1,8 +1,8 @@
-import type { CalcConfig } from "./config.ts";
-import { defaultConfig } from "./config.ts";
+import type { CalcConfig } from "./config.js";
+import { defaultConfig } from "./config.js";
 import createLexer, { Lexer } from "./lexer.js";
 import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
-import { UnitValue } from "./units.ts";
+import { UnitValue } from "./units.js";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 type BinaryOpType = "+" | "-" | "*" | "/" | "^";

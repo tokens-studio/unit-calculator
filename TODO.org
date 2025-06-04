@@ -1,0 +1,5 @@
+* TODO Allow any non operator as a unit
+
+Right now we only strings and % characters as units
+
+* TODO Multi unit handling in functions

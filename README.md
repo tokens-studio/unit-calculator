@@ -12,7 +12,127 @@ bun run cli "1+1" # Evaluate expression
 > 2
 ```
 
-## Concepts
+## Configuration
+
+The configuration for the engine looks like this:
+
+``` typescript
+export interface CalcConfig {
+  allowedUnits: Set<string>;
+  mathFunctions: Record<string, args => number>;
+  unitConversions: Map<string, (LeftToken, RightToken) => {value: number; unit: string | null}>;
+}
+```
+
+## `allowedUnits`
+
+Define which units are allowed in your engine, per default CSS units are allowed.
+
+Right now you can use any string value as unit to be allowed, any non allowed unit will throw.
+
+For instance to allow measure units
+
+``` typescript
+{allowedUnits: new Set(["km", "m", "cm", "mm"])}
+```
+
+So you can use them in your calculations
+
+```
+> 2km + 2km => [ "4km" ]
+```
+
+To mix units you have to set your conversion table
+
+```
+> 2foo + 2bar
+Invalid unit: "foo". Allowed units are: px, em, rem, %, vh, vw, vmin, vmax, cm, mm, in, pt, pc
+```
+
+## `unitConversions`
+
+You can define how units convert by passing in a Vector of rules.
+
+These rules will define how the engine will convert units when you mix them.
+
+### Rules
+
+- Mixing the same units will always preserve units.
+- Unitless Numbers will be matched with `null`, e.g.: `[null, '+', 'px']`
+- You can give a wildcard operator with `*`, e.g.: `['*', '+', '%']`
+
+### Defining a conversion table entry
+
+To define an entry you give it a 3-tuple of `[unit, operator, unit]` and a function that handles the conversion.
+
+For example if you want to convert rems when mixing with px by multiplying rem by a base size you could pass:
+
+``` typescript
+["px", "+", "rem"], (left, right) => {value: left.value + (right.value * 16), unit: "px"},
+```
+
+So you get this result
+
+``` typescript
+> 1px + 1rem
+[ "17px" ]
+```
+
+### Percent Example
+
+You could define a unit `%` that will always add `x%` to the other value
+
+``` typescript
+export const createPercentConfig = function () {
+  const addPercent = (percentToken, unitToken) => ({
+    value: (unitToken.value / 100) * percentToken.value + unitToken.value,
+    unit: unitToken.unit,
+  });
+
+  const config = createConfig();
+
+  return addUnitConversions(config, [
+    [
+      ["%", "+", "*"], (left, right) => addPercent(left, right),
+    ],
+    [
+      ["*", "+", "%"], (left, right) => addPercent(right, left),
+    ],
+  ]);
+};
+```
+
+Now you can add percent to any value that you accept
+
+``` typescript
+> 100px + 10%
+[ "110px" ]
+```
+
+## `mathFunctions`
+
+You can supply your own math functions via the `mathFunctions` property.
+
+Per default all functions in js `Math` are included.
+
+You could define custom functions like this
+
+``` typescript
+const options = {
+    mathFunctions: { add: (a: number, b: number) => a + b },
+};
+```
+
+Now you can use your custom functions like this
+
+``` typescript
+> add(10px, 10px)
+[ "20px" ]
+```
+
+*Functions dont accept multi unit handling yet!*
+
+## Parser 
 
 In general, the Pratt Parser solves the following problem: given the string "1 + 2 * 3", does the "2" associate with the "+" or the "&#42;".  It also solves "-" being both a prefix _and_ infix operator, as well as elegantly handling right associativity.
 

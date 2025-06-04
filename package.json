@@ -32,11 +32,10 @@
   },
   "homepage": "https://github.com/tokens-studio/unit-calculator#readme",
   "devDependencies": {
-    "@types/node": "^20.17.52",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "vitest": "^1.4.0"
+    "vitest": "^3.2.1"
   },
   "publishConfig": {
     "access": "public",

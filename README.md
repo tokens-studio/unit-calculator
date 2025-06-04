@@ -1,6 +1,22 @@
-# Token Value Calculator
+# Unit Calculator
 
-This project demonstrates the fundamentals of a Pratt Parser. It's based on this [repository](https://github.com/jrop/pratt-calculator), [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
+A tool to run calculations on strings with units.
+It lets you define custom rule sets on how mixed units will be converted.
+
+## Example
+
+You can run the repl with a few presets (css units, dimensions, durations, etc)
+
+``` typescript
+> 1h + 1min
+[ "61min" ]
+
+> 10px + 1rem
+[ "26px" ]
+
+> abs(2px)
+[ "2px" ]
+```
 
 ## Running it
 
@@ -133,6 +149,8 @@ Now you can use your custom functions like this
 *Functions dont accept multi unit handling yet!*
 
 ## Concepts
+
+This project demonstrates the fundamentals of a Pratt Parser. It's based on this [repository](https://github.com/jrop/pratt-calculator), [this paper](https://tdop.github.io/) by Vaughan Pratt, and also learns from [this article](http://javascript.crockford.com/tdop/tdop.html) and [this article](http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/).
 
 ### Parser
 

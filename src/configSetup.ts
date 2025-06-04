@@ -1,4 +1,4 @@
-import { createConfig, addUnitConversions, CSS_UNITS } from "./config.js";
+import { createConfig, addUnitConversions, CSS_UNITS } from "./config.ts";
 import {
   lengthTable,
   timeTable,

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import readline from "readline";
-import { calc } from "./parser.js";
-import { createStandardConfig } from "./configSetup.js";
+import { calc } from "./parser.ts";
+import { createStandardConfig } from "./configSetup.ts";
 
 const config = createStandardConfig();
 

@@ -1,11 +1,11 @@
-import { CalcConfig, defaultConfig } from "./config.js";
+import { CalcConfig, defaultConfig } from "./config.ts";
 import createLexer, {
   Lexer,
   NumberToken,
   NumberWithUnitToken,
   Token,
 } from "./lexer.js";
-import { UnitValue } from "./units.js";
+import { UnitValue } from "./units.ts";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 type BinaryOpType = "+" | "-" | "*" | "/" | "^";

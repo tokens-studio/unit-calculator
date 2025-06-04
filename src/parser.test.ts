@@ -6,7 +6,7 @@ import {
   createConfig,
   addUnitConversions,
 } from "./config.js";
-import { calc } from "./parser.js";
+import { calc } from "./parser.ts";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {

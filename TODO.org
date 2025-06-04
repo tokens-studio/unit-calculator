@@ -38,6 +38,75 @@ const add = (l, r) => {
 }
 #+end_src
 
+Or evlolve it even more
+
+#+begin_src ts
+import { match, P } from 'ts-pattern';
+
+const remToPx = (token) => token.unit === 'rem' ? token.value * 16 : token.value;
+
+const matchInfix = (infix, l, r) => match(infix)
+    .with("+", l.value + r.value)
+    .with("-", l.value - r.value)
+    .with("/", l.value / r.value)
+    .with("*", l.value * r.value);
+
+const operate = (fn, l, r) => match([fn, l.unit, r.unit])
+    // Allow adding & subtracting  rem with px by converting to px by the basesize
+    .with(
+        [P.union("+", "-"), P.union("rem", "px"), P.union("rem", "px")],
+        ([infix, l, r]) => {value: matchInfix(infix, remToPx(l), remToPx(r)), unit: "px"}
+    )
+    // Allow multiplying by unitless
+    .with(
+        [P.union("*", "/"), Number, P._],
+        ([infix, l, r]) => {:value matchInfix(infix, l.value, r.value), unit: r.unit}
+    )
+    .with(
+        [P.union("*", "/"), P._, Number],
+        ([infix, l, r]) => {:value matchInfix(infix, l.value, r.value), unit: l.unit}
+    )
+#+end_src
+
+You could then pack these into presets
+
+#+begin_src ts
+const allowMultDivWithUnitless (fn, l, r) => match([fn, l.unit, r.unit])
+    .with(
+        [P.union("*", "/"), Number, P._],
+        ([infix, l, r]) => {:value matchInfix(infix, l.value, r.value), unit: r.unit}
+    )
+    .with(
+        [P.union("*", "/"), P._, Number],
+        ([infix, l, r]) => {:value matchInfix(infix, l.value, r.value), unit: l.unit}
+    )
+
+const allowAddSubtractOnRemWithPx = (fn, l, r) => match([fn, l.unit, r.unit])
+    // Allow adding & subtracting  rem with px by converting to px by the basesize
+    .with(
+        [P.union("+", "-"), P.union("rem", "px"), P.union("rem", "px")],
+        ([infix, l, r]) => {value: matchInfix(infix, remToPx(l), remToPx(r)), unit: "px"}
+    )
+
+const ops = [
+    allowMultDivWithUnitless,
+    allowAddSubtractOnRemWithPx,
+]
+
+const operate = (fn, l, r) => {
+    let result;
+    for (op of ops) {
+        const opResult = op(fn, l, r);
+        if opResult {
+            result = opResult
+            break;
+        }
+    }
+    result
+}
+#+end_src
+
+
 * TODO Tuple mathcing
 
 Look into tuple matching from ts-match

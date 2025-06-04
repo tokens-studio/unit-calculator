@@ -30,11 +30,11 @@ You could also use libraries like ts-match for this
 #+begin_src ts
 import { match, P } from 'ts-pattern';
 
-const remToPx = (token) => token.type === 'rem' && token.value * 16;
+const remToPx = (token) => token.type === 'rem' ? token.value * 16 : token.value;
 
 const add = (l, r) => {
     return match(new Set([l.type, r.type]))
-      .with(P.set("rem", "px"), () => remToPx(l) + remToPx(r))
+      .with(P.set("rem", "px"), () => remToPx(l) + remToPx(r));
 }
 #+end_src
 

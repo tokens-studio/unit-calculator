@@ -2,7 +2,7 @@
   "name": "@tokens-studio/unit-calculator",
   "private": false,
   "version": "0.0.1",
-  "description": "",
+  "description": "A tool to run calculations on strings with units",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

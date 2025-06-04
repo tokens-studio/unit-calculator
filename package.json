@@ -10,8 +10,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "lint": "prettier -l 'src/**/*.ts'",
-    "lint:fix": "prettier --write 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
     "prepack": "npm run build && npm test",
     "test": "vitest run",

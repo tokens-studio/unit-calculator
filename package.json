@@ -18,8 +18,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "npm run build && node dist/index.js",
-    "cli": "ts-node --esm ./src/cli.ts",
-    "cli:dev": "ts-node --esm ./src/cli.ts"
+    "cli": "node --loader ts-node/esm ./src/cli.ts",
+    "cli:dev": "node --loader ts-node/esm ./src/cli.ts"
   },
   "repository": {
     "type": "git",

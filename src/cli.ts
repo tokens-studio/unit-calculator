@@ -1,7 +1,18 @@
 #!/usr/bin/env node
-import { calc } from "./parser.js";
-import { startRepl } from "./repl.js";
-import { createStandardConfig } from "./configSetup.js";
+// Use dynamic imports to handle both ts-node and compiled js environments
+const importModule = async (path) => {
+  try {
+    // First try with .ts extension (for ts-node)
+    return await import(path + '.ts');
+  } catch (e) {
+    // Fall back to .js extension (for compiled code)
+    return await import(path + '.js');
+  }
+};
+
+const { calc } = await importModule('./parser');
+const { startRepl } = await importModule('./repl');
+const { createStandardConfig } = await importModule('./configSetup');
 
 const config = createStandardConfig();
 

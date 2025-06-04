@@ -37,6 +37,8 @@ export function startRepl(): void {
   rl.prompt();
 }
 
-if (require.main === module) {
+// Check if this file is being run directly
+import { fileURLToPath } from 'url';
+if (import.meta.url === fileURLToPath(import.meta.url)) {
   startRepl();
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { UnitValue } from "./units.ts";
-import { createConfig, addUnitConversions } from "./config.ts";
+import { UnitValue } from "./units.js";
+import { createConfig, addUnitConversions } from "./config.js";
 
 describe("UnitValue with custom unit conversions", () => {
   // Create a config with custom unit conversions using array syntax

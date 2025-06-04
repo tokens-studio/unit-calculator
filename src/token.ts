@@ -1,4 +1,4 @@
-import type { Token } from "./lexer.ts";
+import type { Token } from "./lexer.js";
 
 /**
  * Checks if a token's type matches the specified type or any of the types in an array

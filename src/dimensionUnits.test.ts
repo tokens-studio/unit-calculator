@@ -7,8 +7,8 @@ import {
     timeTable,
     weightTable,
 } from "./dimensionUnits.js";
-import { createConfig, addUnitConversions } from "./config.ts";
-import { calc } from "./parser.ts";
+import { createConfig, addUnitConversions } from "./config.js";
+import { calc } from "./parser.js";
 
 describe("Dimension Tables", () => {
     it("creates correct conversion table for length units", () => {

@@ -132,7 +132,9 @@ Now you can use your custom functions like this
 
 *Functions dont accept multi unit handling yet!*
 
-## Parser 
+## Concepts
+
+### Parser
 
 In general, the Pratt Parser solves the following problem: given the string "1 + 2 * 3", does the "2" associate with the "+" or the "&#42;".  It also solves "-" being both a prefix _and_ infix operator, as well as elegantly handling right associativity.
 
@@ -170,7 +172,7 @@ function expr(rbp) {
 }
 ```
 
-## References
+#### References
 
 - [Simple but Powerful Pratt Parsing](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html)
 - [Pratt Parsing: Introduction and Implementation in TypeScript](https://www.less-bug.com/en/posts/pratt-parsing-introduction-and-implementation-in-typescript/)

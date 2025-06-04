@@ -22,15 +22,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tokens-studio/Unit-Calculator.git"
+		"url": "git+https://github.com/tokens-studio/unit-calculator.git"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/tokens-studio/Unit-Calculator/issues"
+		"url": "https://github.com/tokens-studio/unit-calculator/issues"
 	},
-	"homepage": "https://github.com/tokens-studio/Unit-Calculator#readme",
+	"homepage": "https://github.com/tokens-studio/unit-calculator#readme",
 	"devDependencies": {
 		"@types/node": "^20.17.52",
 		"eslint": "^3.19.0",

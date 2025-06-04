@@ -33,8 +33,8 @@ You can run the repl with a few presets (css units, dimensions, durations, etc)
 ### In the console
 
 ``` sh
-bun run cli       # Start a repl
-bun run cli "1+1" # Evaluate expression
+npm run cli       # Start a repl
+npm run cli "1+1" # Evaluate expression
 > 2
 ```
 

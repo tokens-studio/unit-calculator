@@ -1,19 +1,9 @@
-// Dimension units table generator
-// This file provides utilities to generate conversion tables for dimension units
-
 export interface UnitConversionTable {
-  // Maps from source unit to target unit with conversion factor
   [sourceUnit: string]: {
     [targetUnit: string]: number;
   };
 }
 
-/**
- * Creates a conversion table for a set of dimension units
- * @param units Array of units in order from largest to smallest
- * @param conversionFactors Array of conversion factors between adjacent units
- * @returns A complete conversion table between all units
- */
 export function createDimensionTable(
   units: string[],
   conversionFactors: number[]
@@ -201,7 +191,7 @@ export function generateConversionsFromTable(
                 unit: null,
               };
             }
-            
+
             if (targetIsSmaller) {
               // Convert left to target's unit
               const convertedLeft = left.value * sourceToTargetFactor;

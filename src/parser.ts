@@ -352,6 +352,21 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): UnitValue {
   }
 }
 
+export interface RunResult {
+  parsers: ASTNode[];
+  exec: () => UnitValue[];
+}
+
+export function run(s: string, options: Partial<CalcConfig> = {}): RunResult {
+  const config = { ...defaultConfig, ...options };
+  const parsers = parse(s, config);
+
+  return {
+    parsers,
+    exec: (ps = parsers) => parsers.map((p) => evaluateParserNodes(p, config)),
+  };
+}
+
 export function calc(
   s: string,
   options: Partial<CalcConfig> = {}

@@ -1,3 +1,5 @@
+import { IncompatibleUnitsError } from "./utils/errors.js";
+
 export const CSS_UNITS = [
   "px",
   "em",
@@ -95,11 +97,7 @@ export const defaultConversionsArray: Array<
           unit: null,
         };
       }
-      throw new Error(
-        `Cannot divide incompatible units: ${left.unit || "unitless"} and ${
-          right.unit || "unitless"
-        }`
-      );
+      throw new IncompatibleUnitsError({ operation: "/", left, right });
     },
   ],
 ];

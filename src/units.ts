@@ -4,6 +4,7 @@ import {
   getConversionKey,
   findBestConversionKey,
 } from "./config.js";
+import { IncompatibleUnitsError } from "./utils/errors.js";
 import type { IUnitValue, UnitValueConstructor } from "./utils/units.d.js";
 
 export class UnitValue implements IUnitValue {
@@ -94,11 +95,11 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(result.value, result.unit, false, this.config);
     }
 
-    throw new Error(
-      `Cannot add incompatible units: ${this.unit || "unitless"} and ${
-        other.unit || "unitless"
-      }`
-    );
+    throw new IncompatibleUnitsError({
+      operation: "+",
+      left: this,
+      right: other,
+    });
   }
 
   subtract(other: IUnitValue): IUnitValue {
@@ -172,11 +173,11 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(result.value, result.unit, false, this.config);
     }
 
-    throw new Error(
-      `Cannot subtract incompatible units: ${this.unit || "unitless"} and ${
-        other.unit || "unitless"
-      }`
-    );
+    throw new IncompatibleUnitsError({
+      operation: "-",
+      left: this,
+      right: other,
+    });
   }
 
   multiply(other: IUnitValue): IUnitValue {
@@ -222,11 +223,11 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(result.value, result.unit, false, this.config);
     }
 
-    throw new Error(
-      `Cannot multiply incompatible units: ${this.unit || "unitless"} and ${
-        other.unit || "unitless"
-      }`
-    );
+    throw new IncompatibleUnitsError({
+      operation: "*",
+      left: this,
+      right: other,
+    });
   }
 
   divide(other: IUnitValue): IUnitValue {
@@ -250,11 +251,11 @@ export class UnitValue implements IUnitValue {
       );
     }
 
-    throw new Error(
-      `Cannot divide incompatible units: ${this.unit || "unitless"} and ${
-        other.unit || "unitless"
-      }`
-    );
+    throw new IncompatibleUnitsError({
+      operation: "/",
+      left: this,
+      right: other,
+    });
   }
 
   negate(): IUnitValue {

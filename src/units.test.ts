@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { UnitValue } from "./units.js";
 import { createConfig, addUnitConversions } from "./config.js";
+import { IncompatibleUnitsError } from "./utils/errors.js";
 
 describe("UnitValue with custom unit conversions", () => {
   // Create a config with custom unit conversions using array syntax
@@ -348,10 +349,8 @@ describe("UnitValue with custom unit conversions", () => {
       const em = defaultUnitValue(2, "em");
 
       // Cannot multiply or divide incompatible units
-      expect(() => px.multiply(em)).toThrow(
-        /Cannot multiply incompatible units/
-      );
-      expect(() => px.divide(em)).toThrow(/Cannot divide incompatible units/);
+      expect(() => px.multiply(em)).toThrow(IncompatibleUnitsError);
+      expect(() => px.divide(em)).toThrow(IncompatibleUnitsError);
     });
   });
 
@@ -360,16 +359,14 @@ describe("UnitValue with custom unit conversions", () => {
       const px = new UnitValue(10, "px", false, config);
       const cm = new UnitValue(2, "cm", false, config);
 
-      expect(() => px.add(cm)).toThrow(/Cannot add incompatible units/);
+      expect(() => px.add(cm)).toThrow(IncompatibleUnitsError);
     });
 
     it("throws error when subtracting incompatible units", () => {
       const px = new UnitValue(10, "px", false, config);
       const cm = new UnitValue(2, "cm", false, config);
 
-      expect(() => px.subtract(cm)).toThrow(
-        /Cannot subtract incompatible units/
-      );
+      expect(() => px.subtract(cm)).toThrow(IncompatibleUnitsError);
     });
   });
 });

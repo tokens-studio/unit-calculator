@@ -1,7 +1,9 @@
 # Unit Calculator
 
 A tool to run calculations on strings with units.
-It lets you define custom rule sets on how mixed units will be converted.
+The unit calculator lets you define custom rules on how mixed units will be resolved.
+
+It will mainly be used to resolve math operations on design token epxressions.
 
 ## Example
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { calc } from "./parser";
-import { startRepl } from "./repl";
-import { createStandardConfig } from "./configSetup";
+import { calc } from "./parser.js";
+import { startRepl } from "./repl.js";
+import { createStandardConfig } from "./configSetup.js";
 
 const config = createStandardConfig();
 

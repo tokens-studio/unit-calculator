@@ -1,10 +1,7 @@
-import { CalcConfig, defaultConfig } from "./config.ts";
-import createLexer, {
-  Lexer,
-  NumberToken,
-  NumberWithUnitToken,
-  Token,
-} from "./lexer.js";
+import type { CalcConfig } from "./config.ts";
+import { defaultConfig } from "./config.ts";
+import createLexer, { Lexer } from "./lexer.js";
+import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
 import { UnitValue } from "./units.ts";
 
 type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";

@@ -1,6 +1,6 @@
 import { describe, expect, it, test } from "vitest";
+import type { CalcConfig } from "./config.js";
 import {
-  CalcConfig,
   defaultMathFunctions,
   defaultUnitConversions,
   createConfig,

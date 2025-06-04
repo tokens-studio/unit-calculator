@@ -1,4 +1,5 @@
-import { CalcConfig, createConfig, defaultConfig } from "./config.ts";
+import type { CalcConfig } from "./config.ts";
+import { createConfig, defaultConfig } from "./config.ts";
 
 export type TokenType =
   | "EOF"

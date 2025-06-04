@@ -1,5 +1,5 @@
+import type { CalcConfig } from "./config.js";
 import {
-  CalcConfig,
   defaultConfig,
   getConversionKey,
   findBestConversionKey,

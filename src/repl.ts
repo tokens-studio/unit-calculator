@@ -38,7 +38,14 @@ export function startRepl(): void {
 }
 
 // Check if this file is being run directly
-import { fileURLToPath } from 'url';
-if (import.meta.url === fileURLToPath(import.meta.url)) {
+const isMainModule = () => {
+  try {
+    return import.meta.url.endsWith(process.argv[1].replace('file://', ''));
+  } catch (e) {
+    return false;
+  }
+};
+
+if (isMainModule()) {
   startRepl();
 }

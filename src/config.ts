@@ -1,4 +1,5 @@
 import { IncompatibleUnitsError } from "./utils/errors.js";
+import { UnitValue } from "./units.js";
 
 export const CSS_UNITS = [
   "px",
@@ -30,27 +31,102 @@ export type UnitConversionFunction = (
 
 export interface CalcConfig {
   allowedUnits: Set<string>;
-  mathFunctions: Record<string, (...args: number[]) => number>;
+  mathFunctions: Record<string, (...args: any[]) => any>;
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>;
 }
 
-export const defaultMathFunctions: Record<
-  string,
-  (...args: number[]) => number
-> = {
-  abs: Math.abs,
-  sin: Math.sin,
-  cos: Math.cos,
-  tan: Math.tan,
-  sqrt: Math.sqrt,
-  floor: Math.floor,
-  ceil: Math.ceil,
-  round: Math.round,
-  log: Math.log,
-  exp: Math.exp,
-  pow: Math.pow,
-  max: Math.max,
-  min: Math.min,
+export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
+  abs: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.abs(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  sin: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.sin(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  cos: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.cos(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  tan: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.tan(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  sqrt: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.sqrt(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  floor: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.floor(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  ceil: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.ceil(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  round: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.round(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  log: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.log(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  exp: ({ value, unit, fromUnitDivision, config }) => {
+    const result = Math.exp(value);
+    return new UnitValue(result, unit, fromUnitDivision, config);
+  },
+  pow: (...unitValues) => {
+    if (unitValues.length !== 2) {
+      throw new Error("pow function requires exactly 2 arguments");
+    }
+
+    const [base, exp] = unitValues;
+
+    // Exponent must be unitless
+    if (exp.unit !== null) {
+      throw new IncompatibleUnitsError({
+        operation: "pow",
+        left: base,
+        right: exp,
+      });
+    }
+
+    const result = Math.pow(base.value, exp.value);
+    return new UnitValue(result, base.unit, base.fromUnitDivision, base.config);
+  },
+  max: (...unitValues) => {
+    if (unitValues.length === 0) return NaN;
+
+    if (!UnitValue.areAllSame(unitValues)) {
+      throw new IncompatibleUnitsError({
+        operation: "max",
+        left: unitValues[0],
+        right: unitValues[0],
+      });
+    }
+
+    const { unit, config } = unitValues[0];
+    const values = unitValues.map(({ value }) => value);
+    const result = Math.max(...values);
+    return new UnitValue(result, unit, false, config);
+  },
+  min: (...unitValues) => {
+    if (unitValues.length === 0) return NaN;
+
+    if (!UnitValue.areAllSame(unitValues)) {
+      throw new IncompatibleUnitsError({
+        operation: "min",
+        left: unitValues[0],
+        right: unitValues[0],
+      });
+    }
+
+    const { unit, config } = unitValues[0];
+    const values = unitValues.map(({ value }) => value);
+    const result = Math.min(...values);
+    return new UnitValue(result, unit, false, config);
+  },
 };
 
 // Create default unit conversions with array syntax

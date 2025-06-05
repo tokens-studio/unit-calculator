@@ -320,26 +320,28 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         return new UnitValue(n.target.ref, null, false, config);
       }
 
-      // Check for unit compatibility between arguments
-      if (!UnitValue.areAllCompatible(evaluatedArgs)) {
-        throw new Error(
-          `Cannot mix incompatible units in function arguments: ${
-            n.target.id
-          }(${evaluatedArgs.map((arg) => arg.toString()).join(", ")})`
+      const result = (n.target.ref as Function)(...evaluatedArgs);
+
+      if (result instanceof UnitValue) {
+        return result;
+      }
+
+      if (typeof result === "number") {
+        // Use the first argument's unit
+        const unit = evaluatedArgs[0].unit;
+        // Create a UnitValue with the result and the unit from the first argument
+        return new UnitValue(
+          result,
+          unit,
+          evaluatedArgs[0].fromUnitDivision,
+          config
         );
       }
 
-      // Extract values from UnitValue objects
-      const argValues = evaluatedArgs.map((arg) => arg.value);
-
-      // Find the first argument with a unit
-      const unitArg = evaluatedArgs.find((arg) => !arg.isUnitless());
-      const unit = unitArg ? unitArg.unit : null;
-
-      // All functions preserve units
+      // If the result is something else (like a string), convert to number and use first arg's unit
       return new UnitValue(
-        (n.target.ref as Function)(...argValues),
-        unit,
+        Number(result),
+        evaluatedArgs[0].unit,
         false,
         config
       );

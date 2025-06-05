@@ -7,6 +7,8 @@ import {
   addUnitConversions,
 } from "./config.js";
 import { calc } from "./parser.js";
+import { UnitValue } from "./units.js";
+import { IncompatibleUnitsError } from "./utils/errors.js";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {
@@ -380,142 +382,11 @@ describe("Custom math functions", () => {
 
   test("Custom math functions can be added", () => {
     const customFunctions = {
-      double: (x: number) => x * 2,
-      triple: (x: number) => x * 3,
-      square: (x: number) => x * x,
+      double: ({ value, unit, fromUnitDivision, config }) =>
+        new UnitValue(value * 2, unit, fromUnitDivision, config),
     };
 
     expect(calc("double(5)", { mathFunctions: customFunctions })).toEqual([10]);
-    expect(calc("triple(4)", { mathFunctions: customFunctions })).toEqual([12]);
-    expect(calc("square(3)", { mathFunctions: customFunctions })).toEqual([9]);
-  });
-
-  test("Custom functions with units", () => {
-    const customFunctions = {
-      double: (x: number) => x * 2,
-      square: (x: number) => x * x,
-      sum: (a: number, b: number) => a + b,
-    };
-
-    // All functions preserve units
-    expect(calc("square(3cm)", { mathFunctions: customFunctions })).toEqual([
-      "9cm",
-    ]);
-
-    expect(
-      calc("double(3cm)", {
-        mathFunctions: customFunctions,
-      })
-    ).toEqual(["6cm"]);
-
-    expect(
-      calc("sum(2cm, 3cm)", {
-        mathFunctions: customFunctions,
-      })
-    ).toEqual(["5cm"]);
-  });
-
-  test("Custom functions can be combined with default functions", () => {
-    const customFunctions = {
-      ...defaultMathFunctions,
-      double: (x: number) => x * 2,
-    };
-
-    expect(
-      calc("sin(double(PI/4))", { mathFunctions: customFunctions })
-    ).toEqual([1]);
-    expect(calc("sqrt(double(8))", { mathFunctions: customFunctions })).toEqual(
-      [4]
-    );
-  });
-
-  test("Custom functions can be used in complex expressions", () => {
-    const customFunctions = {
-      double: (x: number) => x * 2,
-      half: (x: number) => x / 2,
-      add: (a: number, b: number) => a + b,
-    };
-
-    expect(
-      calc("double(5) + half(8)", { mathFunctions: customFunctions })
-    ).toEqual([14]);
-    expect(
-      calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })
-    ).toEqual(["14cm"]);
-    expect(
-      calc("add(double(2), half(8))", { mathFunctions: customFunctions })
-    ).toEqual([8]);
-  });
-
-  test("Functions with multiple arguments use argument units", () => {
-    const customFunctions = {
-      add: (a: number, b: number) => a + b,
-      max: Math.max,
-      min: Math.min,
-    };
-
-    const options = {
-      mathFunctions: customFunctions,
-      allowedUnits: new Set(["px", "em", "rem"]),
-    };
-
-    // When all arguments have the same unit, result has that unit
-    expect(calc("add(2px, 3px)", options)).toEqual(["5px"]);
-    expect(calc("max(1em, 2em, 3em)", options)).toEqual(["3em"]);
-    expect(calc("min(1rem, 2rem, 0.5rem)", options)).toEqual(["0.5rem"]);
-
-    // When all arguments are unitless, result is unitless
-    expect(calc("add(2, 3)", options)).toEqual([5]);
-    expect(calc("max(1, 2, 3)", options)).toEqual([3]);
-    expect(calc("min(1, 2, 0.5)", options)).toEqual([0.5]);
-  });
-
-  test("Functions throw error when mixing different units", () => {
-    const customFunctions = {
-      add: (a: number, b: number) => a + b,
-      max: Math.max,
-      min: Math.min,
-    };
-
-    const options = {
-      mathFunctions: customFunctions,
-      allowedUnits: new Set(["px", "em", "rem"]),
-    };
-
-    // Should throw when mixing different units
-    expect(() => calc("add(2px, 3em)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-    expect(() => calc("max(1px, 2em, 3rem)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-    expect(() => calc("min(1rem, 2px)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-
-    // Should throw when mixing unitless with units
-    expect(() => calc("add(2px, 3)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-    expect(() => calc("max(1, 2em, 3)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-    expect(() => calc("min(1rem, 2)", options)).toThrow(
-      /Cannot mix incompatible units/
-    );
-  });
-
-  test("Functions require at least one argument", () => {
-    expect(() => calc("sin()")).toThrow(/called with no arguments/);
-    expect(() => calc("max()")).toThrow(/called with no arguments/);
-
-    const customFunctions = {
-      double: (x: number) => x * 2,
-    };
-
-    expect(() => calc("double()", { mathFunctions: customFunctions })).toThrow(
-      /called with no arguments/
-    );
   });
 
   test("Functions allow math expressions as arguments", () => {

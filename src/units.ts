@@ -25,13 +25,13 @@ export class UnitValue implements IUnitValue {
     this.config = config;
   }
 
-  static areAllCompatible(values: IUnitValue[]): boolean {
-    if (values.length <= 1) {
+  static areAllSame(values: IUnitValue[]): boolean {
+    if (values.length === 0) {
       return true;
     }
 
     const firstValue = values[0];
-    return values.every((value) => firstValue.isCompatibleWith(value));
+    return values.every(({ unit }) => firstValue.unit === unit);
   }
 
   isUnitless(): boolean {

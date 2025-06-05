@@ -121,7 +121,7 @@ describe("CSS unit calculations", () => {
   });
 
   it("handles division with same units", () => {
-    expect(calc("6px / 2px")).toEqual(["3"]);
+    expect(calc("6px / 2px")).toEqual(["3px"]);
   });
 
   it("throws on operations with incompatible units", () => {

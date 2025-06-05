@@ -104,7 +104,7 @@ export const defaultConversionsArray: Array<
       if (left.unit === right.unit) {
         return {
           value: left.value / right.value,
-          unit: null,
+          unit: left.unit,
         };
       }
       throw new IncompatibleUnitsError({ operation: "/", left, right });

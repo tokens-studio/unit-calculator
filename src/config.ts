@@ -96,7 +96,7 @@ export const defaultConversionsArray: Array<
     ["/", null, "*"],
     (left, right) => ({
       value: left.value / right.value,
-      unit: null,
+      unit: right.unit,
     }),
   ],
   // Division with same units (results in unitless)

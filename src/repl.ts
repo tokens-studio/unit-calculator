@@ -40,7 +40,7 @@ export function startRepl(): void {
 // Check if this file is being run directly
 const isMainModule = () => {
   try {
-    return import.meta.url.endsWith(process.argv[1].replace('file://', ''));
+    return import.meta.url.endsWith(process.argv[1].replace("file://", ""));
   } catch (e) {
     return false;
   }

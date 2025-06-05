@@ -5,6 +5,7 @@ import {
   defaultUnitConversions,
   createConfig,
   addUnitConversions,
+  addFunctionUnitConversions,
 } from "./config.js";
 import { calc } from "./parser.js";
 
@@ -484,25 +485,112 @@ describe("Custom math functions", () => {
 
     // Should throw when mixing different units
     expect(() => calc("add(2px, 3em)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
     expect(() => calc("max(1px, 2em, 3rem)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
     expect(() => calc("min(1rem, 2px)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
 
     // Should throw when mixing unitless with units
     expect(() => calc("add(2px, 3)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
     expect(() => calc("max(1, 2em, 3)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
     expect(() => calc("min(1rem, 2)", options)).toThrow(
-      /Cannot mix incompatible units/
+      /Cannot mix incompatible units in function/
     );
+  });
+
+  test("Custom function unit conversions", () => {
+    const customFunctions = {
+      sin: Math.sin,
+      add: (a: number, b: number) => a + b,
+    };
+
+    // Create a config with function unit conversions
+    const config = createConfig({
+      mathFunctions: customFunctions,
+      allowedUnits: new Set(["px", "rem", "rad", "deg"]),
+    });
+
+    // Add function unit conversions
+    addFunctionUnitConversions(config, [
+      // Convert degrees to radians for sin function
+      [
+        ["sin", ["deg"]],
+        (args) => ({
+          value: Math.sin((args[0].value * Math.PI) / 180),
+          unit: null,
+        }),
+      ],
+      // Keep radians as is for sin function
+      [
+        ["sin", ["rad"]],
+        (args) => ({
+          value: Math.sin(args[0].value),
+          unit: null,
+        }),
+      ],
+      // Convert px and rem for add function
+      [
+        ["add", ["px", "rem"]],
+        (args) => ({
+          value: args[0].value + args[1].value * 16,
+          unit: "px",
+        }),
+      ],
+      [
+        ["add", ["rem", "px"]],
+        (args) => ({
+          value: args[0].value * 16 + args[1].value,
+          unit: "px",
+        }),
+      ],
+    ]);
+
+    // Test sin with degrees
+    expect(calc("sin(90deg)", config)).toEqual([1]);
+    expect(calc("sin(180deg)", config)).toBeCloseTo(0, 10);
+
+    // Test sin with radians
+    expect(calc("sin(1.5708rad)", config)).toBeCloseTo(1, 10);
+
+    // Test add with px and rem
+    expect(calc("add(10px, 1rem)", config)).toEqual(["26px"]);
+    expect(calc("add(1rem, 10px)", config)).toEqual(["26px"]);
+    expect(calc("add(5rem, 10px)", config)).toEqual(["90px"]);
+  });
+
+  test("Custom function wildcard unit conversions", () => {
+    const customFunctions = {
+      add: (a: number, b: number) => a + b,
+    };
+
+    // Create a new config for wildcard tests
+    const wildcardConfig = createConfig({
+      mathFunctions: customFunctions,
+      allowedUnits: new Set(["px", "rem", "rad"]),
+    });
+
+    // Add wildcard function unit conversions
+    addFunctionUnitConversions(wildcardConfig, [
+      // Wildcard for any unit in first position
+      [
+        ["add", ["*", "px"]],
+        (args) => ({
+          value: args[0].value * 2 + args[1].value,
+          unit: "px",
+        }),
+      ],
+    ]);
+
+    // Test wildcard rule
+    expect(calc("add(5rad, 10px)", wildcardConfig)).toEqual(["20px"]);
   });
 
   test("Functions require at least one argument", () => {

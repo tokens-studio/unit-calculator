@@ -156,7 +156,43 @@ Now you can use your custom functions like this
 [ "20px" ]
 ```
 
-*Functions dont accept multi unit handling yet!*
+### Function Unit Conversions
+
+You can define custom unit handling for functions, similar to how you define unit conversions for operators:
+
+```typescript
+// Add function unit conversions
+addFunctionUnitConversions(config, [
+  // Convert degrees to radians for sin function
+  [
+    ["sin", ["deg"]],
+    (args) => ({
+      value: Math.sin(args[0].value * Math.PI / 180),
+      unit: null,
+    }),
+  ],
+  // Convert px and rem for add function
+  [
+    ["add", ["px", "rem"]],
+    (args) => ({
+      value: args[0].value + args[1].value * 16,
+      unit: "px",
+    }),
+  ],
+]);
+```
+
+This allows you to use functions with different units:
+
+```
+> sin(90deg)
+[ 1 ]
+
+> add(10px, 1rem)
+[ "26px" ]
+```
+
+You can also use wildcards (`*`) to match any unit in a specific position.
 
 ## Concepts
 

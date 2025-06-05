@@ -1,4 +1,9 @@
-import { createConfig, addUnitConversions, CSS_UNITS } from "./config.js";
+import {
+  createConfig,
+  addUnitConversions,
+  addFunctionUnitConversions,
+  CSS_UNITS,
+} from "./config.js";
 import {
   lengthTable,
   timeTable,
@@ -161,6 +166,49 @@ export function createStandardConfig() {
       ["-", "rem", "px"],
       (left, right) => ({
         value: left.value * baseSize - right.value,
+        unit: "px",
+      }),
+    ],
+  ]);
+
+  // Add math functions that respect unit conversions
+  config.mathFunctions = {
+    ...config.mathFunctions,
+    add: (a, b) => a + b,
+    subtract: (a, b) => a - b,
+    multiply: (a, b) => a * b,
+    divide: (a, b) => a / b,
+  };
+
+  // Add function unit conversions for the math operations
+  addFunctionUnitConversions(config, [
+    // Add function with px and rem
+    [
+      ["add", ["px", "rem"]],
+      (args) => ({
+        value: args[0].value + args[1].value * baseSize,
+        unit: "px",
+      }),
+    ],
+    [
+      ["add", ["rem", "px"]],
+      (args) => ({
+        value: args[0].value * baseSize + args[1].value,
+        unit: "px",
+      }),
+    ],
+    // Subtract function with px and rem
+    [
+      ["subtract", ["px", "rem"]],
+      (args) => ({
+        value: args[0].value - args[1].value * baseSize,
+        unit: "px",
+      }),
+    ],
+    [
+      ["subtract", ["rem", "px"]],
+      (args) => ({
+        value: args[0].value * baseSize - args[1].value,
         unit: "px",
       }),
     ],

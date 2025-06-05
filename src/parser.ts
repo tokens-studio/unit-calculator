@@ -1,5 +1,9 @@
 import type { CalcConfig } from "./config.js";
-import { defaultConfig } from "./config.js";
+import {
+  defaultConfig,
+  findBestFunctionConversionKey,
+  addFunctionUnitConversions,
+} from "./config.js";
 import createLexer, { Lexer } from "./lexer.js";
 import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
 import type { IUnitValue } from "./utils/units.d.js";
@@ -320,12 +324,31 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         return new UnitValue(n.target.ref, null, false, config);
       }
 
-      // Check for unit compatibility between arguments
+      // Extract function name
+      const functionName = n.target.id;
+
+      // Extract units from arguments
+      const argUnits = evaluatedArgs.map((arg) => arg.unit);
+
+      // Check if there's a custom function unit conversion defined
+      const functionConversion = findBestFunctionConversionKey(
+        config.functionUnitConversions,
+        functionName,
+        argUnits
+      );
+
+      if (functionConversion) {
+        // Use the custom function unit conversion
+        const result = functionConversion(evaluatedArgs);
+        return new UnitValue(result.value, result.unit, false, config);
+      }
+
+      // Default behavior: check for unit compatibility between arguments
       if (!UnitValue.areAllCompatible(evaluatedArgs)) {
         throw new Error(
-          `Cannot mix incompatible units in function arguments: ${
-            n.target.id
-          }(${evaluatedArgs.map((arg) => arg.toString()).join(", ")})`
+          `Cannot mix incompatible units in function arguments: ${functionName}(${evaluatedArgs
+            .map((arg) => arg.toString())
+            .join(", ")})`
         );
       }
 
@@ -336,7 +359,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
       const unitArg = evaluatedArgs.find((arg) => !arg.isUnitless());
       const unit = unitArg ? unitArg.unit : null;
 
-      // All functions preserve units
+      // All other functions preserve units
       return new UnitValue(
         (n.target.ref as Function)(...argValues),
         unit,

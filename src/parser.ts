@@ -1,9 +1,5 @@
 import type { CalcConfig } from "./config.js";
-import {
-  defaultConfig,
-  findBestFunctionConversionKey,
-  addFunctionUnitConversions,
-} from "./config.js";
+import { defaultConfig, findBestFunctionConversionKey } from "./config.js";
 import createLexer, { Lexer } from "./lexer.js";
 import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
 import type { IUnitValue } from "./utils/units.d.js";

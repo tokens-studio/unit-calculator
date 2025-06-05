@@ -208,7 +208,8 @@ describe("Unit conversions", () => {
     // Config with only px to rem conversions
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([
-        ...defaultUnitConversions,
+        // Copy existing conversions
+        ...Array.from(defaultUnitConversions.entries()),
         [
           "+,px,rem",
           (left, right) => ({
@@ -228,7 +229,7 @@ describe("Unit conversions", () => {
     // Config with wildcard conversions using array syntax
     const config = createConfig();
     // Add default conversions
-    defaultUnitConversions.forEach((fn, key) => {
+    Array.from(defaultUnitConversions.entries()).forEach(([key, fn]) => {
       config.unitConversions.set(key, fn);
     });
 
@@ -275,7 +276,7 @@ describe("Unit conversions", () => {
     // Config with unitless to px conversions using array syntax
     const config = createConfig();
     // Add default conversions
-    defaultUnitConversions.forEach((fn, key) => {
+    Array.from(defaultUnitConversions.entries()).forEach(([key, fn]) => {
       config.unitConversions.set(key, fn);
     });
 

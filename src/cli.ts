@@ -3,16 +3,16 @@
 const importModule = async (path) => {
   try {
     // First try with .ts extension (for ts-node)
-    return await import(path + '.ts');
+    return await import(path + ".ts");
   } catch (e) {
     // Fall back to .js extension (for compiled code)
-    return await import(path + '.js');
+    return await import(path + ".js");
   }
 };
 
-const { calc } = await importModule('./parser');
-const { startRepl } = await importModule('./repl');
-const { createStandardConfig } = await importModule('./configSetup');
+const { calc } = await importModule("./parser");
+const { startRepl } = await importModule("./repl");
+const { createStandardConfig } = await importModule("./configSetup");
 
 const config = createStandardConfig();
 

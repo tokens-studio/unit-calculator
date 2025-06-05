@@ -36,45 +36,45 @@ export interface CalcConfig {
 }
 
 export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
-  abs: ({ value, unit, fromUnitDivision, config }) => {
+  abs: ({ value, unit }) => {
     const result = Math.abs(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  sin: ({ value, unit, fromUnitDivision, config }) => {
+  sin: ({ value, unit }) => {
     const result = Math.sin(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  cos: ({ value, unit, fromUnitDivision, config }) => {
+  cos: ({ value, unit }) => {
     const result = Math.cos(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  tan: ({ value, unit, fromUnitDivision, config }) => {
+  tan: ({ value, unit }) => {
     const result = Math.tan(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  sqrt: ({ value, unit, fromUnitDivision, config }) => {
+  sqrt: ({ value, unit }) => {
     const result = Math.sqrt(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  floor: ({ value, unit, fromUnitDivision, config }) => {
+  floor: ({ value, unit }) => {
     const result = Math.floor(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  ceil: ({ value, unit, fromUnitDivision, config }) => {
+  ceil: ({ value, unit }) => {
     const result = Math.ceil(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  round: ({ value, unit, fromUnitDivision, config }) => {
+  round: ({ value, unit }) => {
     const result = Math.round(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  log: ({ value, unit, fromUnitDivision, config }) => {
+  log: ({ value, unit }) => {
     const result = Math.log(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
-  exp: ({ value, unit, fromUnitDivision, config }) => {
+  exp: ({ value, unit }) => {
     const result = Math.exp(value);
-    return new UnitValue(result, unit, fromUnitDivision, config);
+    return { value: result, unit };
   },
   pow: (...unitValues) => {
     if (unitValues.length !== 2) {
@@ -93,7 +93,7 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
     }
 
     const result = Math.pow(base.value, exp.value);
-    return new UnitValue(result, base.unit, base.fromUnitDivision, base.config);
+    return { value: result, unit: base.unit };
   },
   max: (...unitValues) => {
     if (unitValues.length === 0) return NaN;
@@ -106,10 +106,10 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
       });
     }
 
-    const { unit, config } = unitValues[0];
+    const { unit } = unitValues[0];
     const values = unitValues.map(({ value }) => value);
     const result = Math.max(...values);
-    return new UnitValue(result, unit, false, config);
+    return { value: result, unit };
   },
   min: (...unitValues) => {
     if (unitValues.length === 0) return NaN;
@@ -122,10 +122,10 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
       });
     }
 
-    const { unit, config } = unitValues[0];
+    const { unit } = unitValues[0];
     const values = unitValues.map(({ value }) => value);
     const result = Math.min(...values);
-    return new UnitValue(result, unit, false, config);
+    return { value: result, unit };
   },
 };
 

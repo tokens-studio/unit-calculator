@@ -326,6 +326,16 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         return result;
       }
 
+      // Handle simple record format {value: number; unit: string | null}
+      if (result && typeof result === 'object' && 'value' in result) {
+        return new UnitValue(
+          result.value,
+          result.unit,
+          evaluatedArgs[0].fromUnitDivision,
+          config
+        );
+      }
+
       if (typeof result === "number") {
         // Use the first argument's unit
         const unit = evaluatedArgs[0].unit;

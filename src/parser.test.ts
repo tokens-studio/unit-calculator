@@ -382,11 +382,16 @@ describe("Custom math functions", () => {
 
   test("Custom math functions can be added", () => {
     const customFunctions = {
-      double: ({ value, unit, fromUnitDivision, config }) =>
-        new UnitValue(value * 2, unit, fromUnitDivision, config),
+      double: ({ value, unit }) => ({ value: value * 2, unit }),
+      square: ({ value, unit }) => ({ value: value * value, unit }),
+      half: ({ value, unit }) => ({ value: value / 2, unit }),
+      add: (a, b) => ({ value: a.value + b.value, unit: a.unit }),
     };
 
     expect(calc("double(5)", { mathFunctions: customFunctions })).toEqual([10]);
+    expect(calc("square(3cm)", { mathFunctions: customFunctions })).toEqual(["9cm"]);
+    expect(calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })).toEqual(["14cm"]);
+    expect(calc("add(2px, 3px)", { mathFunctions: customFunctions })).toEqual(["5px"]);
   });
 
   test("Functions allow math expressions as arguments", () => {

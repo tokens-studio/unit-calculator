@@ -20,10 +20,10 @@ export const createPercentConfig = function () {
   // prettier-ignore
   return addUnitConversions(config, [
     [
-      ["%", "+", "*"], (left, right) => addPercent(left, right),
+      ["+", "%", "*"], (left, right) => addPercent(left, right),
     ],
     [
-      ["*", "+", "%"], (left, right) => addPercent(right, left),
+      ["+", "*", "%"], (left, right) => addPercent(right, left),
     ],
   ]);
 };
@@ -35,42 +35,42 @@ export function createPenpotConfig() {
 
   addUnitConversions(config, [
     [
-      ["px", "+", "rem"],
+      ["+", "px", "rem"],
       (left, right) => ({
         value: left.value + right.value * baseSize,
         unit: "px",
       }),
     ],
     [
-      ["rem", "+", "px"],
+      ["+", "rem", "px"],
       (left, right) => ({
         value: left.value * baseSize + right.value,
         unit: "px",
       }),
     ],
     [
-      ["px", "-", "rem"],
+      ["-", "px", "rem"],
       (left, right) => ({
         value: left.value - right.value * baseSize,
         unit: "px",
       }),
     ],
     [
-      ["rem", "-", "px"],
+      ["-", "rem", "px"],
       (left, right) => ({
         value: left.value * baseSize - right.value,
         unit: "px",
       }),
     ],
     [
-      ["px", "+", ""],
+      ["+", "px", null],
       (left, right) => ({
         value: left.value + right.value,
         unit: "px",
       }),
     ],
     [
-      ["", "+", "px"],
+      ["+", null, "px"],
       (left, right) => ({
         value: left.value + right.value,
         unit: "px",
@@ -137,28 +137,28 @@ export function createStandardConfig() {
   // Add px/rem conversions
   addUnitConversions(config, [
     [
-      ["px", "+", "rem"],
+      ["+", "px", "rem"],
       (left, right) => ({
         value: left.value + right.value * baseSize,
         unit: "px",
       }),
     ],
     [
-      ["rem", "+", "px"],
+      ["+", "rem", "px"],
       (left, right) => ({
         value: left.value * baseSize + right.value,
         unit: "px",
       }),
     ],
     [
-      ["px", "-", "rem"],
+      ["-", "px", "rem"],
       (left, right) => ({
         value: left.value - right.value * baseSize,
         unit: "px",
       }),
     ],
     [
-      ["rem", "-", "px"],
+      ["-", "rem", "px"],
       (left, right) => ({
         value: left.value * baseSize - right.value,
         unit: "px",

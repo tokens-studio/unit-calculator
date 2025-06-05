@@ -9,37 +9,37 @@ describe("UnitValue with custom unit conversions", () => {
   addUnitConversions(config, [
     // px to rem conversions (assuming 1rem = 16px)
     [
-      ["px", "+", "rem"],
+      ["+", "px", "rem"],
       (left, right) => ({ value: left.value + right.value * 16, unit: "px" }),
     ],
     [
-      ["rem", "+", "px"],
+      ["+", "rem", "px"],
       (left, right) => ({ value: left.value * 16 + right.value, unit: "px" }),
     ],
     [
-      ["px", "-", "rem"],
+      ["-", "px", "rem"],
       (left, right) => ({ value: left.value - right.value * 16, unit: "px" }),
     ],
     [
-      ["rem", "-", "px"],
+      ["-", "rem", "px"],
       (left, right) => ({ value: left.value * 16 - right.value, unit: "px" }),
     ],
 
     // cm to mm conversions (1cm = 10mm)
     [
-      ["cm", "+", "mm"],
+      ["+", "cm", "mm"],
       (left, right) => ({ value: left.value + right.value / 10, unit: "cm" }),
     ],
     [
-      ["mm", "+", "cm"],
+      ["+", "mm", "cm"],
       (left, right) => ({ value: left.value + right.value * 10, unit: "mm" }),
     ],
     [
-      ["cm", "-", "mm"],
+      ["-", "cm", "mm"],
       (left, right) => ({ value: left.value - right.value / 10, unit: "cm" }),
     ],
     [
-      ["mm", "-", "cm"],
+      ["-", "mm", "cm"],
       (left, right) => ({ value: left.value - right.value * 10, unit: "mm" }),
     ],
   ]);
@@ -69,7 +69,7 @@ describe("UnitValue with custom unit conversions", () => {
     addUnitConversions(wildcardConfig, [
       // Wildcard for left unit (any unit to px)
       [
-        ["*", "+", "px"],
+        ["+", "*", "px"],
         (left, right) => ({
           value: left.value * 10 + right.value,
           unit: "px",
@@ -77,7 +77,7 @@ describe("UnitValue with custom unit conversions", () => {
       ],
       // Wildcard for right unit (px to any unit)
       [
-        ["px", "+", "*"],
+        ["+", "px", "*"],
         (left, right) => ({
           value: left.value + right.value * 10,
           unit: "px",
@@ -85,7 +85,7 @@ describe("UnitValue with custom unit conversions", () => {
       ],
       // Wildcard for both units (any unit to any unit)
       [
-        ["*", "+", "*"],
+        ["+", "*", "*"],
         (left, right) => ({
           value: left.value + right.value,
           unit: "generic",
@@ -120,7 +120,7 @@ describe("UnitValue with custom unit conversions", () => {
       addUnitConversions(mixedConfig, [
         // Specific conversion (highest priority)
         [
-          ["em", "+", "rem"],
+          ["+", "em", "rem"],
           (left, right) => ({
             value: left.value * 2 + right.value * 3,
             unit: "specific",
@@ -128,7 +128,7 @@ describe("UnitValue with custom unit conversions", () => {
         ],
         // Wildcard for left unit (medium priority)
         [
-          ["*", "+", "rem"],
+          ["+", "*", "rem"],
           (left, right) => ({
             value: left.value + right.value * 5,
             unit: "leftWild",
@@ -136,7 +136,7 @@ describe("UnitValue with custom unit conversions", () => {
         ],
         // Wildcard for right unit (medium priority)
         [
-          ["em", "+", "*"],
+          ["+", "em", "*"],
           (left, right) => ({
             value: left.value * 5 + right.value,
             unit: "rightWild",
@@ -144,7 +144,7 @@ describe("UnitValue with custom unit conversions", () => {
         ],
         // Wildcard for both units (lowest priority)
         [
-          ["*", "+", "*"],
+          ["+", "*", "*"],
           (left, right) => ({
             value: left.value + right.value,
             unit: "bothWild",
@@ -179,28 +179,28 @@ describe("UnitValue with custom unit conversions", () => {
     addUnitConversions(unitlessConfig, [
       // Unitless to px conversions
       [
-        ["px", "+", null],
+        ["+", "px", null],
         (left, right) => ({
           value: left.value + right.value,
           unit: "px",
         }),
       ],
       [
-        [null, "+", "px"],
+        ["+", null, "px"],
         (left, right) => ({
           value: left.value + right.value,
           unit: "px",
         }),
       ],
       [
-        ["px", "-", null],
+        ["-", "px", null],
         (left, right) => ({
           value: left.value - right.value,
           unit: "px",
         }),
       ],
       [
-        [null, "*", "px"],
+        ["*", null, "px"],
         (left, right) => ({ value: left.value * right.value, unit: "px" }),
       ],
     ]);

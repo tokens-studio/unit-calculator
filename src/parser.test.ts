@@ -160,28 +160,28 @@ describe("Unit conversions", () => {
     addUnitConversions(config, [
       // px to rem conversions (assuming 1rem = 16px)
       [
-        ["px", "+", "rem"],
+        ["+", "px", "rem"],
         (left, right) => ({
           value: left.value + right.value * 16,
           unit: "px",
         }),
       ],
       [
-        ["rem", "+", "px"],
+        ["+", "rem", "px"],
         (left, right) => ({
           value: left.value * 16 + right.value,
           unit: "px",
         }),
       ],
       [
-        ["px", "-", "rem"],
+        ["-", "px", "rem"],
         (left, right) => ({
           value: left.value - right.value * 16,
           unit: "px",
         }),
       ],
       [
-        ["rem", "-", "px"],
+        ["-", "rem", "px"],
         (left, right) => ({
           value: left.value * 16 - right.value,
           unit: "px",
@@ -209,7 +209,7 @@ describe("Unit conversions", () => {
       unitConversions: new Map([
         ...defaultUnitConversions,
         [
-          "px,+,rem",
+          "+,px,rem",
           (left, right) => ({
             value: left.value + right.value * 16,
             unit: "px",
@@ -235,7 +235,7 @@ describe("Unit conversions", () => {
     addUnitConversions(config, [
       // Wildcard for left unit (any unit to px)
       [
-        ["*", "+", "px"],
+        ["+", "*", "px"],
         (left, right) => ({
           value: left.value * 10 + right.value,
           unit: "px",
@@ -243,7 +243,7 @@ describe("Unit conversions", () => {
       ],
       // Wildcard for right unit (px to any unit)
       [
-        ["px", "+", "*"],
+        ["+", "px", "*"],
         (left, right) => ({
           value: left.value + right.value * 10,
           unit: "px",
@@ -251,7 +251,7 @@ describe("Unit conversions", () => {
       ],
       // Wildcard for both units (any unit to any unit)
       [
-        ["*", "+", "*"],
+        ["+", "*", "*"],
         (left, right) => ({
           value: left.value + right.value,
           unit: "generic",
@@ -282,14 +282,14 @@ describe("Unit conversions", () => {
     addUnitConversions(config, [
       // Unitless to px conversions
       [
-        ["px", "+", null],
+        ["+", "px", null],
         (left, right) => ({
           value: left.value + right.value,
           unit: "px",
         }),
       ],
       [
-        [null, "+", "px"],
+        ["+", null, "px"],
         (left, right) => ({
           value: left.value + right.value,
           unit: "px",
@@ -311,14 +311,14 @@ describe("Unit conversions", () => {
     const options: Partial<CalcConfig> = {
       unitConversions: new Map([
         [
-          "px,+,rem",
+          "+,px,rem",
           (left, right) => ({
             value: left.value + right.value * 16,
             unit: "px",
           }),
         ],
         [
-          "rem,+,px",
+          "+,rem,px",
           (left, right) => ({
             value: left.value * 16 + right.value,
             unit: "px",

@@ -101,13 +101,13 @@ export function generateConversionsFromTable(
   operator: string
 ): Array<
   [
-    [string | null, string, string | null],
+    [string, string | null, string | null],
     (left: any, right: any) => { value: number; unit: string | null }
   ]
 > {
   const conversions: Array<
     [
-      [string | null, string, string | null],
+      [string, string | null, string | null],
       (left: any, right: any) => { value: number; unit: string | null }
     ]
   > = [];
@@ -130,9 +130,9 @@ export function generateConversionsFromTable(
       // Add conversion from source to target
       if (operator === "+" || operator === "-") {
         conversions.push([
-          [sourceUnit, operator, targetUnit] as [
-            string | null,
+          [operator, sourceUnit, targetUnit] as [
             string,
+            string | null,
             string | null
           ],
           (left, right) => {
@@ -162,9 +162,9 @@ export function generateConversionsFromTable(
       } else if (operator === "*") {
         // For multiplication, convert to the smaller unit and multiply
         conversions.push([
-          [sourceUnit, operator, targetUnit] as [
-            string | null,
+          [operator, sourceUnit, targetUnit] as [
             string,
+            string | null,
             string | null
           ],
           (left, right) => {
@@ -190,9 +190,9 @@ export function generateConversionsFromTable(
         // 1. Same units: result is unitless
         // 2. Different units: convert to same unit, then divide
         conversions.push([
-          [sourceUnit, operator, targetUnit] as [
-            string | null,
+          [operator, sourceUnit, targetUnit] as [
             string,
+            string | null,
             string | null
           ],
           (left, right) => {

@@ -84,17 +84,17 @@ These rules will define how the engine will convert units when you mix them.
 ### Rules
 
 - Mixing the same units will always preserve units.
-- Unitless Numbers will be matched with `null`, e.g.: `[null, '+', 'px']`
-- You can give a wildcard operator with `*`, e.g.: `['*', '+', '%']`
+- Unitless Numbers will be matched with `null`, e.g.: `['+', null, 'px']`
+- You can give a wildcard operator with `*`, e.g.: `['+', '*', '%']`
 
 ### Defining a conversion table entry
 
-To define an entry you give it a 3-tuple of `[unit, operator, unit]` and a function that handles the conversion.
+To define an entry you give it a 3-tuple of `[operator, leftUnit, rightUnit]` and a function that handles the conversion.
 
 For example if you want to convert rems when mixing with px by multiplying rem by a base size you could pass:
 
 ``` typescript
-["px", "+", "rem"], (left, right) => {value: left.value + (right.value * 16), unit: "px"},
+["+", "px", "rem"], (left, right) => {value: left.value + (right.value * 16), unit: "px"},
 ```
 
 So you get this result
@@ -119,10 +119,10 @@ export const createPercentConfig = function () {
 
   return addUnitConversions(config, [
     [
-      ["%", "+", "*"], (left, right) => addPercent(left, right),
+      ["+", "%", "*"], (left, right) => addPercent(left, right),
     ],
     [
-      ["*", "+", "%"], (left, right) => addPercent(right, left),
+      ["+", "*", "%"], (left, right) => addPercent(right, left),
     ],
   ]);
 };

@@ -59,7 +59,7 @@ export const defaultConversionsArray: Array<
 > = [
   // Multiplication with unitless values
   [
-    [null, "*", "*"],
+    ["*", null, "*"],
     (left, right) => ({
       value: left.value * right.value,
       unit: right.unit,
@@ -74,14 +74,14 @@ export const defaultConversionsArray: Array<
   ],
   // Division with unitless values
   [
-    ["*", "/", null],
+    ["/", "*", null],
     (left, right) => ({
       value: left.value / right.value,
       unit: left.unit,
     }),
   ],
   [
-    [null, "/", "*"],
+    ["/", null, "*"],
     (left, right) => ({
       value: left.value / right.value,
       unit: null,
@@ -89,7 +89,7 @@ export const defaultConversionsArray: Array<
   ],
   // Division with same units (results in unitless)
   [
-    ["*", "/", "*"],
+    ["/", "*", "*"],
     (left, right) => {
       if (left.unit === right.unit) {
         return {
@@ -155,26 +155,26 @@ export function addUnitConversions(
 }
 
 // Types for the array-based conversion key format
-export type UnitConversionKeyArray = [string | null, string, string | null];
+export type UnitConversionKeyArray = [string, string | null, string | null];
 
 // Helper function to get a conversion key
 export function getConversionKey(
-  leftUnit: string | null,
   operator: string,
+  leftUnit: string | null,
   rightUnit: string | null
 ): UnitConversionKey {
   // Empty string represents unitless values in conversion keys
   const left = leftUnit === null ? "" : leftUnit;
   const right = rightUnit === null ? "" : rightUnit;
-  return `${left},${operator},${right}`;
+  return `${operator},${left},${right}`;
 }
 
 // Helper function to convert array format to string key
 export function arrayToConversionKey(
   keyArray: UnitConversionKeyArray
 ): UnitConversionKey {
-  const [leftUnit, operator, rightUnit] = keyArray;
-  return getConversionKey(leftUnit, operator, rightUnit);
+  const [operator, leftUnit, rightUnit] = keyArray;
+  return getConversionKey(operator, leftUnit, rightUnit);
 }
 
 // Function to find the best matching conversion key
@@ -185,26 +185,26 @@ export function findBestConversionKey(
   rightUnit: string | null
 ): UnitConversionFunction | undefined {
   // Try exact match first
-  const exactKey = getConversionKey(leftUnit, operator, rightUnit);
+  const exactKey = getConversionKey(operator, leftUnit, rightUnit);
   if (unitConversions.has(exactKey)) {
     return unitConversions.get(exactKey);
   }
 
   // Try wildcard patterns in order of specificity
   // 1. Left specific, right wildcard
-  const leftWildcardKey = getConversionKey(leftUnit, operator, "*");
+  const leftWildcardKey = getConversionKey(operator, leftUnit, "*");
   if (unitConversions.has(leftWildcardKey)) {
     return unitConversions.get(leftWildcardKey);
   }
 
   // 2. Right specific, left wildcard
-  const rightWildcardKey = getConversionKey("*", operator, rightUnit);
+  const rightWildcardKey = getConversionKey(operator, "*", rightUnit);
   if (unitConversions.has(rightWildcardKey)) {
     return unitConversions.get(rightWildcardKey);
   }
 
   // 3. Both wildcard
-  const bothWildcardKey = getConversionKey("*", operator, "*");
+  const bothWildcardKey = getConversionKey(operator, "*", "*");
   if (unitConversions.has(bothWildcardKey)) {
     return unitConversions.get(bothWildcardKey);
   }

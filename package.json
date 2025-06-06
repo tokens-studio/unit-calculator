@@ -39,5 +39,9 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "files": ["dist", "LICENSE", "README.md"]
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ]
 }

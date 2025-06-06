@@ -393,7 +393,7 @@ export function calc(
     // Return number for unitless values, string for values with units
     // If this is a result of dividing same units, return as string
     if (result.isUnitless()) {
-      return result.fromUnitDivision ? result.value.toString() : result.value;
+      return result.value;
     } else {
       return result.toString();
     }

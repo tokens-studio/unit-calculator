@@ -3,7 +3,6 @@ import type { CalcConfig } from "../config.js";
 export interface IUnitValue {
   value: number;
   unit: string | null;
-  fromUnitDivision: boolean;
   config: CalcConfig;
 
   isUnitless(): boolean;
@@ -22,7 +21,6 @@ export interface UnitValueConstructor {
   new (
     value: number,
     unit: string | null,
-    fromUnitDivision: boolean,
     config: CalcConfig
   ): IUnitValue;
 

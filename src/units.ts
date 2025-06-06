@@ -10,18 +10,15 @@ import type { IUnitValue, UnitValueConstructor } from "./utils/units.d.js";
 export class UnitValue implements IUnitValue {
   value: number;
   unit: string | null;
-  fromUnitDivision: boolean;
   config: CalcConfig;
 
   constructor(
     value: number,
     unit: string | null = null,
-    fromUnitDivision: boolean = false,
     config: CalcConfig = defaultConfig
   ) {
     this.value = value;
     this.unit = unit;
-    this.fromUnitDivision = fromUnitDivision;
     this.config = config;
   }
 
@@ -78,7 +75,6 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(
         this.value + other.value,
         this.unit,
-        false,
         this.config
       );
     }
@@ -92,7 +88,7 @@ export class UnitValue implements IUnitValue {
 
     if (conversion) {
       const result = conversion(this, other);
-      return new UnitValue(result.value, result.unit, false, this.config);
+      return new UnitValue(result.value, result.unit, this.config);
     }
 
     throw new IncompatibleUnitsError({
@@ -108,7 +104,6 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(
         this.value - other.value,
         this.unit,
-        false,
         this.config
       );
     }
@@ -125,14 +120,13 @@ export class UnitValue implements IUnitValue {
 
       if (conversion) {
         const result = conversion(this, other);
-        return new UnitValue(result.value, result.unit, false, this.config);
+        return new UnitValue(result.value, result.unit, this.config);
       }
 
       // Default behavior for unitless - unit
       return new UnitValue(
         this.value - other.value,
         other.unit,
-        false,
         this.config
       );
     }
@@ -148,14 +142,13 @@ export class UnitValue implements IUnitValue {
 
       if (conversion) {
         const result = conversion(this, other);
-        return new UnitValue(result.value, result.unit, false, this.config);
+        return new UnitValue(result.value, result.unit, this.config);
       }
 
       // Default behavior for unit - unitless
       return new UnitValue(
         this.value - other.value,
         this.unit,
-        false,
         this.config
       );
     }
@@ -170,7 +163,7 @@ export class UnitValue implements IUnitValue {
 
     if (conversion) {
       const result = conversion(this, other);
-      return new UnitValue(result.value, result.unit, false, this.config);
+      return new UnitValue(result.value, result.unit, this.config);
     }
 
     throw new IncompatibleUnitsError({
@@ -186,7 +179,6 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(
         this.value * other.value,
         this.unit,
-        false,
         this.config
       );
     }
@@ -196,7 +188,6 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(
         this.value * other.value,
         other.unit,
-        false,
         this.config
       );
     }
@@ -205,7 +196,6 @@ export class UnitValue implements IUnitValue {
       return new UnitValue(
         this.value * other.value,
         this.unit,
-        false,
         this.config
       );
     }
@@ -220,7 +210,7 @@ export class UnitValue implements IUnitValue {
 
     if (conversion) {
       const result = conversion(this, other);
-      return new UnitValue(result.value, result.unit, false, this.config);
+      return new UnitValue(result.value, result.unit, this.config);
     }
 
     throw new IncompatibleUnitsError({
@@ -241,12 +231,9 @@ export class UnitValue implements IUnitValue {
 
     if (conversion) {
       const result = conversion(this, other);
-      // Mark as from unit division if units were the same
-      const fromUnitDivision = this.unit === other.unit && this.unit !== null;
       return new UnitValue(
         result.value,
         result.unit,
-        fromUnitDivision,
         this.config
       );
     }
@@ -262,7 +249,6 @@ export class UnitValue implements IUnitValue {
     return new UnitValue(
       -this.value,
       this.unit,
-      this.fromUnitDivision,
       this.config
     );
   }

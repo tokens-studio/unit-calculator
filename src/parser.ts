@@ -84,11 +84,10 @@ const NUDS: Record<string, NudFunction> = {
     new UnitValue(
       (t as NumberWithUnitToken).value,
       (t as NumberWithUnitToken).unit,
-      false,
       config
     ),
   NUMBER: (t, _bp, _parse, _lexer, config) =>
-    new UnitValue((t as NumberToken).value, null, false, config),
+    new UnitValue((t as NumberToken).value, null, config),
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
@@ -253,14 +252,14 @@ function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
 }
 
 function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
-  if (typeof node === "number") return new UnitValue(node, null, false, config);
+  if (typeof node === "number") return new UnitValue(node, null, config);
   if (node instanceof UnitValue) return node;
 
   const typedNode = node as BaseNode;
 
   switch (typedNode.type) {
     case "id":
-      return new UnitValue((node as IdNode).ref as number, null, false, config);
+      return new UnitValue((node as IdNode).ref as number, null, config);
 
     case "^": {
       const n = node as BinaryOpNode;
@@ -276,7 +275,6 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
       return new UnitValue(
         Math.pow(left.value, right.value),
         null,
-        false,
         config
       );
     }
@@ -317,7 +315,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
 
       // Handle constants
       if (typeof n.target.ref === "number") {
-        return new UnitValue(n.target.ref, null, false, config);
+        return new UnitValue(n.target.ref, null, config);
       }
 
       const result = (n.target.ref as Function)(...evaluatedArgs);
@@ -331,7 +329,6 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         return new UnitValue(
           result.value,
           result.unit,
-          evaluatedArgs[0].fromUnitDivision,
           config
         );
       }
@@ -343,7 +340,6 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         return new UnitValue(
           result,
           unit,
-          evaluatedArgs[0].fromUnitDivision,
           config
         );
       }
@@ -352,7 +348,6 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
       return new UnitValue(
         Number(result),
         evaluatedArgs[0].unit,
-        false,
         config
       );
     }

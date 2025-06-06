@@ -46,11 +46,11 @@ describe("UnitValue with custom unit conversions", () => {
 
   describe("unit compatibility", () => {
     it("recognizes compatible units based on config", () => {
-      const px = new UnitValue(10, "px", false, config);
-      const rem = new UnitValue(1, "rem", false, config);
-      const cm = new UnitValue(2, "cm", false, config);
-      const mm = new UnitValue(20, "mm", false, config);
-      const em = new UnitValue(1, "em", false, config);
+      const px = new UnitValue(10, "px", config);
+      const rem = new UnitValue(1, "rem", config);
+      const cm = new UnitValue(2, "cm", config);
+      const mm = new UnitValue(20, "mm", config);
+      const em = new UnitValue(1, "em", config);
 
       expect(px.isCompatibleWith(rem)).toBe(true);
       expect(rem.isCompatibleWith(px)).toBe(true);
@@ -94,9 +94,9 @@ describe("UnitValue with custom unit conversions", () => {
     ]);
 
     it("converts using wildcard patterns", () => {
-      const px = new UnitValue(10, "px", false, wildcardConfig);
-      const em = new UnitValue(2, "em", false, wildcardConfig);
-      const rem = new UnitValue(3, "rem", false, wildcardConfig);
+      const px = new UnitValue(10, "px", wildcardConfig);
+      const em = new UnitValue(2, "em", wildcardConfig);
+      const rem = new UnitValue(3, "rem", wildcardConfig);
 
       // Test "*,+,px" pattern: any unit to px
       const result1 = em.add(px);
@@ -152,9 +152,9 @@ describe("UnitValue with custom unit conversions", () => {
         ],
       ]);
 
-      const em = new UnitValue(2, "em", false, mixedConfig);
-      const rem = new UnitValue(3, "rem", false, mixedConfig);
-      const px = new UnitValue(4, "px", false, mixedConfig);
+      const em = new UnitValue(2, "em", mixedConfig);
+      const rem = new UnitValue(3, "rem", mixedConfig);
+      const px = new UnitValue(4, "px", mixedConfig);
 
       // Should use specific conversion
       const result1 = em.add(rem);
@@ -206,8 +206,8 @@ describe("UnitValue with custom unit conversions", () => {
     ]);
 
     it("converts between unitless and units", () => {
-      const px = new UnitValue(10, "px", false, unitlessConfig);
-      const unitless = new UnitValue(5, null, false, unitlessConfig);
+      const px = new UnitValue(10, "px", unitlessConfig);
+      const unitless = new UnitValue(5, null, unitlessConfig);
 
       const result1 = px.add(unitless);
       expect(result1.value).toBe(15);
@@ -230,8 +230,8 @@ describe("UnitValue with custom unit conversions", () => {
 
   describe("unit conversions", () => {
     it("converts px to rem and vice versa during addition", () => {
-      const px = new UnitValue(10, "px", false, config);
-      const rem = new UnitValue(1, "rem", false, config);
+      const px = new UnitValue(10, "px", config);
+      const rem = new UnitValue(1, "rem", config);
 
       // 10px + 1rem (16px) = 26px
       const result1 = px.add(rem);
@@ -245,8 +245,8 @@ describe("UnitValue with custom unit conversions", () => {
     });
 
     it("converts px to rem and vice versa during subtraction", () => {
-      const px = new UnitValue(26, "px", false, config);
-      const rem = new UnitValue(1, "rem", false, config);
+      const px = new UnitValue(26, "px", config);
+      const rem = new UnitValue(1, "rem", config);
 
       // 26px - 1rem (16px) = 10px
       const result1 = px.subtract(rem);
@@ -254,16 +254,16 @@ describe("UnitValue with custom unit conversions", () => {
       expect(result1.unit).toBe("px");
 
       // 1rem - 10px = 6px
-      const rem2 = new UnitValue(1, "rem", false, config);
-      const px2 = new UnitValue(10, "px", false, config);
+      const rem2 = new UnitValue(1, "rem", config);
+      const px2 = new UnitValue(10, "px", config);
       const result2 = rem2.subtract(px2);
       expect(result2.value).toBe(6);
       expect(result2.unit).toBe("px");
     });
 
     it("converts cm to mm and vice versa during addition", () => {
-      const cm = new UnitValue(1, "cm", false, config);
-      const mm = new UnitValue(5, "mm", false, config);
+      const cm = new UnitValue(1, "cm", config);
+      const mm = new UnitValue(5, "mm", config);
 
       // 1cm + 5mm = 1.5cm
       const result1 = cm.add(mm);
@@ -277,8 +277,8 @@ describe("UnitValue with custom unit conversions", () => {
     });
 
     it("converts cm to mm and vice versa during subtraction", () => {
-      const cm = new UnitValue(1, "cm", false, config);
-      const mm = new UnitValue(5, "mm", false, config);
+      const cm = new UnitValue(1, "cm", config);
+      const mm = new UnitValue(5, "mm", config);
 
       // 1cm - 5mm = 0.5cm
       const result1 = cm.subtract(mm);
@@ -341,7 +341,6 @@ describe("UnitValue with custom unit conversions", () => {
       const result = px1.divide(px2);
       expect(result.value).toBe(5);
       expect(result.unit).toBe("px");
-      expect(result.fromUnitDivision).toBe(true);
     });
 
     it("throws on incompatible unit operations", () => {
@@ -356,15 +355,15 @@ describe("UnitValue with custom unit conversions", () => {
 
   describe("error handling", () => {
     it("throws error when adding incompatible units", () => {
-      const px = new UnitValue(10, "px", false, config);
-      const cm = new UnitValue(2, "cm", false, config);
+      const px = new UnitValue(10, "px", config);
+      const cm = new UnitValue(2, "cm", config);
 
       expect(() => px.add(cm)).toThrow(IncompatibleUnitsError);
     });
 
     it("throws error when subtracting incompatible units", () => {
-      const px = new UnitValue(10, "px", false, config);
-      const cm = new UnitValue(2, "cm", false, config);
+      const px = new UnitValue(10, "px", config);
+      const cm = new UnitValue(2, "cm", config);
 
       expect(() => px.subtract(cm)).toThrow(IncompatibleUnitsError);
     });

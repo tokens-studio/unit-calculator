@@ -5,7 +5,7 @@ import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
 import type { IUnitValue } from "./utils/units.d.js";
 import { UnitValue } from "./units.js";
 
-type NodeType = "id" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
+type NodeType = "id" | "string" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
 type BinaryOpType = "+" | "-" | "*" | "/" | "^";
 type ParseFunction = (rbp?: number) => ASTNode;
 
@@ -17,6 +17,11 @@ interface IdNode extends BaseNode {
   type: "id";
   ref: number | Function;
   id: string;
+}
+
+interface StringNode extends BaseNode {
+  type: "string";
+  value: string;
 }
 
 interface BinaryOpNode extends BaseNode {
@@ -38,6 +43,7 @@ interface NegationNode extends BaseNode {
 
 type ASTNode =
   | IdNode
+  | StringNode
   | BinaryOpNode
   | FunctionCallNode
   | NegationNode
@@ -88,9 +94,16 @@ const NUDS: Record<string, NudFunction> = {
     ),
   NUMBER: (t, _bp, _parse, _lexer, config) =>
     new UnitValue((t as NumberToken).value, null, config),
+  STRING: (t, _bp, _parse, _lexer, _config) => {
+    return {
+      type: "string",
+      value: (t as StringToken).value,
+    };
+  },
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
+    // Since validation is now done in the lexer, we can safely assume this is a valid ID
     if (config.mathFunctions && id in config.mathFunctions) {
       return {
         type: "id",
@@ -173,8 +186,14 @@ const LEDS: Record<string, LedFunction> = {
   },
 };
 
-const GROUP_END = new Set(["NUMBER", "NUMBER_WITH_UNIT", ")"]);
-const GROUP_START = new Set(["NUMBER", "NUMBER_WITH_UNIT", "(", "ID"]);
+const GROUP_END = new Set(["NUMBER", "NUMBER_WITH_UNIT", "STRING", ")"]);
+const GROUP_START = new Set([
+  "NUMBER",
+  "NUMBER_WITH_UNIT",
+  "STRING",
+  "(",
+  "ID",
+]);
 const isGroupSplit = (left: Token, right: Token): boolean =>
   GROUP_END.has(left.type) && GROUP_START.has(right.type);
 
@@ -199,8 +218,16 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
       if (parenLevel < 0) throw new Error("Unmatched closing parenthesis");
     }
 
-    // Split into new group
-    if (parenLevel === 0 && next && isGroupSplit(current, next)) {
+    // Split into new group when:
+    // 1. We're not inside parentheses
+    // 2. There's a next token
+    // 3. Either it's a group split or we have a STRING token followed by another token
+    if (
+      parenLevel === 0 &&
+      next &&
+      (isGroupSplit(current, next) ||
+        (current.type === "STRING" && next.type !== "EOF"))
+    ) {
       expressions.push([...currentExpr]);
       currentExpr = [];
     }
@@ -251,13 +278,19 @@ function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   );
 }
 
-function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
+function evaluateParserNodes(
+  node: ASTNode,
+  config: CalcConfig
+): IUnitValue | StringNode {
   if (typeof node === "number") return new UnitValue(node, null, config);
   if (node instanceof UnitValue) return node;
 
   const typedNode = node as BaseNode;
 
   switch (typedNode.type) {
+    case "string":
+      return node as StringNode;
+
     case "id":
       return new UnitValue((node as IdNode).ref as number, null, config);
 
@@ -272,11 +305,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
         );
       }
 
-      return new UnitValue(
-        Math.pow(left.value, right.value),
-        null,
-        config
-      );
+      return new UnitValue(Math.pow(left.value, right.value), null, config);
     }
 
     case "+": {
@@ -326,30 +355,18 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
 
       // Handle simple record format {value: number; unit: string | null}
       if (result && typeof result === "object" && "value" in result) {
-        return new UnitValue(
-          result.value,
-          result.unit,
-          config
-        );
+        return new UnitValue(result.value, result.unit, config);
       }
 
       if (typeof result === "number") {
         // Use the first argument's unit
         const unit = evaluatedArgs[0].unit;
         // Create a UnitValue with the result and the unit from the first argument
-        return new UnitValue(
-          result,
-          unit,
-          config
-        );
+        return new UnitValue(result, unit, config);
       }
 
       // If the result is something else (like a string), convert to number and use first arg's unit
-      return new UnitValue(
-        Number(result),
-        evaluatedArgs[0].unit,
-        config
-      );
+      return new UnitValue(Number(result), evaluatedArgs[0].unit, config);
     }
 
     case "neg":
@@ -362,7 +379,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
 
 export interface RunResult {
   parsers: ASTNode[];
-  exec: () => IUnitValue[];
+  exec: () => (IUnitValue | StringNode)[];
 }
 
 export function run(s: string, options: Partial<CalcConfig> = {}): RunResult {
@@ -385,12 +402,18 @@ export function calc(
   const results = parsers.map((p) => {
     const result = evaluateParserNodes(p, config);
 
+    // Handle string nodes
+    if ((result as any).type === "string") {
+      return (result as StringNode).value;
+    }
+
+    // Handle UnitValue nodes
+    const unitValue = result as IUnitValue;
     // Return number for unitless values, string for values with units
-    // If this is a result of dividing same units, return as string
-    if (result.isUnitless()) {
-      return result.value;
+    if (unitValue.isUnitless()) {
+      return unitValue.value;
     } else {
-      return result.toString();
+      return unitValue.toString();
     }
   });
 

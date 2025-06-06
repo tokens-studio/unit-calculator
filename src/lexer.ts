@@ -6,6 +6,7 @@ export type TokenType =
   | "NUMBER"
   | "NUMBER_WITH_UNIT"
   | "ID"
+  | "STRING"
   | "+"
   | "-"
   | "*"
@@ -45,6 +46,12 @@ export interface IdentifierToken extends BaseToken {
   match: string;
 }
 
+export interface StringToken extends BaseToken {
+  type: "STRING";
+  match: string;
+  value: string;
+}
+
 export interface OperatorToken extends BaseToken {
   type: "+" | "-" | "*" | "/" | "^";
   match: string;
@@ -70,6 +77,7 @@ export type Token =
   | NumberToken
   | NumberWithUnitToken
   | IdentifierToken
+  | StringToken
   | OperatorToken
   | CommaToken
   | ParenToken
@@ -168,9 +176,13 @@ const parseNumber = function (
   } as NumberToken;
 };
 
-const parseIdentifier = function (s: string): Token | undefined {
+const parseIdentifier = function (
+  s: string,
+  _tokens,
+  config: CalcConfig
+): Token | undefined {
   const match = /^[A-Za-z]+/.exec(s);
-  if (match) {
+  if (match && config.mathFunctions[match]) {
     return {
       type: "ID",
       match: match[0],
@@ -224,6 +236,17 @@ function isOperator(type: TokenType): type is "+" | "-" | "*" | "/" | "^" {
   );
 }
 
+const parseString = function (s: string): Token | undefined {
+  const match = /^[^ ]*/.exec(s);
+  if (match) {
+    return {
+      type: "STRING",
+      match: match[0],
+      value: match[0],
+    } as StringToken;
+  }
+};
+
 const tokenizers: TokenParser[] = [
   parseWhitespace,
   parseNumber,
@@ -236,6 +259,7 @@ const tokenizers: TokenParser[] = [
   (s, _tokens, _config) => parseParen("(", s),
   (s, _tokens, _config) => parseParen(")", s),
   parseComma,
+  parseString,
 ];
 
 export default function lex(

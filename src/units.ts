@@ -72,11 +72,7 @@ export class UnitValue implements IUnitValue {
 
   add(other: IUnitValue): IUnitValue {
     if (this.unit === other.unit) {
-      return new UnitValue(
-        this.value + other.value,
-        this.unit,
-        this.config
-      );
+      return new UnitValue(this.value + other.value, this.unit, this.config);
     }
 
     const conversion = findBestConversionKey(
@@ -101,11 +97,7 @@ export class UnitValue implements IUnitValue {
   subtract(other: IUnitValue): IUnitValue {
     // Same units
     if (this.unit === other.unit) {
-      return new UnitValue(
-        this.value - other.value,
-        this.unit,
-        this.config
-      );
+      return new UnitValue(this.value - other.value, this.unit, this.config);
     }
 
     // One is unitless
@@ -124,11 +116,7 @@ export class UnitValue implements IUnitValue {
       }
 
       // Default behavior for unitless - unit
-      return new UnitValue(
-        this.value - other.value,
-        other.unit,
-        this.config
-      );
+      return new UnitValue(this.value - other.value, other.unit, this.config);
     }
 
     if (other.isUnitless()) {
@@ -146,11 +134,7 @@ export class UnitValue implements IUnitValue {
       }
 
       // Default behavior for unit - unitless
-      return new UnitValue(
-        this.value - other.value,
-        this.unit,
-        this.config
-      );
+      return new UnitValue(this.value - other.value, this.unit, this.config);
     }
 
     // Different units - check for conversion
@@ -176,28 +160,16 @@ export class UnitValue implements IUnitValue {
   multiply(other: IUnitValue): IUnitValue {
     // If both have the same unit
     if (this.unit === other.unit) {
-      return new UnitValue(
-        this.value * other.value,
-        this.unit,
-        this.config
-      );
+      return new UnitValue(this.value * other.value, this.unit, this.config);
     }
 
     // If one is unitless, result has the unit of the other
     if (this.isUnitless()) {
-      return new UnitValue(
-        this.value * other.value,
-        other.unit,
-        this.config
-      );
+      return new UnitValue(this.value * other.value, other.unit, this.config);
     }
 
     if (other.isUnitless()) {
-      return new UnitValue(
-        this.value * other.value,
-        this.unit,
-        this.config
-      );
+      return new UnitValue(this.value * other.value, this.unit, this.config);
     }
 
     // Check for conversion using wildcard matching
@@ -231,11 +203,7 @@ export class UnitValue implements IUnitValue {
 
     if (conversion) {
       const result = conversion(this, other);
-      return new UnitValue(
-        result.value,
-        result.unit,
-        this.config
-      );
+      return new UnitValue(result.value, result.unit, this.config);
     }
 
     throw new IncompatibleUnitsError({
@@ -246,10 +214,6 @@ export class UnitValue implements IUnitValue {
   }
 
   negate(): IUnitValue {
-    return new UnitValue(
-      -this.value,
-      this.unit,
-      this.config
-    );
+    return new UnitValue(-this.value, this.unit, this.config);
   }
 }

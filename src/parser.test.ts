@@ -412,3 +412,23 @@ describe("Custom math functions", () => {
     expect(calc("max(1px + 2px, 2px * 2)")).toEqual(["4px"]);
   });
 });
+
+describe("String handling", () => {
+  it("handles basic string values", () => {
+    expect(calc("'hello'")).toEqual(["'hello'"]);
+    expect(calc("hello")).toEqual(["hello"]);
+  });
+
+  it("returns strings as-is without evaluation", () => {
+    expect(calc("'1+1'")).toEqual(["'1+1'"]);
+    expect(calc('"2*3"')).toEqual(['"2*3"']);
+  });
+
+  it("handles multiple string expressions", () => {
+    expect(calc("hello world")).toEqual(["hello", "world"]);
+  });
+
+  it("handles mixed string and numeric expressions", () => {
+    expect(calc("5px * 2px solid red")).toEqual(["10px", "solid", "red"]);
+  });
+});

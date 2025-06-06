@@ -18,11 +18,7 @@ export interface IUnitValue {
 }
 
 export interface UnitValueConstructor {
-  new (
-    value: number,
-    unit: string | null,
-    config: CalcConfig
-  ): IUnitValue;
+  new (value: number, unit: string | null, config: CalcConfig): IUnitValue;
 
   areAllCompatible(values: IUnitValue[]): boolean;
 }

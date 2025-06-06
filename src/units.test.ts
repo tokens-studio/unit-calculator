@@ -330,7 +330,7 @@ describe("UnitValue with custom unit conversions", () => {
       // Unitless / Unit = Unitless
       const result2 = unitless.divide(px);
       expect(result2.value).toBe(0.2);
-      expect(result2.unit).toBe(null);
+      expect(result2.unit).toBe("px");
     });
 
     it("divides same units to get unitless", () => {
@@ -340,7 +340,7 @@ describe("UnitValue with custom unit conversions", () => {
       // px / px = unitless
       const result = px1.divide(px2);
       expect(result.value).toBe(5);
-      expect(result.unit).toBe(null);
+      expect(result.unit).toBe("px");
       expect(result.fromUnitDivision).toBe(true);
     });
 

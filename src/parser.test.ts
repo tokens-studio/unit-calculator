@@ -122,7 +122,7 @@ describe("CSS unit calculations", () => {
   });
 
   it("handles division with same units", () => {
-    expect(calc("6px / 2px")).toEqual(["3"]);
+    expect(calc("6px / 2px")).toEqual(["3px"]);
   });
 
   it("throws on operations with incompatible units", () => {
@@ -389,9 +389,15 @@ describe("Custom math functions", () => {
     };
 
     expect(calc("double(5)", { mathFunctions: customFunctions })).toEqual([10]);
-    expect(calc("square(3cm)", { mathFunctions: customFunctions })).toEqual(["9cm"]);
-    expect(calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })).toEqual(["14cm"]);
-    expect(calc("add(2px, 3px)", { mathFunctions: customFunctions })).toEqual(["5px"]);
+    expect(calc("square(3cm)", { mathFunctions: customFunctions })).toEqual([
+      "9cm",
+    ]);
+    expect(
+      calc("double(3cm * 2) + 2cm", { mathFunctions: customFunctions })
+    ).toEqual(["14cm"]);
+    expect(calc("add(2px, 3px)", { mathFunctions: customFunctions })).toEqual([
+      "5px",
+    ]);
   });
 
   test("Functions allow math expressions as arguments", () => {

@@ -327,7 +327,7 @@ function evaluateParserNodes(node: ASTNode, config: CalcConfig): IUnitValue {
       }
 
       // Handle simple record format {value: number; unit: string | null}
-      if (result && typeof result === 'object' && 'value' in result) {
+      if (result && typeof result === "object" && "value" in result) {
         return new UnitValue(
           result.value,
           result.unit,

@@ -152,7 +152,8 @@ const parseNumber = function (
       prevToken &&
       (prevToken.type === "NUMBER" ||
         prevToken.type === "NUMBER_WITH_UNIT" ||
-        prevToken.type === "ID" ||
+        prevToken.type === "FUNCTION_ID" ||
+        prevToken.type === "CONSTANT_ID" ||
         prevToken.type === ")")
     ) {
       return;

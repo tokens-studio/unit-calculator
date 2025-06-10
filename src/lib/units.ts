@@ -1,10 +1,9 @@
 import type { CalcConfig } from "./config.js";
 import { defaultConfig, findBestConversionKey } from "./config.js";
 import { IncompatibleUnitsError } from "./utils/errors.js";
-import type { MathNodeBase } from "./utils/types.d.js";
 import type { IUnitValue } from "./utils/units.d.js";
 
-export class UnitValue implements IUnitValue, MathNodeBase {
+export class UnitValue implements IUnitValue {
   type: string = "unitvalue";
   value: number;
   unit: string | null;

@@ -7,7 +7,6 @@ import type {
   StringToken,
   Token,
 } from "./lexer.js";
-import type { MathNodeBase } from "./utils/types.d.js";
 import type { IUnitValue } from "./utils/units.d.js";
 import { UnitValue } from "./units.js";
 
@@ -54,7 +53,7 @@ type MathNode =
   | BinaryOpNode
   | FunctionCallNode
   | NegationNode
-  | (IUnitValue & MathNodeBase)
+  | IUnitValue
   | number;
 
 type ASTNode = MathNode | StringNode;

@@ -5,9 +5,11 @@ import {
   findBestConversionKey,
 } from "./config.js";
 import { IncompatibleUnitsError } from "./utils/errors.js";
+import type { MathNodeBase } from "./utils/types.d.js";
 import type { IUnitValue, UnitValueConstructor } from "./utils/units.d.js";
 
-export class UnitValue implements IUnitValue {
+export class UnitValue implements IUnitValue, MathNodeBase {
+  type: string = "unitvalue";
   value: number;
   unit: string | null;
   config: CalcConfig;

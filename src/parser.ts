@@ -1,22 +1,20 @@
 import type { CalcConfig } from "./config.js";
 import { defaultConfig } from "./config.js";
 import createLexer, { Lexer } from "./lexer.js";
-import type { NumberToken, NumberWithUnitToken, Token } from "./lexer.js";
+import type {
+  NumberToken,
+  NumberWithUnitToken,
+  StringToken,
+  Token,
+} from "./lexer.js";
+import type { MathNodeBase } from "./utils/types.d.js";
 import type { IUnitValue } from "./utils/units.d.js";
 import { UnitValue } from "./units.js";
 
-type NodeType = "id" | "string" | "+" | "-" | "*" | "/" | "^" | "()" | "neg";
-type BinaryOpType = "+" | "-" | "*" | "/" | "^";
 type ParseFunction = (rbp?: number) => ASTNode;
 
 interface BaseNode {
-  type: NodeType;
-}
-
-interface IdNode extends BaseNode {
-  type: "id";
-  ref: number | Function;
-  id: string;
+  type: string;
 }
 
 interface StringNode extends BaseNode {
@@ -24,31 +22,42 @@ interface StringNode extends BaseNode {
   value: string;
 }
 
+// Math nodes
+
+interface IdNode extends BaseNode {
+  type: "id";
+  ref: number | Function;
+  id: string;
+}
+
+type BinaryOpType = "+" | "-" | "*" | "/" | "^";
+
 interface BinaryOpNode extends BaseNode {
   type: BinaryOpType;
-  left: ASTNode;
-  right: ASTNode;
+  left: MathNode;
+  right: MathNode;
 }
 
 interface FunctionCallNode extends BaseNode {
   type: "()";
   target: IdNode;
-  args: ASTNode[];
+  args: MathNode[];
 }
 
 interface NegationNode extends BaseNode {
   type: "neg";
-  value: ASTNode;
+  value: MathNode;
 }
 
-type ASTNode =
+type MathNode =
   | IdNode
-  | StringNode
   | BinaryOpNode
   | FunctionCallNode
   | NegationNode
-  | IUnitValue
+  | (IUnitValue & MathNodeBase)
   | number;
+
+type ASTNode = MathNode | StringNode;
 
 type NudFunction = (
   token: Token,
@@ -98,12 +107,11 @@ const NUDS: Record<string, NudFunction> = {
     return {
       type: "string",
       value: (t as StringToken).value,
-    };
+    } as StringNode;
   },
   ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
 
-    // Since validation is now done in the lexer, we can safely assume this is a valid ID
     if (config.mathFunctions && id in config.mathFunctions) {
       return {
         type: "id",
@@ -112,7 +120,6 @@ const NUDS: Record<string, NudFunction> = {
       } as IdNode;
     }
 
-    // Check for math constants in the config
     if (config.mathConstants && id in config.mathConstants) {
       return {
         type: "id",
@@ -151,6 +158,7 @@ const LEDS: Record<string, LedFunction> = {
   "^": (left, _t, bp, parse, _lexer, _config) =>
     ({ type: "^", left, right: parse(bp - 1) } as BinaryOpNode),
 
+  // Parse arguments (comma-separated)
   "(": (left, _t, _bp, parse, lexer, _config) => {
     if ((left as IdNode).type !== "id") {
       throw new Error("Cannot invoke expression as if it was a function");
@@ -161,7 +169,6 @@ const LEDS: Record<string, LedFunction> = {
       throw new Error("Cannot invoke non-function");
     }
 
-    // Parse arguments (comma-separated)
     const args: ASTNode[] = [];
 
     // Functions must have at least one argument
@@ -169,7 +176,7 @@ const LEDS: Record<string, LedFunction> = {
       throw new Error(`Function ${idNode.id}() called with no arguments`);
     }
 
-    // Parse first argument - use parse(0) to allow full expressions
+    // Parse first argument
     args.push(parse(0));
 
     // Parse additional arguments if any
@@ -275,26 +282,34 @@ function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   );
 }
 
-function evaluateParserNodes(
-  node: ASTNode,
-  config: CalcConfig
-): IUnitValue | StringNode {
+function isStringNode(node: ASTNode): node is StringNode {
+  return (
+    node && typeof node === "object" && "type" in node && node.type === "string"
+  );
+}
+
+function isMathNode(node: ASTNode): node is MathNode {
+  return !isStringNode(node);
+}
+
+function evaluateMathNode(node: MathNode, config: CalcConfig): IUnitValue {
   if (typeof node === "number") return new UnitValue(node, null, config);
   if (node instanceof UnitValue) return node;
 
-  const typedNode = node as BaseNode;
+  const typedNode = node as
+    | IdNode
+    | BinaryOpNode
+    | FunctionCallNode
+    | NegationNode;
 
   switch (typedNode.type) {
-    case "string":
-      return node as StringNode;
-
     case "id":
       return new UnitValue((node as IdNode).ref as number, null, config);
 
     case "^": {
       const n = node as BinaryOpNode;
-      const left = evaluateParserNodes(n.left, config);
-      const right = evaluateParserNodes(n.right, config);
+      const left = evaluateMathNode(n.left, config);
+      const right = evaluateMathNode(n.right, config);
 
       if (!left.isUnitless() || !right.isUnitless()) {
         throw new Error(
@@ -307,37 +322,35 @@ function evaluateParserNodes(
 
     case "+": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).add(
-        evaluateParserNodes(n.right, config)
+      return evaluateMathNode(n.left, config).add(
+        evaluateMathNode(n.right, config)
       );
     }
 
     case "-": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).subtract(
-        evaluateParserNodes(n.right, config)
+      return evaluateMathNode(n.left, config).subtract(
+        evaluateMathNode(n.right, config)
       );
     }
 
     case "*": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).multiply(
-        evaluateParserNodes(n.right, config)
+      return evaluateMathNode(n.left, config).multiply(
+        evaluateMathNode(n.right, config)
       );
     }
 
     case "/": {
       const n = node as BinaryOpNode;
-      return evaluateParserNodes(n.left, config).divide(
-        evaluateParserNodes(n.right, config)
+      return evaluateMathNode(n.left, config).divide(
+        evaluateMathNode(n.right, config)
       );
     }
 
     case "()": {
       const n = node as FunctionCallNode;
-      const evaluatedArgs = n.args.map((arg) =>
-        evaluateParserNodes(arg, config)
-      );
+      const evaluatedArgs = n.args.map((arg) => evaluateMathNode(arg, config));
 
       // Handle constants
       if (typeof n.target.ref === "number") {
@@ -367,11 +380,27 @@ function evaluateParserNodes(
     }
 
     case "neg":
-      return evaluateParserNodes((node as NegationNode).value, config).negate();
+      return evaluateMathNode((node as NegationNode).value, config).negate();
 
     default:
-      throw new Error(`Unknown node type: ${typedNode.type}`);
+      // At this point typedNode is never type due to exhaustive switch cases
+      throw new Error(`Unknown node type: ${String((typedNode as any).type)}`);
   }
+}
+
+function evaluateParserNodes(
+  node: ASTNode,
+  config: CalcConfig
+): IUnitValue | StringNode {
+  if (isStringNode(node)) {
+    return node;
+  }
+
+  return evaluateMathNode(node, config);
+}
+
+function isStringResult(result: IUnitValue | StringNode): result is StringNode {
+  return "type" in result && result.type === "string";
 }
 
 export interface RunResult {
@@ -399,19 +428,11 @@ export function calc(
   const results = parsers.map((p) => {
     const result = evaluateParserNodes(p, config);
 
-    // Handle string nodes
-    if ((result as any).type === "string") {
-      return (result as StringNode).value;
-    }
+    if (isStringResult(result)) return result.value;
 
-    // Handle UnitValue nodes
-    const unitValue = result as IUnitValue;
-    // Return number for unitless values, string for values with units
-    if (unitValue.isUnitless()) {
-      return unitValue.value;
-    } else {
-      return unitValue.toString();
-    }
+    if (result.isUnitless()) return result.value;
+
+    return result.toString();
   });
 
   return results;

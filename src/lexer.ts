@@ -189,7 +189,7 @@ const parseIdentifier = function (
   _tokens,
   config: CalcConfig
 ): Token | undefined {
-  const match = /^[A-Za-z]+/.exec(s);
+  const match = /^[A-Za-z0-9]+/.exec(s);
   if (match) {
     const id = match[0];
 
@@ -318,16 +318,6 @@ export default function lex(
     if (cur.type === "WHITESPACE") return acc;
 
     const next = orig[idx + 1];
-
-    console.log("CUR", cur);
-
-    if (cur.type === "FUNCTION_ID" && next.type !== "(") {
-      throw new Error("Function identifiers are not allowed to stand alone.");
-    }
-
-    if (cur.type === "CONSTANT_ID" && next && next.type !== "WHITESPACE") {
-      cur.type === "STRING";
-    }
 
     // Check for consecutive operators (except valid negation)
     if (isOperator(cur.type) && isOperator(next.type)) {

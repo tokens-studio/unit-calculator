@@ -431,4 +431,16 @@ describe("String handling", () => {
   it("handles mixed string and numeric expressions", () => {
     expect(calc("5px * 2px solid red")).toEqual(["10px", "solid", "red"]);
   });
+
+  it("handles math constants followed by strings", () => {
+    expect(calc("PI A")).toEqual([Math.PI, "A"]);
+    expect(calc("PI A 1+1 B")).toEqual([Math.PI, "A", 2, "B"]);
+    expect(calc("PI2 E3")).toEqual(["PI2", "E3"]);
+  });
+
+  it("handles math constants in expressions with strings", () => {
+    expect(calc("PI + 1 text")).toEqual([Math.PI + 1, "text"]);
+    expect(calc("2 * PI text")).toEqual([2 * Math.PI, "text"]);
+    expect(calc("solid PI * 2px")).toEqual(["solid", 2 * Math.PI + "px"]);
+  });
 });

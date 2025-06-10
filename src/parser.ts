@@ -181,7 +181,13 @@ const LEDS: Record<string, LedFunction> = {
   },
 };
 
-const GROUP_END = new Set(["NUMBER", "NUMBER_WITH_UNIT", "STRING", ")"]);
+const GROUP_END = new Set([
+  "NUMBER",
+  "NUMBER_WITH_UNIT",
+  "CONSTANT_ID",
+  "STRING",
+  ")",
+]);
 const GROUP_START = new Set([
   "NUMBER",
   "NUMBER_WITH_UNIT",

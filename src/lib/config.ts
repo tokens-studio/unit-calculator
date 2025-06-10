@@ -1,21 +1,7 @@
 import { IncompatibleUnitsError } from "./utils/errors.js";
 import { UnitValue } from "./units.js";
-
-export const CSS_UNITS = [
-  "px",
-  "em",
-  "rem",
-  "%",
-  "vh",
-  "vw",
-  "vmin",
-  "vmax",
-  "cm",
-  "mm",
-  "in",
-  "pt",
-  "pc",
-];
+import type { IUnitValue } from "./utils/units.d.js";
+import { CSS_UNITS } from "./utils/constants.js";
 
 export type UnitConversionKey = string;
 
@@ -25,59 +11,62 @@ interface ConversionOutput {
 }
 
 export type UnitConversionFunction = (
-  left: any,
-  right: any
+  left: IUnitValue,
+  right: IUnitValue
 ) => ConversionOutput;
 
 export interface CalcConfig {
   allowedUnits: Set<string>;
-  mathFunctions: Record<string, (...args: any[]) => any>;
+  mathFunctions: Record<string, (...args: IUnitValue[]) => ConversionOutput>;
   mathConstants: Record<string, number>;
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>;
 }
 
-export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
-  abs: ({ value, unit }) => {
+export const defaultMathFunctions: Record<
+  string,
+  (...args: IUnitValue[]) => ConversionOutput
+> = {
+  abs: ({ value, unit }: IUnitValue) => {
     const result = Math.abs(value);
     return { value: result, unit };
   },
-  sin: ({ value, unit }) => {
+  sin: ({ value, unit }: IUnitValue) => {
     const result = Math.sin(value);
     return { value: result, unit };
   },
-  cos: ({ value, unit }) => {
+  cos: ({ value, unit }: IUnitValue) => {
     const result = Math.cos(value);
     return { value: result, unit };
   },
-  tan: ({ value, unit }) => {
+  tan: ({ value, unit }: IUnitValue) => {
     const result = Math.tan(value);
     return { value: result, unit };
   },
-  sqrt: ({ value, unit }) => {
+  sqrt: ({ value, unit }: IUnitValue) => {
     const result = Math.sqrt(value);
     return { value: result, unit };
   },
-  floor: ({ value, unit }) => {
+  floor: ({ value, unit }: IUnitValue) => {
     const result = Math.floor(value);
     return { value: result, unit };
   },
-  ceil: ({ value, unit }) => {
+  ceil: ({ value, unit }: IUnitValue) => {
     const result = Math.ceil(value);
     return { value: result, unit };
   },
-  round: ({ value, unit }) => {
+  round: ({ value, unit }: IUnitValue) => {
     const result = Math.round(value);
     return { value: result, unit };
   },
-  log: ({ value, unit }) => {
+  log: ({ value, unit }: IUnitValue) => {
     const result = Math.log(value);
     return { value: result, unit };
   },
-  exp: ({ value, unit }) => {
+  exp: ({ value, unit }: IUnitValue) => {
     const result = Math.exp(value);
     return { value: result, unit };
   },
-  pow: (...unitValues) => {
+  pow: (...unitValues: IUnitValue[]) => {
     if (unitValues.length !== 2) {
       throw new Error("pow function requires exactly 2 arguments");
     }
@@ -96,8 +85,8 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
     const result = Math.pow(base.value, exp.value);
     return { value: result, unit: base.unit };
   },
-  max: (...unitValues) => {
-    if (unitValues.length === 0) return NaN;
+  max: (...unitValues: IUnitValue[]) => {
+    if (unitValues.length === 0) return { value: NaN, unit: null };
 
     if (!UnitValue.areAllSame(unitValues)) {
       throw new IncompatibleUnitsError({
@@ -112,8 +101,8 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
     const result = Math.max(...values);
     return { value: result, unit };
   },
-  min: (...unitValues) => {
-    if (unitValues.length === 0) return NaN;
+  min: (...unitValues: IUnitValue[]) => {
+    if (unitValues.length === 0) return { value: NaN, unit: null };
 
     if (!UnitValue.areAllSame(unitValues)) {
       throw new IncompatibleUnitsError({
@@ -130,7 +119,6 @@ export const defaultMathFunctions: Record<string, (...args: any[]) => any> = {
   },
 };
 
-// Create default unit conversions with array syntax
 export const defaultConversionsArray: Array<
   [UnitConversionKeyArray, UnitConversionFunction]
 > = [
@@ -179,7 +167,6 @@ export const defaultConversionsArray: Array<
   ],
 ];
 
-// Convert array format to Map
 export const defaultUnitConversions: Map<
   UnitConversionKey,
   UnitConversionFunction
@@ -214,13 +201,11 @@ export function createConfig({
   mathConstants = defaultConfig.mathConstants,
   unitConversions = defaultConfig.unitConversions,
 }: Partial<CalcConfig> = {}): CalcConfig {
-  // Process unit conversions to handle array format
   const processedConversions = new Map<
     UnitConversionKey,
     UnitConversionFunction
   >();
 
-  // Copy existing conversions
   unitConversions.forEach((fn, key) => {
     processedConversions.set(key, fn);
   });
@@ -248,7 +233,6 @@ export function addUnitConversions(
 // Types for the array-based conversion key format
 export type UnitConversionKeyArray = [string | null, string, string | null];
 
-// Helper function to get a conversion key
 export function getConversionKey(
   leftUnit: string | null,
   operator: string,
@@ -260,7 +244,6 @@ export function getConversionKey(
   return `${left},${operator},${right}`;
 }
 
-// Helper function to convert array format to string key
 export function arrayToConversionKey(
   keyArray: UnitConversionKeyArray
 ): UnitConversionKey {
@@ -268,7 +251,6 @@ export function arrayToConversionKey(
   return getConversionKey(leftUnit, operator, rightUnit);
 }
 
-// Function to find the best matching conversion key
 export function findBestConversionKey(
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>,
   leftUnit: string | null,
@@ -299,7 +281,4 @@ export function findBestConversionKey(
   if (unitConversions.has(bothWildcardKey)) {
     return unitConversions.get(bothWildcardKey);
   }
-
-  // No match found
-  return undefined;
 }

@@ -186,7 +186,7 @@ const parseNumber = function (
 
 const parseIdentifier = function (
   s: string,
-  _tokens,
+  _tokens: Token[],
   config: CalcConfig
 ): Token | undefined {
   const match = /^[A-Za-z0-9]+/.exec(s);

@@ -1,6 +1,6 @@
 import type { IUnitValue } from "./units.d.js";
 
-const evaluationError = (msg) => `Evaluation Error: ${msg}`;
+const evaluationError = (msg: string) => `Evaluation Error: ${msg}`;
 
 export class IncompatibleUnitsError extends Error {
   values: Array<IUnitValue>;

@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "npm run build && node dist/index.js",
-    "cli": "node --loader ts-node/esm ./src/cli.ts",
+    "cli": "node --loader ts-node/esm ./src/cli/cli.ts",
     "link": "npm run build && npm link"
   },
   "repository": {
@@ -39,9 +39,5 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ]
+  "files": ["dist", "LICENSE", "README.md"]
 }

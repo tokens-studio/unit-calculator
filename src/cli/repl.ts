@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import readline from "readline";
-import { calc } from "./parser.js";
-import { createStandardConfig } from "./configSetup.js";
-
-const config = createStandardConfig();
+import { calc } from "../lib/parser.js";
+import { defaultConfig as config } from "../lib/config.js";
 
 export function startRepl(): void {
   const rl = readline.createInterface({
@@ -15,10 +13,7 @@ export function startRepl(): void {
 
   console.log("Token Value Calculator REPL");
   console.log(
-    "Type expressions like '2px + 2rem' or '2km + 500m' or 'ctrl+c' to exit"
-  );
-  console.log(
-    "Supported dimension units: km, m, cm, mm, kg, g, mg, h, min, s, ms"
+    `Supported dimension units: ${[...config.allowedUnits].join(", ")}`
   );
 
   rl.on("line", function (line) {

@@ -379,10 +379,22 @@ describe("Custom math functions", () => {
 
   test("Custom math functions can be added", () => {
     const customFunctions = {
-      double: ({ value, unit }) => ({ value: value * 2, unit }),
-      square: ({ value, unit }) => ({ value: value * value, unit }),
-      half: ({ value, unit }) => ({ value: value / 2, unit }),
-      add: (a, b) => ({ value: a.value + b.value, unit: a.unit }),
+      double: ({ value, unit }: { value: number; unit: string | null }) => ({
+        value: value * 2,
+        unit,
+      }),
+      square: ({ value, unit }: { value: number; unit: string | null }) => ({
+        value: value * value,
+        unit,
+      }),
+      half: ({ value, unit }: { value: number; unit: string | null }) => ({
+        value: value / 2,
+        unit,
+      }),
+      add: (
+        a: { value: number; unit: string | null },
+        b: { value: number; unit: string | null }
+      ) => ({ value: a.value + b.value, unit: a.unit }),
     };
 
     expect(calc("double(5)", { mathFunctions: customFunctions })).toEqual([10]);

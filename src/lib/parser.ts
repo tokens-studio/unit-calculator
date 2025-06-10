@@ -286,10 +286,6 @@ function isStringNode(node: ASTNode): node is StringNode {
   );
 }
 
-function isMathNode(node: ASTNode): node is MathNode {
-  return !isStringNode(node);
-}
-
 function evaluateMathNode(node: MathNode, config: CalcConfig): IUnitValue {
   if (typeof node === "number") return new UnitValue(node, null, config);
   if (node instanceof UnitValue) return node;
@@ -412,7 +408,7 @@ export function run(s: string, options: Partial<CalcConfig> = {}): RunResult {
 
   return {
     parsers,
-    exec: (ps = parsers) => parsers.map((p) => evaluateParserNodes(p, config)),
+    exec: (_ps = parsers) => parsers.map((p) => evaluateParserNodes(p, config)),
   };
 }
 

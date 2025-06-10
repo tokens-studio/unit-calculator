@@ -32,37 +32,6 @@ export class UnitValue implements IUnitValue {
     return this.unit === null;
   }
 
-  isCompatibleWith(other: IUnitValue): boolean {
-    // Same units are always compatible
-    if (this.unit === other.unit) {
-      return true;
-    }
-
-    // Both unitless is compatible
-    if (this.isUnitless() && other.isUnitless()) {
-      return true;
-    }
-
-    // Check if there's a conversion defined for these units
-    // Try exact match first, then wildcards
-    return !!findBestConversionKey(
-      this.config.unitConversions,
-      this.unit,
-      "+",
-      other.unit
-    );
-  }
-
-  canMultiplyWith(other: IUnitValue): boolean {
-    // Check if there's a conversion defined for these units
-    return !!findBestConversionKey(
-      this.config.unitConversions,
-      this.unit,
-      "*",
-      other.unit
-    );
-  }
-
   toString(): string {
     return this.isUnitless() ? `${this.value}` : `${this.value}${this.unit}`;
   }

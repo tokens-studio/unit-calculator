@@ -6,8 +6,6 @@ export interface IUnitValue {
   config: CalcConfig;
 
   isUnitless(): boolean;
-  isCompatibleWith(other: IUnitValue): boolean;
-  canMultiplyWith(other: IUnitValue): boolean;
   toString(): string;
 
   add(other: IUnitValue): IUnitValue;

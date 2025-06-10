@@ -44,25 +44,6 @@ describe("UnitValue with custom unit conversions", () => {
     ],
   ]);
 
-  describe("unit compatibility", () => {
-    it("recognizes compatible units based on config", () => {
-      const px = new UnitValue(10, "px", config);
-      const rem = new UnitValue(1, "rem", config);
-      const cm = new UnitValue(2, "cm", config);
-      const mm = new UnitValue(20, "mm", config);
-      const em = new UnitValue(1, "em", config);
-
-      expect(px.isCompatibleWith(rem)).toBe(true);
-      expect(rem.isCompatibleWith(px)).toBe(true);
-      expect(cm.isCompatibleWith(mm)).toBe(true);
-      expect(mm.isCompatibleWith(cm)).toBe(true);
-
-      // Units without conversion rules are not compatible
-      expect(px.isCompatibleWith(cm)).toBe(false);
-      expect(rem.isCompatibleWith(em)).toBe(false);
-    });
-  });
-
   describe("wildcard conversions", () => {
     // Create a config with wildcard conversions using array syntax
     const wildcardConfig = createConfig();

@@ -300,27 +300,24 @@ export default function lex(
     }
   }
 
-  const tokensWithoutWhitespace = tokens.filter(
-    ({ type }) => type !== "WHITESPACE"
-  );
+  const lexableTokens = tokens.reduce((acc, cur, idx, orig) => {
+    if (cur.type === "WHITESPACE") return acc;
 
-  // Validate no consecutive operators (except for negation cases)
-  for (let i = 0; i < tokensWithoutWhitespace.length - 1; i++) {
-    const current = tokensWithoutWhitespace[i];
-    const next = tokensWithoutWhitespace[i + 1];
+    const next = orig[idx + 1];
 
     // Check for consecutive operators (except valid negation)
-    if (isOperator(current.type) && isOperator(next.type)) {
+    if (isOperator(cur.type) && isOperator(next.type)) {
       throw new Error(
-        `Consecutive operators not allowed: ${current.match}${next.match}`
+        `Consecutive operators not allowed: ${cur.match}${next.match}`
       );
     }
-
     // Special case for minus: allow it after operators as negation, but not after minus
-    if (current.type === "-" && next.type === "-") {
+    if (cur.type === "-" && next.type === "-") {
       throw new Error("Consecutive minus operators not allowed");
     }
-  }
 
-  return new Lexer(tokensWithoutWhitespace);
+    return [...acc, cur];
+  }, []);
+
+  return new Lexer(lexableTokens);
 }

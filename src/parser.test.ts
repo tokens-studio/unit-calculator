@@ -1,14 +1,11 @@
 import { describe, expect, it, test } from "vitest";
 import type { CalcConfig } from "./config.js";
 import {
-  defaultMathFunctions,
   defaultUnitConversions,
   createConfig,
   addUnitConversions,
 } from "./config.js";
 import { calc } from "./parser.js";
-import { UnitValue } from "./units.js";
-import { IncompatibleUnitsError } from "./utils/errors.js";
 
 describe("Basic arithmetic", () => {
   it("handles basic operations with correct precedence", () => {

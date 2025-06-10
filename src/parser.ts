@@ -80,7 +80,8 @@ const BPS = {
   EOF: 0,
   NUMBER: 0,
   NUMBER_WITH_UNIT: 0,
-  ID: 0,
+  FUNCTION_ID: 0,
+  CONSTANT_ID: 0,
   ")": 0,
   "+": 20,
   "-": 20,
@@ -109,31 +110,21 @@ const NUDS: Record<string, NudFunction> = {
       value: (t as StringToken).value,
     } as StringNode;
   },
-  ID: (t, _bp, _parse, _lexer, config) => {
+  FUNCTION_ID: (t, _bp, _parse, _lexer, config) => {
     const id = t.match!;
-
-    if (config.mathFunctions && id in config.mathFunctions) {
-      return {
-        type: "id",
-        ref: config.mathFunctions[id],
-        id,
-      } as IdNode;
-    }
-
-    if (config.mathConstants && id in config.mathConstants) {
-      return {
-        type: "id",
-        ref: config.mathConstants[id],
-        id,
-      } as IdNode;
-    }
-
-    const posInfo = t.charpos !== undefined ? `at position ${t.charpos}` : "";
-    throw new Error(
-      `Unknown expression: '${id}'${
-        posInfo ? " " + posInfo : ""
-      }. Only configured math functions and constants are supported.`
-    );
+    return {
+      type: "id",
+      ref: config.mathFunctions[id],
+      id,
+    } as IdNode;
+  },
+  CONSTANT_ID: (t, _bp, _parse, _lexer, config) => {
+    const id = t.match!;
+    return {
+      type: "id",
+      ref: config.mathConstants[id],
+      id,
+    } as IdNode;
   },
   "+": (_t, bp, parse, _lexer, _config) => parse(bp),
   "-": (_t, bp, parse, _lexer, _config) =>
@@ -166,7 +157,7 @@ const LEDS: Record<string, LedFunction> = {
 
     const idNode = left as IdNode;
     if (typeof idNode.ref !== "function") {
-      throw new Error("Cannot invoke non-function");
+      throw new Error(`Cannot invoke constant '${idNode.id}' as a function`);
     }
 
     const args: ASTNode[] = [];
@@ -196,7 +187,8 @@ const GROUP_START = new Set([
   "NUMBER_WITH_UNIT",
   "STRING",
   "(",
-  "ID",
+  "FUNCTION_ID",
+  "CONSTANT_ID",
 ]);
 const isGroupSplit = (left: Token, right: Token): boolean =>
   GROUP_END.has(left.type) && GROUP_START.has(right.type);

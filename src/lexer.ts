@@ -5,7 +5,8 @@ export type TokenType =
   | "EOF"
   | "NUMBER"
   | "NUMBER_WITH_UNIT"
-  | "ID"
+  | "FUNCTION_ID"
+  | "CONSTANT_ID"
   | "STRING"
   | "+"
   | "-"
@@ -41,8 +42,13 @@ export interface NumberWithUnitToken extends BaseToken {
   unit: string;
 }
 
-export interface IdentifierToken extends BaseToken {
-  type: "ID";
+export interface FunctionIdToken extends BaseToken {
+  type: "FUNCTION_ID";
+  match: string;
+}
+
+export interface ConstantIdToken extends BaseToken {
+  type: "CONSTANT_ID";
   match: string;
 }
 
@@ -76,7 +82,8 @@ export type Token =
   | EOFToken
   | NumberToken
   | NumberWithUnitToken
-  | IdentifierToken
+  | FunctionIdToken
+  | ConstantIdToken
   | StringToken
   | OperatorToken
   | CommaToken
@@ -184,13 +191,21 @@ const parseIdentifier = function (
   const match = /^[A-Za-z]+/.exec(s);
   if (match) {
     const id = match[0];
-    const isMathConstantOrFunction =
-      config.mathFunctions[id] || config.mathConstants[id];
-    if (isMathConstantOrFunction) {
+    
+    // Check if it's a math function
+    if (config.mathFunctions[id]) {
       return {
-        type: "ID",
+        type: "FUNCTION_ID",
         match: id,
-      } as IdentifierToken;
+      } as FunctionIdToken;
+    }
+    
+    // Check if it's a math constant
+    if (config.mathConstants[id]) {
+      return {
+        type: "CONSTANT_ID",
+        match: id,
+      } as ConstantIdToken;
     }
   }
 };

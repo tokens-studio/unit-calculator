@@ -182,11 +182,16 @@ const parseIdentifier = function (
   config: CalcConfig
 ): Token | undefined {
   const match = /^[A-Za-z]+/.exec(s);
-  if (match && config.mathFunctions[match]) {
-    return {
-      type: "ID",
-      match: match[0],
-    } as IdentifierToken;
+  if (match) {
+    const id = match[0];
+    const isMathConstantOrFunction =
+      config.mathFunctions[id] || config.mathConstants[id];
+    if (isMathConstantOrFunction) {
+      return {
+        type: "ID",
+        match: id,
+      } as IdentifierToken;
+    }
   }
 };
 

@@ -32,6 +32,7 @@ export type UnitConversionFunction = (
 export interface CalcConfig {
   allowedUnits: Set<string>;
   mathFunctions: Record<string, (...args: any[]) => any>;
+  mathConstants: Record<string, number>;
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>;
 }
 
@@ -189,15 +190,28 @@ export const defaultUnitConversions: Map<
   ])
 );
 
+export const defaultMathConstants: Record<string, number> = {
+  PI: Math.PI,
+  E: Math.E,
+  LN2: Math.LN2,
+  LN10: Math.LN10,
+  LOG2E: Math.LOG2E,
+  LOG10E: Math.LOG10E,
+  SQRT1_2: Math.SQRT1_2,
+  SQRT2: Math.SQRT2,
+};
+
 export const defaultConfig: CalcConfig = {
   allowedUnits: new Set(CSS_UNITS),
   mathFunctions: defaultMathFunctions,
+  mathConstants: defaultMathConstants,
   unitConversions: defaultUnitConversions,
 };
 
 export function createConfig({
   allowedUnits = defaultConfig.allowedUnits,
   mathFunctions = defaultConfig.mathFunctions,
+  mathConstants = defaultConfig.mathConstants,
   unitConversions = defaultConfig.unitConversions,
 }: Partial<CalcConfig> = {}): CalcConfig {
   // Process unit conversions to handle array format
@@ -214,6 +228,7 @@ export function createConfig({
   return {
     allowedUnits: new Set(allowedUnits),
     mathFunctions,
+    mathConstants,
     unitConversions: processedConversions,
   };
 }

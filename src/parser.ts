@@ -112,14 +112,11 @@ const NUDS: Record<string, NudFunction> = {
       } as IdNode;
     }
 
-    const mathConstant = Math[id as keyof typeof Math];
-    if (
-      typeof mathConstant !== "undefined" &&
-      typeof mathConstant !== "function"
-    ) {
+    // Check for math constants in the config
+    if (config.mathConstants && id in config.mathConstants) {
       return {
         type: "id",
-        ref: mathConstant,
+        ref: config.mathConstants[id],
         id,
       } as IdNode;
     }

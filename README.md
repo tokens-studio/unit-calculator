@@ -6,9 +6,13 @@ The unit calculator lets you define custom rules on how mixed units will be reso
 
 It will mainly be used to resolve math operations on design token epxressions.
 
-## Example
+## Installation
 
-You can run the repl with a few presets (css units, dimensions, durations, etc)
+``` sh
+npm i @tokens-studio/unit-calculator
+```
+
+## Example
 
 ``` typescript
 // Allows defining custom units
@@ -26,6 +30,10 @@ You can run the repl with a few presets (css units, dimensions, durations, etc)
 // Handles multiple expressions
 > (2px * 4) - (2rem * 10) 1rem 2% * 10
 [ "-312px", "1rem", "20%" ]
+
+// Handles strings
+> 10px - 1px solid green
+[ "9px", "solid", "green" ]
 ```
 
 ## Running it
@@ -46,6 +54,7 @@ The configuration for the engine looks like this:
 export interface CalcConfig {
   allowedUnits: Set<string>;
   mathFunctions: Record<string, args => number>;
+  mathConstants: Record<string, number>;
   unitConversions: Map<string, (LeftToken, RightToken) => {value: number; unit: string | null}>;
 }
 ```
@@ -62,13 +71,13 @@ For instance to allow measure units
 {allowedUnits: new Set(["km", "m", "cm", "mm"])}
 ```
 
-So you can use them in your calculations
+So you can use them in your calculations (once you've defined the conversion entries)
 
 ```
 > 2km + 2km => [ "4km" ]
 ```
 
-To mix units you have to set your conversion table
+Undefined units will throw
 
 ```
 > 2foo + 2bar
@@ -145,7 +154,7 @@ You could define custom functions like this
 
 ``` typescript
 const options = {
-    mathFunctions: { add: (a: number, b: number) => a + b },
+    mathFunctions: { add: (a, b) => {value: a.value + b.value}, unit: a.unit },
 };
 ```
 
@@ -156,7 +165,7 @@ Now you can use your custom functions like this
 [ "20px" ]
 ```
 
-*Functions dont accept multi unit handling yet!*
+Unit mixing has to be custom handled in your function.
 
 ## Concepts
 

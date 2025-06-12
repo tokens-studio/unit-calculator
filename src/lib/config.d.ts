@@ -20,6 +20,8 @@ export interface CalcConfig {
   mathFunctions: Record<string, (...args: any[]) => ConversionOutput>;
   mathConstants: Record<string, number>;
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>;
+  allowStrings: boolean;
+  allowMultipleExpressions: boolean;
 }
 
 // Types for the array-based conversion key format

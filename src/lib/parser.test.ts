@@ -497,4 +497,80 @@ describe("String handling", () => {
     expect(calc("2 * PI text")).toEqual([2 * Math.PI, "text"]);
     expect(calc("solid PI * 2px")).toEqual(["solid", 2 * Math.PI + "px"]);
   });
+
+  it("throws error when strings are disabled", () => {
+    const options = { allowStrings: false };
+
+    expect(() => calc("hello", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+    expect(() => calc("'hello'", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+    expect(() => calc("1 + 1 hello", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+    expect(() => calc("hello 1 + 1", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+  });
+
+  it("allows math expressions when strings are disabled", () => {
+    const options = { allowStrings: false };
+
+    expect(calc("1 + 1", options)).toEqual([2]);
+    expect(calc("2px * 3", options)).toEqual(["6px"]);
+    expect(calc("PI", options)).toEqual([Math.PI]);
+    expect(calc("abs(-5)", options)).toEqual([5]);
+  });
+});
+
+describe("Multiple expressions handling", () => {
+  it("throws error when multiple expressions are disabled", () => {
+    const options = { allowMultipleExpressions: false };
+
+    expect(() => calc("1 + 1 2 + 2", options)).toThrow(
+      "Multiple expressions are not allowed"
+    );
+    expect(() => calc("hello world", options)).toThrow(
+      "Multiple expressions are not allowed"
+    );
+    expect(() => calc("1px 2px", options)).toThrow(
+      "Multiple expressions are not allowed"
+    );
+    expect(() => calc("PI E", options)).toThrow(
+      "Multiple expressions are not allowed"
+    );
+  });
+
+  it("allows single expressions when multiple expressions are disabled", () => {
+    const options = { allowMultipleExpressions: false };
+
+    expect(calc("1 + 1", options)).toEqual([2]);
+    expect(calc("2px * 3", options)).toEqual(["6px"]);
+    expect(calc("hello", options)).toEqual(["hello"]);
+    expect(calc("PI", options)).toEqual([Math.PI]);
+    expect(calc("(1 + 2) * 3", options)).toEqual([9]);
+  });
+
+  it("can disable both strings and multiple expressions", () => {
+    const options = { allowStrings: false, allowMultipleExpressions: false };
+
+    // Should work with single math expressions
+    expect(calc("1 + 1", options)).toEqual([2]);
+    expect(calc("2px * 3", options)).toEqual(["6px"]);
+
+    // Should throw for strings
+    expect(() => calc("hello", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+
+    // Should throw for multiple expressions (but strings error comes first)
+    expect(() => calc("hello world", options)).toThrow(
+      "Strings in expressions are not allowed"
+    );
+    expect(() => calc("1 + 1 2 + 2", options)).toThrow(
+      "Multiple expressions are not allowed"
+    );
+  });
 });

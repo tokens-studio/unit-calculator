@@ -9,6 +9,10 @@ import type {
 } from "./lexer.js";
 import type { IUnitValue } from "./utils/units.d.js";
 import { UnitValue } from "./units.js";
+import {
+  StringsNotAllowedError,
+  MultipleExpressionsNotAllowedError,
+} from "./utils/errors.js";
 
 type ParseFunction = (rbp?: number) => ASTNode;
 
@@ -103,7 +107,10 @@ const NUDS: Record<string, NudFunction> = {
     ),
   NUMBER: (t, _bp, _parse, _lexer, config) =>
     new UnitValue((t as NumberToken).value, null, config),
-  STRING: (t, _bp, _parse, _lexer, _config) => {
+  STRING: (t, _bp, _parse, _lexer, config) => {
+    if (!config.allowStrings) {
+      throw new StringsNotAllowedError();
+    }
     return {
       type: "string",
       value: (t as StringToken).value,
@@ -198,10 +205,19 @@ const GROUP_START = new Set([
 const isGroupSplit = (left: Token, right: Token): boolean =>
   GROUP_END.has(left.type) && GROUP_START.has(right.type);
 
-function validateTokenStream(lexer: Lexer): Lexer[] {
+function validateTokenStream(lexer: Lexer, config: CalcConfig): Lexer[] {
   const expressions: Token[][] = [];
   let currentExpr: Token[] = [];
   let parenLevel = 0;
+
+  // Check for strings first if they're not allowed
+  if (!config.allowStrings) {
+    for (const token of lexer.tokens) {
+      if (token.type === "STRING") {
+        throw new StringsNotAllowedError();
+      }
+    }
+  }
 
   for (let i = 0; i < lexer.tokens.length; i++) {
     const current = lexer.tokens[i];
@@ -236,6 +252,11 @@ function validateTokenStream(lexer: Lexer): Lexer[] {
 
   if (parenLevel > 0) throw new Error("Unmatched opening parenthesis");
   if (currentExpr.length > 0) expressions.push(currentExpr);
+
+  // Check if multiple expressions are allowed
+  if (!config.allowMultipleExpressions && expressions.length > 1) {
+    throw new MultipleExpressionsNotAllowedError();
+  }
 
   return expressions.map((tokens) => new Lexer(tokens));
 }
@@ -274,7 +295,7 @@ function createParseFunction(lexer: Lexer, config: CalcConfig): ParseFunction {
 
 function parse(s: string, options: Partial<CalcConfig> = {}): ASTNode[] {
   const config = { ...defaultConfig, ...options };
-  return validateTokenStream(createLexer(s, options)).map((lexer) =>
+  return validateTokenStream(createLexer(s, options), config).map((lexer) =>
     createParseFunction(lexer, config)()
   );
 }

@@ -60,3 +60,15 @@ export class UnsupportedUnitError extends Error {
     };
   }
 }
+
+export class StringsNotAllowedError extends Error {
+  constructor() {
+    super(errorTemplate("Strings in expressions are not allowed"));
+  }
+}
+
+export class MultipleExpressionsNotAllowedError extends Error {
+  constructor() {
+    super(errorTemplate("Multiple expressions are not allowed"));
+  }
+}

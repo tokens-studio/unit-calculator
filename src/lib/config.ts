@@ -191,6 +191,8 @@ export const defaultConfig: CalcConfig = {
   mathFunctions: defaultMathFunctions,
   mathConstants: defaultMathConstants,
   unitConversions: defaultUnitConversions,
+  allowStrings: true,
+  allowMultipleExpressions: true,
 };
 
 export function createConfig({
@@ -198,6 +200,8 @@ export function createConfig({
   mathFunctions = defaultConfig.mathFunctions,
   mathConstants = defaultConfig.mathConstants,
   unitConversions = defaultConfig.unitConversions,
+  allowStrings = defaultConfig.allowStrings,
+  allowMultipleExpressions = defaultConfig.allowMultipleExpressions,
 }: Partial<CalcConfig> = {}): CalcConfig {
   const processedConversions = new Map<
     UnitConversionKey,
@@ -213,6 +217,8 @@ export function createConfig({
     mathFunctions,
     mathConstants,
     unitConversions: processedConversions,
+    allowStrings,
+    allowMultipleExpressions,
   };
 }
 

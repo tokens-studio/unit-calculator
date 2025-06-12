@@ -1,8 +1,8 @@
-import type { CalcConfig } from "../config.js";
+import type { CalcConfig, Unit } from "../config.js";
 
 export interface IUnitValue {
   value: number;
-  unit: string | null;
+  unit: Unit;
   config: CalcConfig;
 
   isUnitless(): boolean;
@@ -16,7 +16,7 @@ export interface IUnitValue {
 }
 
 export interface UnitValueConstructor {
-  new (value: number, unit: string | null, config: CalcConfig): IUnitValue;
+  new (value: number, unit: Unit, config: CalcConfig): IUnitValue;
 
   areAllCompatible(values: IUnitValue[]): boolean;
 }

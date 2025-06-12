@@ -7,6 +7,7 @@ import type {
   UnitConversionFunction,
   UnitConversionKey,
   CalcConfig,
+  Unit,
 } from "./config.d.js";
 import { CSS_UNITS } from "./utils/constants.js";
 
@@ -16,6 +17,7 @@ export type {
   UnitConversionFunction,
   CalcConfig,
   AllowedUnits,
+  Unit,
 } from "./config.d.js";
 
 export const defaultMathFunctions: Record<
@@ -230,9 +232,9 @@ export function addUnitConversions(
 export type UnitConversionKeyArray = [string | null, string, string | null];
 
 export function getConversionKey(
-  leftUnit: string | null,
+  leftUnit: Unit,
   operator: string,
-  rightUnit: string | null
+  rightUnit: Unit
 ): UnitConversionKey {
   // Empty string represents unitless values in conversion keys
   const left = leftUnit === null ? "" : leftUnit;
@@ -249,9 +251,9 @@ export function arrayToConversionKey(
 
 export function findBestConversionKey(
   unitConversions: Map<UnitConversionKey, UnitConversionFunction>,
-  leftUnit: string | null,
+  leftUnit: Unit,
   operator: string,
-  rightUnit: string | null
+  rightUnit: Unit
 ): UnitConversionFunction | undefined {
   // Try exact match first
   const exactKey = getConversionKey(leftUnit, operator, rightUnit);

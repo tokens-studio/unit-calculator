@@ -1,10 +1,11 @@
 import type { IUnitValue } from "./units.d.js";
+import type { Unit } from "../config.js";
 
 // Utilities -------------------------------------------------------------------
 
 const errorTemplate = (msg: string) => `Evaluation Error: ${msg}`;
 
-export const stringifyUnit = (unit: string | null): string =>
+export const stringifyUnit = (unit: Unit): string =>
   unit === null ? "unitless" : unit;
 
 // Errors ----------------------------------------------------------------------

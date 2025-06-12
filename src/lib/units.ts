@@ -1,4 +1,4 @@
-import type { CalcConfig } from "./config.js";
+import type { CalcConfig, Unit } from "./config.js";
 import { defaultConfig, findBestConversionKey } from "./config.js";
 import { IncompatibleUnitsError } from "./utils/errors.js";
 import type { IUnitValue } from "./utils/units.d.js";
@@ -6,12 +6,12 @@ import type { IUnitValue } from "./utils/units.d.js";
 export class UnitValue implements IUnitValue {
   type: string = "unitvalue";
   value: number;
-  unit: string | null;
+  unit: Unit;
   config: CalcConfig;
 
   constructor(
     value: number,
-    unit: string | null = null,
+    unit: Unit = null,
     config: CalcConfig = defaultConfig
   ) {
     this.value = value;

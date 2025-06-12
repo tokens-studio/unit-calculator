@@ -1,8 +1,11 @@
+// Unit type definition
+export type Unit = string | null;
+
 export type AllowedUnits = Set<string>;
 
 export interface ConversionOutput {
   value: number;
-  unit: string | null;
+  unit: Unit;
 }
 
 export type UnitConversionKey = string;
@@ -20,4 +23,4 @@ export interface CalcConfig {
 }
 
 // Types for the array-based conversion key format
-export type UnitConversionKeyArray = [string | null, string, string | null];
+export type UnitConversionKeyArray = [Unit, string, Unit];

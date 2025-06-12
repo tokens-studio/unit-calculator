@@ -11,6 +11,7 @@ export type {
   UnitConversionFunction,
   UnitConversionKey,
   UnitConversionKeyArray,
+  Unit,
 } from "./lib/config.d.js";
 
 // Classes ---------------------------------------------------------------------

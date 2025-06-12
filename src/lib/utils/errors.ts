@@ -16,9 +16,9 @@ export class IncompatibleUnitsError extends Error {
   }) {
     const error = `Units ${left.unit || "unitless"} & ${
       right.unit || "unitless"
-    } are incompatible in expression ${left.value}${left.unit} ${operation} ${
+    } are incompatible in expression ${left.value}${left.unit || ""} ${operation} ${
       right.value
-    }${right.unit}.`;
+    }${right.unit || ""}.`;
 
     super(evaluationError(error));
     this.values = [left, right];

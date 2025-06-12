@@ -422,6 +422,51 @@ describe("Custom math functions", () => {
   });
 });
 
+describe("Custom Units & unsupported units error handling", () => {
+  it("throws error for unsupported units", () => {
+    // Default config only allows CSS units
+    expect(() => calc("10foo + 20bar")).toThrow(/Invalid unit/);
+    expect(() => calc("5lightyears * 2")).toThrow(/Invalid unit/);
+  });
+
+  it("allows custom units when explicitly added", () => {
+    const options: Partial<CalcConfig> = {
+      allowedUnits: new Set(["foo", "bar", "lightyear"]),
+    };
+
+    expect(calc("10foo + 20foo", options)).toEqual(["30foo"]);
+    expect(calc("5lightyear * 2", options)).toEqual(["10lightyear"]);
+
+    expect(() => calc("10px", options)).toThrow(/Invalid unit/);
+  });
+
+  it("handles mixed custom units with conversions", () => {
+    const config = createConfig({
+      allowedUnits: new Set(["km", "m"]),
+    });
+
+    addUnitConversions(config, [
+      [
+        ["km", "+", "m"],
+        (left, right) => ({
+          value: left.value + right.value / 1000,
+          unit: "km",
+        }),
+      ],
+      [
+        ["m", "+", "km"],
+        (left, right) => ({
+          value: left.value + right.value * 1000,
+          unit: "m",
+        }),
+      ],
+    ]);
+
+    expect(calc("1km + 500m", config)).toEqual(["1.5km"]);
+    expect(calc("1m + 2km", config)).toEqual(["2001m"]);
+  });
+});
+
 describe("String handling", () => {
   it("handles basic string values", () => {
     expect(calc("'hello'")).toEqual(["'hello'"]);

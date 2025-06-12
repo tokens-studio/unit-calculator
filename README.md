@@ -41,10 +41,42 @@ npm i @tokens-studio/unit-calculator
 ### In the console
 
 ``` sh
-npm run cli       # Start a repl
-npm run cli "1+1" # Evaluate expression
-> 2
+npm run cli                           # Start a repl
+npm run cli "1+1"                     # Evaluate expression
+npm run cli --help                    # Show help
 ```
+
+### CLI Options
+
+The CLI supports various configuration options:
+
+``` sh
+# Control string handling
+npm run cli --no-strings "1 + 2"
+npm run cli --strings "hello world"
+
+# Control multiple expressions
+npm run cli --no-multiple-expressions "1 + 1 2 + 2"  # Will throw error
+npm run cli --multiple-expressions "1 + 1 2 + 2"     # Returns [2, 4]
+
+# Specify allowed units
+npm run cli --units "px,em,rem" "1px + 2em"
+
+# Combine options
+npm run cli --no-strings --units "px,rem" "1px + 2rem"
+```
+
+### CLI Help
+
+``` sh
+npm run cli --help
+```
+
+Shows all available options:
+- `--strings` / `--no-strings`: Allow/disallow strings in expressions
+- `--multiple-expressions` / `--no-multiple-expressions`: Allow/disallow multiple expressions
+- `--units <list>`: Comma-separated list of allowed units
+- `--help`, `-h`: Show help message
 
 ## Configuration
 

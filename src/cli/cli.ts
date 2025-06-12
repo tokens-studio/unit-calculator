@@ -22,7 +22,7 @@ function parseArgs(args: string[]) {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case "--no-strings":
         options.allowStrings = false;
@@ -61,7 +61,11 @@ Options:
   --multiple-expressions       Allow multiple expressions (default)
   --no-multiple-expressions    Allow only single expressions
   --units <list>               Comma-separated list of allowed units
-                              (default: ${defaultConfig.allowedUnits.size > 10 ? 'CSS units' : [...defaultConfig.allowedUnits].join(',')})
+                              (default: ${
+                                defaultConfig.allowedUnits.size > 10
+                                  ? "CSS units"
+                                  : [...defaultConfig.allowedUnits].join(",")
+                              })
   --help, -h                   Show this help message
 
 Examples:
@@ -98,7 +102,7 @@ if (options.expression) {
     allowMultipleExpressions: options.allowMultipleExpressions,
     allowedUnits: new Set(options.units),
   });
-  
+
   try {
     const result = calc(options.expression, config);
     console.log(result);

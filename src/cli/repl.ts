@@ -15,8 +15,12 @@ export function startRepl(options: ReplOptions = {}): void {
   const config: CalcConfig = createConfig({
     ...defaultConfig,
     allowStrings: options.allowStrings ?? defaultConfig.allowStrings,
-    allowMultipleExpressions: options.allowMultipleExpressions ?? defaultConfig.allowMultipleExpressions,
-    allowedUnits: options.units ? new Set(options.units) : defaultConfig.allowedUnits,
+    allowMultipleExpressions:
+      options.allowMultipleExpressions ??
+      defaultConfig.allowMultipleExpressions,
+    allowedUnits: options.units
+      ? new Set(options.units)
+      : defaultConfig.allowedUnits,
   });
 
   const rl = readline.createInterface({
@@ -31,7 +35,9 @@ export function startRepl(options: ReplOptions = {}): void {
     `Supported dimension units: ${[...config.allowedUnits].join(", ")}`
   );
   console.log(`Strings allowed: ${config.allowStrings}`);
-  console.log(`Multiple expressions allowed: ${config.allowMultipleExpressions}`);
+  console.log(
+    `Multiple expressions allowed: ${config.allowMultipleExpressions}`
+  );
 
   rl.on("line", function (line) {
     try {

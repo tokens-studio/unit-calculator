@@ -7,6 +7,15 @@ export * as config from "./lib/config.js";
 export type { IUnitValue } from "./lib/utils/units.d.js";
 export { UnitValue } from "./lib/units.js";
 
+export type {
+  CalcConfig,
+  AllowedUnits,
+  ConversionOutput,
+  UnitConversionFunction,
+  UnitConversionKey,
+  UnitConversionKeyArray,
+} from "./lib/config.d.js";
+
 import { createPenpotConfig } from "./lib/presets/penpot.js";
 
 export const presets = {

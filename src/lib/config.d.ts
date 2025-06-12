@@ -1,11 +1,11 @@
 export type AllowedUnits = Set<string>;
 
-export type UnitConversionKey = string;
-
 export interface ConversionOutput {
   value: number;
   unit: string | null;
 }
+
+export type UnitConversionKey = string;
 
 export type UnitConversionFunction = (
   left: any,

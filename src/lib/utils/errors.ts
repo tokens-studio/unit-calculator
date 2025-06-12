@@ -24,3 +24,15 @@ export class IncompatibleUnitsError extends Error {
     this.values = [left, right];
   }
 }
+
+export class UnsupportedUnitError extends Error {
+  unit: string;
+  allowedUnits: string[];
+
+  constructor(unit: string, allowedUnits: string[]) {
+    const error = `Invalid unit: "${unit}". Allowed units are: ${allowedUnits.join(", ")}`;
+    super(error);
+    this.unit = unit;
+    this.allowedUnits = allowedUnits;
+  }
+}

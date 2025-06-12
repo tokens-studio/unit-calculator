@@ -4,14 +4,16 @@ import type { IUnitValue } from "./units.d.js";
 
 const errorTemplate = (msg: string) => `Evaluation Error: ${msg}`;
 
-export function stringifyUnit(unit: string | null): string {
-  return unit || "unitless";
-}
+export const stringifyUnit = (unit: string | null): string =>
+  unit === null ? "unitless" : unit;
 
 // Errors ----------------------------------------------------------------------
 
 export class IncompatibleUnitsError extends Error {
-  values: Array<IUnitValue>;
+  data: {
+    values: Array<IUnitValue>;
+    operation: string;
+  };
 
   constructor({
     operation,
@@ -29,13 +31,18 @@ export class IncompatibleUnitsError extends Error {
     } ${operation} ${right.value}${right.unit || ""}.`;
 
     super(errorTemplate(error));
-    this.values = [left, right];
+    this.data = {
+      values: [left, right],
+      operation,
+    };
   }
 }
 
 export class UnsupportedUnitError extends Error {
-  unit: string;
-  allowedUnits: string[];
+  data: {
+    unit: string;
+    allowedUnits: string[];
+  };
 
   constructor(unit: string, allowedUnits: string[] | Set<string>) {
     const unitsArray = Array.isArray(allowedUnits)
@@ -46,7 +53,9 @@ export class UnsupportedUnitError extends Error {
     )}". Allowed units are: ${unitsArray.map(stringifyUnit).join(", ")}`;
 
     super(errorTemplate(error));
-    this.unit = unit;
-    this.allowedUnits = unitsArray;
+    this.data = {
+      unit,
+      allowedUnits: unitsArray,
+    };
   }
 }

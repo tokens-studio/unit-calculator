@@ -1,6 +1,7 @@
 import type { CalcConfig } from "./config.js";
 import { createConfig, defaultConfig } from "./config.js";
 import { UnsupportedUnitError } from "./utils/errors.js";
+import type { AllowedUnits } from "./config.d.js";
 
 export type TokenType =
   | "EOF"
@@ -170,7 +171,7 @@ const parseNumber = function (
         unit: suffix,
       } as NumberWithUnitToken;
     } else {
-      throw new UnsupportedUnitError(suffix, [...config.allowedUnits]);
+      throw new UnsupportedUnitError(suffix, config.allowedUnits);
     }
   }
 

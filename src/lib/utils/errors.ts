@@ -29,10 +29,15 @@ export class UnsupportedUnitError extends Error {
   unit: string;
   allowedUnits: string[];
 
-  constructor(unit: string, allowedUnits: string[]) {
-    const error = `Invalid unit: "${unit}". Allowed units are: ${allowedUnits.join(", ")}`;
+  constructor(unit: string, allowedUnits: string[] | Set<string>) {
+    const unitsArray = Array.isArray(allowedUnits)
+      ? allowedUnits
+      : [...allowedUnits];
+    const error = `Invalid unit: "${unit}". Allowed units are: ${unitsArray.join(
+      ", "
+    )}`;
     super(error);
     this.unit = unit;
-    this.allowedUnits = allowedUnits;
+    this.allowedUnits = unitsArray;
   }
 }

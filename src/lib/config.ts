@@ -1,26 +1,22 @@
 import { IncompatibleUnitsError } from "./utils/errors.js";
 import { UnitValue } from "./units.js";
 import type { IUnitValue } from "./utils/units.d.js";
+import type {
+  AllowedUnits,
+  ConversionOutput,
+  UnitConversionFunction,
+  UnitConversionKey,
+  CalcConfig,
+} from "./config.d.js";
 import { CSS_UNITS } from "./utils/constants.js";
 
-export type UnitConversionKey = string;
-
-interface ConversionOutput {
-  value: number;
-  unit: string | null;
-}
-
-export type UnitConversionFunction = (
-  left: IUnitValue,
-  right: IUnitValue
-) => ConversionOutput;
-
-export interface CalcConfig {
-  allowedUnits: Set<string>;
-  mathFunctions: Record<string, (...args: IUnitValue[]) => ConversionOutput>;
-  mathConstants: Record<string, number>;
-  unitConversions: Map<UnitConversionKey, UnitConversionFunction>;
-}
+export type {
+  UnitConversionKey,
+  ConversionOutput,
+  UnitConversionFunction,
+  CalcConfig,
+  AllowedUnits,
+} from "./config.d.js";
 
 export const defaultMathFunctions: Record<
   string,
@@ -206,7 +202,7 @@ export function createConfig({
     UnitConversionFunction
   >();
 
-  unitConversions.forEach((fn, key) => {
+  unitConversions.forEach((fn: UnitConversionFunction, key: string) => {
     processedConversions.set(key, fn);
   });
 

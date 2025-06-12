@@ -46,17 +46,17 @@ export class UnsupportedUnitError extends Error {
   };
 
   constructor(unit: string, allowedUnits: string[] | Set<string>) {
-    const unitsArray = Array.isArray(allowedUnits)
+    const units = Array.isArray(allowedUnits)
       ? allowedUnits
       : [...allowedUnits];
     const error = `Invalid unit: "${stringifyUnit(
       unit
-    )}". Allowed units are: ${unitsArray.map(stringifyUnit).join(", ")}`;
+    )}". Allowed units are: ${units.map(stringifyUnit).join(", ")}`;
 
     super(errorTemplate(error));
     this.data = {
       unit,
-      allowedUnits: unitsArray,
+      allowedUnits: units,
     };
   }
 }

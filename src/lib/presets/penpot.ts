@@ -2,11 +2,15 @@ import type { CalcConfig } from "../config.js";
 import { createConfig, addUnitConversions } from "../config.js";
 import { createPercentConfig } from "./percent.js";
 
-const allowedUnits = new Set(["px", "rem", "%"]);
+export const baseConfig = {
+  allowedUnits: new Set(["px", "rem", "%"]),
+  allowStrings: false,
+  allowMultipleExpressions: false,
+};
 
 export function createPenpotConfig({
   baseSize = 16,
-  config = createConfig({ allowedUnits }),
+  config = createConfig(baseConfig),
 }: {
   baseSize: number;
   config: CalcConfig;

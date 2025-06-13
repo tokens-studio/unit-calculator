@@ -27,9 +27,11 @@ export * as errors from "./lib/utils/errors.js";
 export * as config from "./lib/config.js";
 
 import { createPenpotConfig } from "./lib/presets/penpot.js";
+import { createPercentConfig } from "./lib/presets/percent.js";
 
 export const presets = {
   penpot: createPenpotConfig,
+  percent: createPercentConfig,
 };
 
 // Main ------------------------------------------------------------------------

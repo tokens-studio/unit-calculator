@@ -16,13 +16,21 @@
     "test:watch": "vitest",
     "start": "npm run build && node dist/index.js",
     "cli": "node --loader ts-node/esm ./src/cli/cli.ts",
-    "link": "npm run build && npm link"
+    "link": "npm run build && npm link",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && npm test && changeset publish"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tokens-studio/unit-calculator.git"
   },
-  "keywords": [],
+  "keywords": [
+    "tokens",
+    "design-tokens",
+    "calculator",
+    "units"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -30,6 +38,7 @@
   },
   "homepage": "https://github.com/tokens-studio/unit-calculator#readme",
   "devDependencies": {
+    "@changesets/cli": "^2.29.4",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
@@ -39,5 +48,9 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "files": ["dist", "LICENSE", "README.md"]
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ]
 }

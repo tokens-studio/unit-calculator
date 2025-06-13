@@ -18,6 +18,14 @@ export const subtractPercent: UnitConversionFunction = (
   unit: unitToken.unit,
 });
 
+export const subtractValueFromPercent: UnitConversionFunction = (
+  percentToken,
+  unitToken
+) => ({
+  value: -(unitToken.value - (unitToken.value / 100) * percentToken.value),
+  unit: unitToken.unit,
+});
+
 export const multiplyPercent: UnitConversionFunction = (
   percentToken,
   unitToken
@@ -38,20 +46,22 @@ export const dividePercentBy: UnitConversionFunction = (
   percentToken,
   unitToken
 ) => ({
-  value: (percentToken.value / unitToken.value) * 100,
+  value: percentToken.value / unitToken.value,
   unit: "%",
 });
 
-export const createPercentConfig = function (
-  config = createConfig()
-): CalcConfig {
+export const createPercentConfig = function ({
+  config = createConfig(),
+}: Partial<{
+  config: CalcConfig;
+}> = {}): CalcConfig {
   return addUnitConversions(config, [
     // Addition
     [["%", "+", "*"], (left, right) => addPercent(left, right)],
     [["*", "+", "%"], (left, right) => addPercent(right, left)],
 
     // Subtraction
-    [["%", "-", "*"], (left, right) => subtractPercent(left, right)],
+    [["%", "-", "*"], (left, right) => subtractValueFromPercent(left, right)],
     [["*", "-", "%"], (left, right) => subtractPercent(right, left)],
 
     // Multiplication

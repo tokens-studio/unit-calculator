@@ -8,13 +8,13 @@ export const baseConfig = {
   allowMultipleExpressions: false,
 };
 
-export function createPenpotConfig({
+export const createPenpotConfig = ({
   baseSize = 16,
   config = createConfig(baseConfig),
-}: {
+}: Partial<{
   baseSize: number;
   config: CalcConfig;
-}) {
+}> = {}): CalcConfig => {
   const defaultConfig = addUnitConversions(config, [
     [
       ["px", "+", "rem"],
@@ -60,7 +60,7 @@ export function createPenpotConfig({
     ],
   ]);
 
-  const configWithPercent = createPercentConfig(defaultConfig);
+  const configWithPercent = createPercentConfig({ config: defaultConfig });
 
   return configWithPercent;
-}
+};

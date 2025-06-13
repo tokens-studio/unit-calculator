@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.5 (2025-06-13)
+
+- Create percent preset for percentage calculations
+  - Support for adding, subtracting, multiplying, and dividing with percentages
+  - Percentage operations work with any unit (px, rem, em, etc.)
+  - Export percent preset in main index for easy access
+- Enhance Penpot preset with percentage support
+  - Integrate percent preset into Penpot configuration
+  - Maintain existing px/rem conversions while adding percentage operations
+
 ## 0.0.4 (2025-06-12)
 
 - Add configuration option to disable strings or groups

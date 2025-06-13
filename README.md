@@ -6,6 +6,8 @@ The unit calculator lets you define custom rules on how mixed units will be reso
 
 It will mainly be used to resolve math operations on design token epxressions.
 
+⚠️ This package doesn't follow semver strictly right now as it's still in development, so expect breaking changes until 1.0.0
+
 ## Installation
 
 ``` sh

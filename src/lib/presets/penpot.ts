@@ -1,11 +1,17 @@
+import type { CalcConfig } from "../config.js";
 import { createConfig, addUnitConversions } from "../config.js";
+import { createPercentConfig } from "./percent.js";
 
-export function createPenpotConfig({ baseSize = 16 }: { baseSize: number }) {
-  const config = createConfig({
-    allowedUnits: new Set(["px", "rem"]),
-  });
+const allowedUnits = new Set(["px", "rem", "%"]);
 
-  addUnitConversions(config, [
+export function createPenpotConfig({
+  baseSize = 16,
+  config = createConfig({ allowedUnits }),
+}: {
+  baseSize: number;
+  config: CalcConfig;
+}) {
+  const defaultConfig = addUnitConversions(config, [
     [
       ["px", "+", "rem"],
       (left, right) => ({
@@ -50,5 +56,7 @@ export function createPenpotConfig({ baseSize = 16 }: { baseSize: number }) {
     ],
   ]);
 
-  return config;
+  const configWithPercent = createPercentConfig(defaultConfig);
+
+  return configWithPercent;
 }

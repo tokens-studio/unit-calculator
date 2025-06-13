@@ -1,7 +1,7 @@
 {
   "name": "@tokens-studio/unit-calculator",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A tool to run calculations on strings with units",
   "main": "dist/index.js",
   "type": "module",
@@ -25,12 +25,7 @@
     "type": "git",
     "url": "git+https://github.com/tokens-studio/unit-calculator.git"
   },
-  "keywords": [
-    "tokens",
-    "design-tokens",
-    "calculator",
-    "units"
-  ],
+  "keywords": ["tokens", "design-tokens", "calculator", "units"],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -48,9 +43,5 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ]
+  "files": ["dist", "LICENSE", "README.md"]
 }
